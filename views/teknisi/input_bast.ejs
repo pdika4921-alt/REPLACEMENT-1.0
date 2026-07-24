@@ -49,18 +49,15 @@
             <div class="mb-4">
                 <label class="form-label fw-medium">Pilih Nama Teknisi</label>
                 <!-- Dropdown Nama Teknisi Sesuai Request -->
-                <select class="form-select" name="teknisi_select" required>
-                    <option value="" selected disabled>-- Pilih NIK dan Nama Anda --</option>
-                    <option value="26050119 | ANDI ARYA WIJAYA">26050119 | ANDI ARYA WIJAYA</option>
-                    <option value="26010129 | MOHAMAD FARHAN HAKIM">26010129 | MOHAMAD FARHAN HAKIM</option>
-                    <option value="26960081 | AHMAD YUDHA AMRULLAH">26960081 | AHMAD YUDHA AMRULLAH</option>
-                    <option value="26010128 | AHMAD ASFA MUHAROMMAIN">26010128 | AHMAD ASFA MUHAROMMAIN</option>
-                    <option value="26960082 | FIKRI KHOIRUL AZHARI">26960082 | FIKRI KHOIRUL AZHARI</option>
-                    <option value="26950095 | YULIYANTO">26950095 | YULIYANTO</option>
-                    <option value="26970121 | ADITYA FERIANSYAH PUTRA">26970121 | ADITYA FERIANSYAH PUTRA</option>
-                    <option value="26700002 | LUKMAN HAKIM">26700002 | LUKMAN HAKIM</option>
-                </select>
-            </div>
+                <!-- Dropdown Nama Teknisi dari Database -->
+<select class="form-select" name="teknisi_select" required>
+    <option value="" selected disabled>-- Pilih NIK dan Nama Anda --</option>
+    <% namaTeknisiList.forEach(t => { %>
+    <option value="<%= t.nik %> | <%= t.nama %>">
+        <%= t.nik %> | <%= t.nama %>
+    </option>
+    <% }) %>
+</select>
 
             <!-- 3. Multi Input Perangkat -->
             <div class="section-title d-flex justify-content-between align-items-center">

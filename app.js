@@ -16,7 +16,11 @@ db.serialize(() => {
     db.run(`INSERT OR IGNORE INTO users (username, password, role) VALUES ('admin', 'admin123', 'admin')`);
     db.run(`INSERT OR IGNORE INTO users (username, password, role) VALUES ('teknisi', '123', 'teknisi')`);
     db.run(`INSERT OR IGNORE INTO users (username, password, role) VALUES ('warehouse', '123', 'wh')`);
-
+    db.run(`CREATE TABLE IF NOT EXISTS nama_teknisi (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nik TEXT,
+    nama TEXT
+)`);
     db.run(`CREATE TABLE IF NOT EXISTS bast_data (
         id INTEGER PRIMARY KEY AUTOINCREMENT, kode_unik TEXT UNIQUE, status TEXT,
         tanggal TEXT, loksto TEXT, teknisi_nama TEXT, teknisi_nik TEXT, wh_nama TEXT,
@@ -74,41 +78,35 @@ app.get('/logout', (req, res) => { req.session.destroy(); res.redirect('/login')
 app.get('/admin/dashboard', checkRole('admin'), (req, res) => {
     db.all("SELECT * FROM bast_data ORDER BY id DESC", (err, rows) => {
         db.all("SELECT * FROM users WHERE role = 'teknisi'", (err, teknisiList) => {
-            let groupedRekap = {};
-            let snMaster = {}; // <-- TAMBAHAN BARU UNTUK VLOOKUP
-            
-            rows.forEach(row => {
-                if (row.perangkat_json) {
-                    try {
-                        let items = JSON.parse(row.perangkat_json);
-                        items.forEach(item => {
-                            // Grouping untuk Accordion (Tetap Ada)
-                            let penyetor = row.teknisi_nama || 'Tanpa Nama';
-                            if (!groupedRekap[penyetor]) groupedRekap[penyetor] = [];
-                            groupedRekap[penyetor].push({
-                                kode_unik: row.kode_unik, tanggal: row.tanggal, loksto: row.loksto,
-                                penerima: row.wh_nama || '-', sn_lama: item.snlama, sn_baru: item.snbaru,
-                                no_inet: item.noinet, kondisi: item.kondisi, status: row.status
-                            });
-
-                            // Mapping SN untuk VLOOKUP (Menyimpan status terakhir/tertinggi)
-                            if (item.snlama) {
-                                // Jika sudah COMPLETED, jangan ditimpa PENDING jika ada SN ganda
-                                if (snMaster[item.snlama] !== 'COMPLETED') {
+            db.all("SELECT * FROM nama_teknisi ORDER BY nama ASC", (err, namaTeknisiList) => {
+                let groupedRekap = {};
+                let snMaster = {};
+                
+                rows.forEach(row => {
+                    if (row.perangkat_json) {
+                        try {
+                            let items = JSON.parse(row.perangkat_json);
+                            items.forEach(item => {
+                                let penyetor = row.teknisi_nama || 'Tanpa Nama';
+                                if (!groupedRekap[penyetor]) groupedRekap[penyetor] = [];
+                                groupedRekap[penyetor].push({
+                                    kode_unik: row.kode_unik, tanggal: row.tanggal, loksto: row.loksto,
+                                    penerima: row.wh_nama || '-', sn_lama: item.snlama, sn_baru: item.snbaru,
+                                    no_inet: item.noinet, kondisi: item.kondisi, status: row.status
+                                });
+                                if (item.snlama && snMaster[item.snlama] !== 'COMPLETED') {
                                     snMaster[item.snlama] = row.status;
                                 }
-                            }
-                        });
-                    } catch(e){}
-                }
-            });
+                            });
+                        } catch(e){}
+                    }
+                });
 
-            res.render('admin/dashboard', { 
-                bastData: rows, 
-                teknisiList: teknisiList, 
-                groupedRekap: groupedRekap, 
-                snMaster: snMaster, // <-- KIRIM DATA INI KE VIEW
-                username: req.session.username 
+                res.render('admin/dashboard', { 
+                    bastData: rows, teknisiList, groupedRekap, snMaster,
+                    namaTeknisiList,  // <-- tambahan
+                    username: req.session.username 
+                });
             });
         });
     });
@@ -131,12 +129,31 @@ app.get('/admin/user/delete/:id', checkRole('admin'), (req, res) => {
     });
 });
 
+// Admin Tambah Nama Teknisi di Dropdown
+app.post('/admin/teknisi/add', checkRole('admin'), (req, res) => {
+    const { nik, nama } = req.body;
+    db.run("INSERT INTO nama_teknisi (nik, nama) VALUES (?, ?)", [nik, nama.toUpperCase()], (err) => {
+        res.redirect('/admin/dashboard');
+    });
+});
+
+// Admin Hapus Nama Teknisi dari Dropdown
+app.get('/admin/teknisi/delete/:id', checkRole('admin'), (req, res) => {
+    db.run("DELETE FROM nama_teknisi WHERE id = ?", [req.params.id], () => {
+        res.redirect('/admin/dashboard');
+    });
+});
+
 // ================= ROUTE TEKNISI =================
 app.get('/teknisi/dashboard', checkRole('teknisi'), (req, res) => {
     db.all("SELECT * FROM bast_data ORDER BY id DESC", (err, rows) => res.render('teknisi/dashboard', { data: rows }));
 });
 
-app.get('/teknisi/input', checkRole('teknisi'), (req, res) => res.render('teknisi/input_bast'));
+app.get('/teknisi/input', checkRole('teknisi'), (req, res) => {
+    db.all("SELECT * FROM nama_teknisi ORDER BY nama ASC", (err, namaTeknisiList) => {
+        res.render('teknisi/input_bast', { namaTeknisiList });
+    });
+});
 
 app.post('/teknisi/submit', upload.array('eviden', 10), (req, res) => { 
     try {
