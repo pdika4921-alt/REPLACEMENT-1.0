@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Cetak BAST - <%= data.kode_unik %></title>
+    <!-- Bootstrap Icons untuk ikon panah dan printer -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        /* Pengaturan Ukuran Kertas A4 & Font Standar Dokumen Formal */
+        @page { size: A4; margin: 20mm; }
+        body { 
+            font-family: 'Times New Roman', Times, serif; 
+            font-size: 11pt; line-height: 1.5; color: #000; 
+            background: #fff; margin: 0; padding: 0;
+        }
+        
+        /* Bilah Tombol Navigasi Atas (Rapi, Berdampingan & Tidak Bentrok) */
+        .print-nav-bar {
+            background: #f8f9fa; 
+            padding: 12px 20px; 
+            border-bottom: 1px solid #dee2e6; 
+            display: flex; 
+            justify-content: flex-end; 
+            align-items: center; 
+            gap: 12px; 
+            margin-bottom: 25px;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        .btn-custom-back {
+            background-color: #6c757d; 
+            color: white; 
+            padding: 8px 18px; 
+            border-radius: 8px; 
+            font-size: 13px; 
+            font-weight: 600; 
+            text-decoration: none; 
+            display: inline-flex; 
+            align-items: center;
+        }
+        .btn-custom-back:hover { background-color: #5a6268; color: white; }
+
+        .btn-custom-print {
+            background-color: #EE2E24; 
+            color: white; 
+            border: none; 
+            padding: 8px 20px; 
+            border-radius: 8px; 
+            font-size: 13px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            display: inline-flex; 
+            align-items: center;
+        }
+        .btn-custom-print:hover { background-color: #d1221a; }
+
+        /* Otomatis sembunyikan tombol saat dicetak ke PDF/Kertas */
+        @media print { 
+            .no-print { display: none !important; } 
+        }
+
+        /* Desain Dokumen BAST Asli */
+        .kop-surat { font-size: 14pt; font-weight: bold; text-align: center; margin-bottom: 5px; }
+        .logo-text { color: #EE2E24; font-size: 16pt; }
+        .garis-bawah { border-bottom: 3px double #000; margin-bottom: 20px; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; }
+        th, td { border: 1px solid #000; padding: 6px; font-size: 10pt; }
+        th { text-align: center; background-color: #f2f2f2; }
+        
+        .ttd-area { width: 100%; margin-top: 40px; text-align: center; page-break-inside: avoid; }
+        .ttd-box { width: 50%; float: left; }
+        .ttd-img { max-height: 90px; max-width: 150px; margin: 5px 0; }
+        
+        /* Halaman Baru Khusus Lampiran */
+        .lampiran-page { page-break-before: always; padding-top: 20px; }
+        .grid-foto { text-align: center; margin-top: 20px; }
+        .foto-eviden { width: 45%; max-height: 250px; object-fit: contain; margin: 5px; border: 1px solid #ccc; padding: 3px; }
+        
+        .clearfix::after { content: ""; clear: both; display: table; }
+    </style>
+</head>
+<body>
+
+    <!-- BILAH TOMBOL AKSI ATAS -->
+<div class="print-nav-bar no-print">
+    <a href="/wh/dashboard" class="btn-custom-back">
+        <i class="bi bi-arrow-left me-1"></i> Kembali
+    </a>
+    
+    <button onclick="window.print()" class="btn-custom-print">
+        <i class="bi bi-printer-fill me-2"></i> Cetak / Simpan PDF
+    </button>
+</div>
+
+    <!-- Container Utama Dokumen -->
+    <div style="padding: 0 20px 20px 20px;">
+        <!-- ================= HALAMAN 1: BAST ================= -->
+        <div class="kop-surat">
+            <span class="logo-text">TelkomAkses</span><br>
+            BERITA ACARA SERAH TERIMA (BAST)<br>
+            PERANGKAT REPLACEMENT ONT
+        </div>
+        <div class="garis-bawah"></div>
+
+        <p style="text-align: center; margin-top:-10px;">Nomor: <b><%= data.kode_unik %></b></p>
+
+        <p>Pada hari ini, tanggal <b><%= data.tanggal %></b> bertempat di Lokasi <b><%= data.loksto %></b> telah dilakukan serah terima perangkat antara:</p>
+
+        <!-- Data Pihak 1 & 2 -->
+        <div style="margin-left: 20px;">
+            <b>1. Pihak Pertama (Pemberi):</b><br>
+            <table style="width: auto; border: none; margin: 0;">
+                <tr><td style="border: none; padding: 2px;">&#8226; Nama (NIK)</td><td style="border: none; padding: 2px;">: <%= data.teknisi_nama %> (<%= data.teknisi_nik %>)</td></tr>
+                <tr><td style="border: none; padding: 2px;">&#8226; Jabatan</td><td style="border: none; padding: 2px;">: Teknisi</td></tr>
+                <tr><td style="border: none; padding: 2px;">&#8226; Instansi/Perusahaan</td><td style="border: none; padding: 2px;">: PT. TELKOM AKSES</td></tr>
+            </table>
+            
+            <br>
+            <b>2. Pihak Kedua (Penerima):</b><br>
+            <table style="width: auto; border: none; margin: 0;">
+                <tr><td style="border: none; padding: 2px;">&#8226; Nama</td><td style="border: none; padding: 2px;">: <%= data.wh_nama %></td></tr>
+                <tr><td style="border: none; padding: 2px;">&#8226; Alamat/Instansi</td><td style="border: none; padding: 2px;">: PT. TELKOM AKSES</td></tr>
+            </table>
+        </div>
+
+        <!-- Tabel Perangkat Dinamis -->
+        <p style="margin-top: 15px;"><b>DETAIL BARANG:</b><br>
+        Pihak Pertama menyerahkan perangkat kepada Pihak Kedua dengan rincian sebagai berikut:</p>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Nama Barang</th>
+                    <th>Merk & SN ONT lama</th>
+                    <th>Tipe Pekerjaan</th>
+                    <th>SN ONT Baru</th>
+                    <th>No Internet</th>
+                    <th>Kondisi</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Looping data perangkat dari Database -->
+                <% if (data.perangkat && data.perangkat.length > 0) { %>
+                    <% data.perangkat.forEach((item, index) => { %>
+                    <tr>
+                        <td style="text-align: center;"><%= index + 1 %></td>
+                        <td style="text-align: center;">ONT</td>
+                        <td><%= item.snlama %></td>
+                        <td style="text-align: center;">REPLACE</td>
+                        <td><%= item.snbaru %></td>
+                        <td style="text-align: center;"><%= item.noinet %></td>
+                        <td style="text-align: center;"><%= item.kondisi %></td>
+                    </tr>
+                    <% }) %>
+                <% } %>
+            </tbody>
+        </table>
+
+        <!-- Pernyataan & TTD -->
+        <p><b>PERNYATAAN:</b></p>
+        <div style="margin-left: 20px;">
+            1. Pihak Kedua menyatakan telah menerima perangkat tersebut dalam keadaan lengkap dan berfungsi dengan baik.<br>
+            2. Pihak Kedua bertanggung jawab penuh atas keamanan dan pemeliharaan perangkat selama masa penyimpanan di WH area.<br>
+            3. Apabila terjadi kerusakan atau kehilangan akibat kelalaian Pihak Kedua, maka akan dikenakan sanksi/biaya penggantian sesuai ketentuan yang berlaku.
+        </div>
+
+        <p style="margin-top: 15px;">Demikian Berita Acara ini dibuat untuk dipergunakan sebagaimana mestinya.</p>
+
+        <div class="ttd-area clearfix">
+            <div class="ttd-box">
+                <p style="margin-bottom: 0;">Pihak Pertama (Pemberi)</p>
+                <!-- Menampilkan Gambar TTD Teknisi -->
+                <% if (data.ttd_teknisi) { %>
+                    <img src="/<%= data.ttd_teknisi.replace(/\\/g, '/') %>" class="ttd-img"><br>
+                <% } else { %>
+                    <br><br><br>
+                <% } %>
+                <b style="text-decoration: underline;"><%= data.teknisi_nama %></b>
+            </div>
+            <div class="ttd-box">
+                <p style="margin-bottom: 0;">Pihak Kedua (Penerima)</p>
+                <!-- Menampilkan Gambar TTD WH -->
+                <% if (data.ttd_penerima) { %>
+                    <img src="<%= data.ttd_penerima %>" class="ttd-img"><br>
+                <% } else if (data.ttd_wh) { %>
+                    <img src="/<%= data.ttd_wh.replace(/\\/g, '/') %>" class="ttd-img"><br>
+                <% } else { %>
+                    <br><br><br>
+                <% } %>
+                <b style="text-decoration: underline;"><%= data.wh_nama %></b>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= HALAMAN 2: LAMPIRAN FOTO ================= -->
+    <div class="lampiran-page">
+        <div class="kop-surat" style="font-size: 12pt; border-bottom: 1px solid #000; padding-bottom: 10px;">
+            LAMPIRAN EVIDEN FOTO LAPANGAN - BAST NOMOR: <%= data.kode_unik %>
+        </div>
+        
+        <div class="grid-foto">
+            <!-- Looping data foto eviden dari Database -->
+            <% if (data.eviden && data.eviden.length > 0) { %>
+                <% data.eviden.forEach(foto => { %>
+                    <img src="/<%= foto.replace(/\\/g, '/') %>" class="foto-eviden">
+                <% }) %>
+            <% } %>
+        </div>
+    </div>
+
+</body>
+</html>

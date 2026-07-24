@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input BAST - Telkom Akses</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <!-- SweetAlert2 untuk Pop Up Kode Unik Modern -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #f4f7f6; color: #333; }
+        .header-modern { background: linear-gradient(135deg, #EE2E24 0%, #b31217 100%); padding: 2rem 0 4rem 0; border-bottom-left-radius: 40px; border-bottom-right-radius: 40px; color: white; box-shadow: 0 10px 20px rgba(238, 46, 36, 0.2); }
+        .form-container { background: #ffffff; border-radius: 20px; box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05); margin-top: -40px; padding: 2.5rem; margin-bottom: 3rem; }
+        
+        .role-btn { border: 2px solid #f0f0f0; border-radius: 16px; transition: all 0.3s ease; background: #fff; color: #6c757d; font-weight: 500; cursor: pointer; }
+        .btn-check:checked + .role-btn { border-color: #EE2E24; background: #fff4f4; color: #EE2E24; box-shadow: 0 8px 15px rgba(238, 46, 36, 0.1); transform: translateY(-3px); }
+        .role-btn:hover { border-color: #EE2E24; color: #EE2E24; }
+
+        .form-floating > .form-control { border-radius: 12px; border: 1.5px solid #e2e8f0; }
+        .form-floating > .form-control:focus { border-color: #EE2E24; box-shadow: 0 0 0 4px rgba(238, 46, 36, 0.1); }
+        .section-badge { background: #ffe5e5; color: #EE2E24; padding: 8px 15px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; display: inline-block; margin-bottom: 1.5rem; }
+        .ttd-box { border: 2px dashed #cbd5e1; border-radius: 16px; background: #f8fafc; padding: 10px; transition: 0.3s; }
+        .ttd-box:hover { border-color: #EE2E24; background: #fff; }
+        .signature-pad { width: 100%; height: 180px; touch-action: none; cursor: crosshair; }
+        
+        .btn-submit { background: #EE2E24; color: white; border-radius: 12px; font-weight: 600; padding: 14px; transition: 0.3s; border:none; width: 100%; }
+        .btn-submit:hover { background: #c41230; box-shadow: 0 8px 20px rgba(238, 46, 36, 0.3); transform: translateY(-2px); color: white; }
+    </style>
+</head>
+<body>
+
+<div class="header-modern text-center">
+    <div class="container">
+        <h3 class="fw-bold"><i class="bi bi-file-earmark-text"></i> Form BAST Digital</h3>
+    </div>
+</div>
+
+<div class="container">
+    <div class="form-container">
+        
+        <!-- Pilihan Peran -->
+        <div class="text-center mb-4">
+            <h5 class="fw-bold mb-3">Anda Mengisi Form Ini Sebagai:</h5>
+            <div class="row justify-content-center g-3">
+                <div class="col-6 col-md-5">
+                    <input type="radio" class="btn-check" name="userRole" id="rolePemberi" autocomplete="off" checked onclick="toggleMode('pemberi')">
+                    <label class="btn w-100 p-3 role-btn" for="rolePemberi">
+                        <i class="bi bi-person-up fs-2 d-block mb-1"></i> Teknisi (Pemberi)
+                    </label>
+                </div>
+                <div class="col-6 col-md-5">
+                    <input type="radio" class="btn-check" name="userRole" id="rolePenerima" autocomplete="off" onclick="toggleMode('penerima')">
+                    <label class="btn w-100 p-3 role-btn" for="rolePenerima">
+                        <i class="bi bi-person-down fs-2 d-block mb-1"></i> Pihak 2 (Penerima)
+                    </label>
+                </div>
+            </div>
+        </div>
+        <hr class="text-muted opacity-25 mb-4">
+
+        <!-- ============================================== -->
+        <!-- AREA 1: FORM PEMBERI (TEKNISI)                 -->
+        <!-- ============================================== -->
+        <div id="areaPemberi">
+            <form id="formPemberi">
+                <!-- Data Lokasi -->
+                <div class="section-badge"><i class="bi bi-geo-alt-fill me-1"></i> 1. Informasi Lokasi & Waktu</div>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="form-floating"><input type="text" class="form-control" name="harikerja" placeholder="SENIN" required><label>Hari</label></div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating"><input type="text" class="form-control" name="ttlkerja" placeholder="8 MEI 2026" required><label>Tanggal</label></div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating"><input type="text" class="form-control" name="loksto" placeholder="WH SO TUGU" required><label>Lokasi / STO</label></div>
+                    </div>
+                </div>
+
+                <!-- Data Pihak 1 -->
+                <div class="section-badge"><i class="bi bi-person-badge-fill me-1"></i> 2. Identitas Pihak Pertama (Pemberi)</div>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="form-floating"><input type="text" class="form-control" name="namapemberi" placeholder="Nama" required><label>Nama / NIK Teknisi</label></div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating"><input type="text" class="form-control" name="jabatanpemberi" value="Teknisi" required><label>Jabatan</label></div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating"><input type="text" class="form-control" name="instansipemberi" value="PT. TELKOM AKSES" required><label>Instansi</label></div>
+                    </div>
+                </div>
+
+                <!-- Data Perangkat -->
+                <div class="section-badge"><i class="bi bi-router-fill me-1"></i> 3. Data Perangkat & Eviden</div>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="form-floating"><input type="text" class="form-control" name="snbrlama" placeholder="SN Lama" required><label>Merk & SN Lama</label></div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating"><input type="text" class="form-control" name="snbrbaru" placeholder="SN Baru" required><label>Merk & SN Baru</label></div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating"><input type="text" class="form-control" name="noinet" placeholder="No Inet" required><label>Nomor Internet</label></div>
+                    </div>
+                    <div class="col-12">
+                        <div class="card border-0 bg-light p-2 rounded-3 border">
+                            <label class="form-label ms-2 text-muted small mb-1">Upload Eviden Foto Lapangan</label>
+                            <input type="file" name="eviden" class="form-control border-0 bg-transparent" accept="image/*" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TTD Pemberi -->
+                <div class="section-badge"><i class="bi bi-pen-fill me-1"></i> 4. Tanda Tangan Teknisi</div>
+                <div class="row mb-5 justify-content-center">
+                    <div class="col-md-8 text-center">
+                        <div class="ttd-box"><canvas id="canvasPemberi" class="signature-pad"></canvas></div>
+                        <button type="button" class="btn btn-sm btn-light text-danger mt-2 rounded-pill shadow-sm" onclick="clearCanvas(canvasPemberi, ctxPemberi)"><i class="bi bi-eraser-fill"></i> Hapus Coretan</button>
+                    </div>
+                </div>
+
+                <button type="button" class="btn-submit" onclick="submitPemberi()" id="btnSubmitPemberi">
+                    <i class="bi bi-cloud-upload-fill me-2"></i> SIMPAN & BUAT KODE UNIK
+                </button>
+            </form>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- AREA 2: FORM PENERIMA (PIHAK 2)                -->
+        <!-- ============================================== -->
+        <div id="areaPenerima" style="display: none;">
+            
+            <!-- Pencarian Kode -->
+            <div class="card bg-light border-0 rounded-4 p-4 mb-4 text-center">
+                <h5 class="fw-bold mb-3 text-danger"><i class="bi bi-key-fill"></i> Masukkan Kode Unik</h5>
+                <p class="text-muted small">Minta Kode Unik BAST kepada Teknisi yang bertugas.</p>
+                <div class="input-group mb-3" style="max-width: 400px; margin: 0 auto;">
+                    <input type="text" class="form-control form-control-lg text-center fw-bold" id="inputKodeUnik" placeholder="Contoh: BAST-XXXXX" style="text-transform: uppercase;">
+                    <button class="btn btn-danger px-4" type="button" onclick="cekKode()">CEK</button>
+                </div>
+            </div>
+
+            <!-- Form Identitas Penerima (Disembunyikan sebelum kode benar) -->
+            <form id="formPenerima" style="display: none;" action="/user/submit-penerima" method="POST">
+                <input type="hidden" name="kode_unik" id="hiddenKodeUnik">
+                
+                <div class="section-badge"><i class="bi bi-person-fill-add me-1"></i> Identitas Penerima</div>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <div class="form-floating"><input type="text" class="form-control" name="namapenerima" placeholder="Nama" required><label>Nama Penerima</label></div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating"><input type="text" class="form-control" name="nikpenerima" placeholder="NIK" required><label>NIK Penerima</label></div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-floating"><input type="text" class="form-control" name="instansipenerima" value="PT. TELKOM AKSES" required><label>Instansi / Alamat</label></div>
+                    </div>
+                </div>
+
+                <div class="section-badge"><i class="bi bi-pen-fill me-1"></i> Tanda Tangan Penerima</div>
+                <div class="row mb-5 justify-content-center">
+                    <div class="col-md-8 text-center">
+                        <div class="ttd-box"><canvas id="canvasPenerima" class="signature-pad"></canvas></div>
+                        <button type="button" class="btn btn-sm btn-light text-danger mt-2 rounded-pill shadow-sm" onclick="clearCanvas(canvasPenerima, ctxPenerima)"><i class="bi bi-eraser-fill"></i> Hapus Coretan</button>
+                        <input type="hidden" name="ttdPenerimaBase64" id="ttdPenerimaBase64">
+                    </div>
+                </div>
+
+                <button type="button" class="btn-submit" onclick="submitPenerima()">
+                    <i class="bi bi-printer-fill me-2"></i> SELESAIKAN & CETAK BAST
+                </button>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Logic Menyembunyikan / Menampilkan Area Berdasarkan Pilihan
+    function toggleMode(mode) {
+        document.getElementById('areaPemberi').style.display = (mode === 'pemberi') ? 'block' : 'none';
+        document.getElementById('areaPenerima').style.display = (mode === 'penerima') ? 'block' : 'none';
+    }
+
+    // Inisialisasi Canvas TTD
+    function setupCanvas(canvasId) {
+        const canvas = document.getElementById(canvasId);
+        const ctx = canvas.getContext('2d');
+        ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.strokeStyle = '#1e293b'; 
+        let drawing = false;
+
+        const startDraw = (e) => { drawing = true; ctx.beginPath(); ctx.moveTo(e.offsetX || e.touches[0].clientX - canvas.getBoundingClientRect().left, e.offsetY || e.touches[0].clientY - canvas.getBoundingClientRect().top); };
+        const draw = (e) => { if (drawing) { e.preventDefault(); ctx.lineTo(e.offsetX || e.touches[0].clientX - canvas.getBoundingClientRect().left, e.offsetY || e.touches[0].clientY - canvas.getBoundingClientRect().top); ctx.stroke(); } };
+        const stopDraw = () => drawing = false;
+
+        canvas.addEventListener('mousedown', startDraw); canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDraw); canvas.addEventListener('mouseout', stopDraw);
+        canvas.addEventListener('touchstart', startDraw); canvas.addEventListener('touchmove', draw);
+        canvas.addEventListener('touchend', stopDraw);
+        return { canvas, ctx };
+    }
+
+    const { canvas: canvasPemberi, ctx: ctxPemberi } = setupCanvas('canvasPemberi');
+    const { canvas: canvasPenerima, ctx: ctxPenerima } = setupCanvas('canvasPenerima');
+    function clearCanvas(canvas, ctx) { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
+    // --- PROSES 1: PEMBERI (TEKNISI) ---
+    async function submitPemberi() {
+        const btn = document.getElementById('btnSubmitPemberi');
+        const form = document.getElementById('formPemberi');
+        if(!form.checkValidity()) { form.reportValidity(); return; } // Cek validasi wajib isi
+
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Memproses...';
+        btn.disabled = true;
+
+        const formData = new FormData(form);
+        formData.append('ttdPemberiBase64', canvasPemberi.toDataURL()); // Masukkan gambar TTD
+
+        try {
+            const response = await fetch('/user/submit-pemberi', { method: 'POST', body: formData });
+            const result = await response.json();
+            
+            if (result.success) {
+                // Munculkan Pop-Up sukses dengan KODE UNIK
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Form Tersimpan!',
+                    html: `Berikan Kode Unik ini kepada Penerima:<br><br><b style="font-size: 30px; color: #EE2E24; letter-spacing: 2px;">${result.kodeUnik}</b>`,
+                    confirmButtonText: 'Selesai',
+                    confirmButtonColor: '#EE2E24',
+                    allowOutsideClick: false
+                }).then(() => { window.location.reload(); });
+            }
+        } catch (error) {
+            Swal.fire('Error', 'Terjadi kesalahan sistem.', 'error');
+            btn.disabled = false; btn.innerHTML = '<i class="bi bi-cloud-upload-fill me-2"></i> SIMPAN & BUAT KODE UNIK';
+        }
+    }
+
+    // --- PROSES 2: CEK KODE OLEH PENERIMA ---
+    async function cekKode() {
+        const kode = document.getElementById('inputKodeUnik').value.trim().toUpperCase();
+        if (!kode) return Swal.fire('Perhatian', 'Masukkan kode unik terlebih dahulu!', 'warning');
+
+        try {
+            const response = await fetch(`/api/cek-kode/${kode}`);
+            const result = await response.json();
+
+            if (result.success) {
+                Swal.fire('Ditemukan!', `Silakan isi identitas Anda untuk menyelesaikan serah terima dari Teknisi: <b>${result.data.namapemberi}</b>`, 'success');
+                document.getElementById('hiddenKodeUnik').value = kode;
+                document.getElementById('formPenerima').style.display = 'block'; // Tampilkan form penerima
+                
+                // Scroll perlahan ke bawah form penerima
+                setTimeout(() => document.getElementById('formPenerima').scrollIntoView({ behavior: 'smooth' }), 500);
+            } else {
+                Swal.fire('Gagal', result.message, 'error');
+                document.getElementById('formPenerima').style.display = 'none';
+            }
+        } catch (error) {
+            Swal.fire('Error', 'Gagal mengecek kode.', 'error');
+        }
+    }
+
+    // --- PROSES 3: SUBMIT PENERIMA ---
+    function submitPenerima() {
+        const form = document.getElementById('formPenerima');
+        if(!form.checkValidity()) { form.reportValidity(); return; }
+
+        document.getElementById('ttdPenerimaBase64').value = canvasPenerima.toDataURL();
+        
+        const btn = document.querySelector('#formPenerima .btn-submit');
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Mengenerate Dokumen...';
+        btn.style.opacity = '0.8'; btn.style.pointerEvents = 'none';
+        
+        form.submit();
+    }
+</script>
+
+</body>
+</html>

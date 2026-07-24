@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Input BAST - Teknisi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #f4f7f6; }
+        .header-modern { background: linear-gradient(135deg, #EE2E24 0%, #b31217 100%); padding: 2rem 0 3rem 0; color: white; }
+        .form-container { background: #ffffff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-top: -30px; padding: 2rem; margin-bottom: 3rem; }
+        .section-title { font-weight: 600; color: #EE2E24; margin-bottom: 1rem; border-bottom: 2px dashed #ffe5e5; padding-bottom: 10px; }
+        .form-control, .form-select { border-radius: 8px; border: 1px solid #ced4da; }
+        .form-control:focus, .form-select:focus { border-color: #EE2E24; box-shadow: 0 0 0 0.25rem rgba(238, 46, 36, 0.25); }
+        .signature-pad { width: 100%; height: 200px; border: 2px dashed #cbd5e1; border-radius: 12px; background: #f8fafc; cursor: crosshair; }
+        .btn-submit { background: #EE2E24; color: white; font-weight: bold; width: 100%; border-radius: 12px; padding: 12px; border: none; }
+        .table-perangkat th { background: #f8fafc; font-size: 0.85rem; color: #475569; }
+    </style>
+</head>
+<body>
+
+<div class="header-modern text-center">
+    <h3 class="fw-bold"><i class="bi bi-file-earmark-text"></i> Form Serah Terima Teknisi</h3>
+    <p class="opacity-75">Isi data perangkat yang akan diserahkan ke Warehouse</p>
+</div>
+
+<div class="container">
+    <div class="form-container">
+        <form id="formTeknisi">
+            <!-- 1. Lokasi & Waktu -->
+            <div class="section-title"><i class="bi bi-geo-alt-fill"></i> 1. Informasi Lokasi & Waktu</div>
+            <div class="row mb-4">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-medium">Tanggal Pelaksanaan</label>
+                    <!-- Input Date Picker -->
+                    <input type="date" class="form-control" name="tanggal" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-medium">Lokasi / STO</label>
+                    <input type="text" class="form-control" name="loksto" placeholder="Contoh: WH SO TUGU" required>
+                </div>
+            </div>
+
+            <!-- 2. Identitas Teknisi -->
+            <div class="section-title"><i class="bi bi-person-vcard-fill"></i> 2. Identitas Pihak Pertama (Teknisi)</div>
+            <div class="mb-4">
+                <label class="form-label fw-medium">Pilih Nama Teknisi</label>
+                <!-- Dropdown Nama Teknisi Sesuai Request -->
+                <select class="form-select" name="teknisi_select" required>
+                    <option value="" selected disabled>-- Pilih NIK dan Nama Anda --</option>
+                    <option value="26050119 | ANDI ARYA WIJAYA">26050119 | ANDI ARYA WIJAYA</option>
+                    <option value="26010129 | MOHAMAD FARHAN HAKIM">26010129 | MOHAMAD FARHAN HAKIM</option>
+                    <option value="26960081 | AHMAD YUDHA AMRULLAH">26960081 | AHMAD YUDHA AMRULLAH</option>
+                    <option value="26010128 | AHMAD ASFA MUHAROMMAIN">26010128 | AHMAD ASFA MUHAROMMAIN</option>
+                    <option value="26960082 | FIKRI KHOIRUL AZHARI">26960082 | FIKRI KHOIRUL AZHARI</option>
+                    <option value="26950095 | YULIYANTO">26950095 | YULIYANTO</option>
+                    <option value="26970121 | ADITYA FERIANSYAH PUTRA">26970121 | ADITYA FERIANSYAH PUTRA</option>
+                    <option value="26700002 | LUKMAN HAKIM">26700002 | LUKMAN HAKIM</option>
+                </select>
+            </div>
+
+            <!-- 3. Multi Input Perangkat -->
+            <div class="section-title d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-router-fill"></i> 3. Data Perangkat ONT</span>
+                <button type="button" class="btn btn-sm btn-dark rounded-pill px-3" onclick="tambahBaris()">
+                    <i class="bi bi-plus-circle"></i> Tambah (Max 10)
+                </button>
+            </div>
+            
+            <div class="table-responsive mb-4">
+                <table class="table table-bordered table-perangkat" id="tabelPerangkat">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Merk & SN Lama</th>
+                            <th>Merk & SN Baru</th>
+                            <th>No Internet</th>
+                            <th>Kondisi</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bodyPerangkat">
+                        <!-- Baris Pertama (Default) -->
+                        <tr>
+                            <td class="text-center baris-nomor">1</td>
+                            <td><input type="text" class="form-control form-control-sm" name="snlama" placeholder="SN Lama" required></td>
+                            <td><input type="text" class="form-control form-control-sm" name="snbaru" placeholder="SN Baru" required></td>
+                            <td><input type="text" class="form-control form-control-sm" name="noinet" placeholder="No Inet" required></td>
+                            <td>
+                                <select class="form-select form-select-sm" name="kondisi" required>
+                                    <option value="Baik">Baik</option>
+                                    <option value="Rusak">Rusak</option>
+                                </select>
+                            </td>
+                            <td class="text-center">-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 4. Upload Eviden -->
+            <div class="section-title"><i class="bi bi-camera-fill"></i> 4. Upload Eviden Lapangan</div>
+            <div class="mb-4 bg-light p-3 rounded border">
+                <label class="form-label fw-bold">Pilih Foto (Bisa pilih lebih dari satu, Maksimal 10 foto)</label>
+                <!-- Multi Upload file -->
+                <input type="file" class="form-control" name="eviden" id="inputFoto" accept="image/*" multiple required onchange="cekJumlahFoto()">
+                <!-- Peringatan wajib warna merah -->
+                <small class="text-danger fw-bold mt-2 d-block">
+                    <i class="bi bi-exclamation-triangle-fill"></i> INFO: Gambar foto barcode dan SN harus terlihat jelas!
+                </small>
+            </div>
+
+            <!-- 5. TTD -->
+            <div class="section-title"><i class="bi bi-pen-fill"></i> 5. Tanda Tangan Anda</div>
+            <div class="mb-5 text-center">
+                <canvas id="canvasPemberi" class="signature-pad"></canvas>
+                <button type="button" class="btn btn-sm btn-outline-danger mt-2 rounded-pill px-4" onclick="clearCanvas()">
+                    <i class="bi bi-eraser-fill"></i> Hapus Coretan
+                </button>
+            </div>
+
+            <button type="button" class="btn-submit" onclick="submitForm()" id="btnSubmit">
+                <i class="bi bi-cloud-arrow-up-fill me-2"></i> SIMPAN & BUAT KODE BAST
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Logic Multi-Baris Perangkat (Maks 10)
+    let jmlBaris = 1;
+    function tambahBaris() {
+        if (jmlBaris >= 10) return Swal.fire('Batas Maksimal', 'Anda hanya bisa input maksimal 10 perangkat sekaligus.', 'warning');
+        
+        jmlBaris++;
+        const tbody = document.getElementById('bodyPerangkat');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="text-center baris-nomor">${jmlBaris}</td>
+            <td><input type="text" class="form-control form-control-sm" name="snlama" placeholder="SN Lama" required></td>
+            <td><input type="text" class="form-control form-control-sm" name="snbaru" placeholder="SN Baru" required></td>
+            <td><input type="text" class="form-control form-control-sm" name="noinet" placeholder="No Inet" required></td>
+            <td>
+                <select class="form-select form-select-sm" name="kondisi" required>
+                    <option value="Baik">Baik</option>
+                    <option value="Rusak">Rusak</option>
+                </select>
+            </td>
+            <td class="text-center">
+                <button type="button" class="btn btn-sm btn-danger" onclick="hapusBaris(this)"><i class="bi bi-trash"></i></button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+        updateNomor();
+    }
+
+    function hapusBaris(btn) {
+        btn.closest('tr').remove();
+        jmlBaris--;
+        updateNomor();
+    }
+
+    function updateNomor() {
+        const baris = document.querySelectorAll('.baris-nomor');
+        baris.forEach((td, index) => td.innerText = index + 1);
+    }
+
+    // Logic Validasi Jumlah Foto Maksimal 10
+    function cekJumlahFoto() {
+        const input = document.getElementById('inputFoto');
+        if (input.files.length > 10) {
+            Swal.fire('Terlalu Banyak!', 'Maksimal upload 10 foto.', 'error');
+            input.value = ''; // Reset file
+        }
+    }
+
+    // Canvas Tanda Tangan
+    const canvas = document.getElementById('canvasPemberi');
+    const ctx = canvas.getContext('2d');
+    let drawing = false;
+    ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.strokeStyle = '#1e293b';
+
+    const startDraw = (e) => { drawing = true; ctx.beginPath(); ctx.moveTo(getX(e), getY(e)); };
+    const draw = (e) => { if (!drawing) return; e.preventDefault(); ctx.lineTo(getX(e), getY(e)); ctx.stroke(); };
+    const stopDraw = () => drawing = false;
+    
+    const getX = (e) => e.offsetX || (e.touches ? e.touches[0].clientX - canvas.getBoundingClientRect().left : 0);
+    const getY = (e) => e.offsetY || (e.touches ? e.touches[0].clientY - canvas.getBoundingClientRect().top : 0);
+
+    canvas.addEventListener('mousedown', startDraw); canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDraw); canvas.addEventListener('mouseout', stopDraw);
+    canvas.addEventListener('touchstart', startDraw); canvas.addEventListener('touchmove', draw);
+    canvas.addEventListener('touchend', stopDraw);
+
+    function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
+    // Proses Submit (Kirim Data ke Server)
+   // Proses Submit (Kirim Data ke Server)
+async function submitForm() {
+    const form = document.getElementById('formTeknisi');
+    if (!form.checkValidity()) return form.reportValidity(); // Cek inputan kosong
+
+    const btn = document.getElementById('btnSubmit');
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Mengirim Data...';
+    btn.disabled = true;
+
+    const formData = new FormData(form);
+    formData.append('ttdPemberiBase64', canvas.toDataURL());
+
+    try {
+        const response = await fetch('/teknisi/submit', { method: 'POST', body: formData });
+        
+        // Cek jika server mengalami error fatal
+        if (!response.ok) {
+            const errText = await response.text();
+            throw new Error('Gagal terhubung ke server atau ukuran file terlalu besar.');
+        }
+
+        const result = await response.json();
+        
+        if (result.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                html: `Sampaikan Kode Unik ini kepada pihak Warehouse:<br><br><b style="font-size:30px; color:#EE2E24;">${result.kodeUnik}</b>`,
+                confirmButtonText: 'Kembali ke Dasbor',
+                allowOutsideClick: false
+            }).then(() => window.location.href = '/teknisi/dashboard');
+        } else {
+            Swal.fire('Gagal', result.message, 'error');
+            btn.innerHTML = '<i class="bi bi-cloud-arrow-up-fill me-2"></i> SIMPAN & BUAT KODE BAST';
+            btn.disabled = false;
+        }
+    } catch (error) {
+        console.error(error);
+        Swal.fire('Error Sistem', error.message + ' Silakan cek terminal VS Code Anda.', 'error');
+        btn.innerHTML = '<i class="bi bi-cloud-arrow-up-fill me-2"></i> SIMPAN & BUAT KODE BAST';
+        btn.disabled = false;
+    }
+}
+</script>
+
+</body>
+</html>

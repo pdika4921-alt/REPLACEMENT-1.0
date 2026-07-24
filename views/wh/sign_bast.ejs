@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verifikasi BAST - <%= data.kode_unik %></title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #f4f7f6; }
+        .form-container { background: #ffffff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); padding: 2rem; margin-top: 2rem; margin-bottom: 3rem; }
+        .section-title { font-weight: 600; color: #EE2E24; margin-bottom: 1rem; border-bottom: 2px dashed #ffe5e5; padding-bottom: 10px; }
+        .signature-pad { width: 100%; height: 200px; border: 2px dashed #cbd5e1; border-radius: 12px; background: #f8fafc; cursor: crosshair; }
+        .btn-submit { background: #EE2E24; color: white; font-weight: bold; width: 100%; border-radius: 12px; padding: 12px; border: none; }
+        .info-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 15px; margin-bottom: 20px; }
+        
+        /* Style untuk Foto Eviden agar interaktif */
+        .zoomable-img {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 2px solid #cbd5e1;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .zoomable-img:hover {
+            transform: scale(1.05);
+            border-color: #EE2E24;
+        }
+
+        /* Fullscreen Lightbox Overlay */
+        #imgLightbox {
+            display: none;
+            position: fixed;
+            z-index: 99999;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.85);
+            text-align: center;
+            padding-top: 50px;
+        }
+        #imgLightbox img {
+            max-width: 90%;
+            max-height: 85vh;
+            border-radius: 10px;
+            box-shadow: 0 0 25px rgba(255,255,255,0.2);
+        }
+        #imgLightbox .close-btn {
+            position: absolute;
+            top: 20px; right: 30px;
+            color: #fff; font-size: 40px; font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="form-container">
+        <h4 class="fw-bold text-center mb-4"><i class="bi bi-shield-check text-danger"></i> Verifikasi Penerimaan Barang</h4>
+        
+        <!-- Info dari Teknisi -->
+        <div class="info-box">
+            <div class="row">
+                <div class="col-md-4">
+                    <p class="mb-1 text-muted small">Kode BAST</p>
+                    <h6 class="fw-bold text-danger font-monospace"><%= data.kode_unik %></h6>
+                </div>
+                <div class="col-md-4">
+                    <p class="mb-1 text-muted small">Pihak 1 (Teknisi)</p>
+                    <h6 class="fw-bold"><%= data.teknisi_nama %></h6>
+                </div>
+                <div class="col-md-4">
+                    <p class="mb-1 text-muted small">Lokasi / Tanggal</p>
+                    <h6 class="fw-bold"><%= data.loksto %> / <%= data.tanggal %></h6>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabel Perangkat -->
+        <div class="section-title"><i class="bi bi-router-fill"></i> Data Perangkat Diserahkan</div>
+        <div class="table-responsive mb-4">
+            <table class="table table-bordered table-sm">
+                <thead class="table-light text-center">
+                    <tr>
+                        <th>No</th><th>SN Lama</th><th>SN Baru</th><th>No Internet</th><th>Kondisi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% data.perangkat.forEach((item, index) => { %>
+                        <tr>
+                            <td class="text-center"><%= index + 1 %></td>
+                            <td><%= item.snlama %></td>
+                            <td><%= item.snbaru %></td>
+                            <td class="text-center"><%= item.noinet %></td>
+                            <td class="text-center"><%= item.kondisi %></td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Eviden Foto Lapangan (Dijamin Langsung Bisa Diklik) -->
+        <div class="section-title"><i class="bi bi-images"></i> Eviden Foto Lapangan <span class="text-muted small fw-normal">(Klik foto untuk memperbesar)</span></div>
+        <div class="d-flex flex-wrap gap-3 mb-4">
+            <% if (data.foto_json) { %>
+                <% JSON.parse(data.foto_json).forEach(foto => { %>
+                    <img src="/uploads/<%= foto %>" class="zoomable-img shadow-sm" onclick="bukaLightbox('/uploads/<%= foto %>')" title="Klik untuk memperbesar">
+                <% }) %>
+            <% } else { %>
+                <% data.eviden.forEach(foto => { %>
+                    <img src="/<%= foto.replace(/\\/g, '/') %>" class="zoomable-img shadow-sm" onclick="bukaLightbox('/<%= foto.replace(/\\/g, '/') %>')" title="Klik untuk memperbesar">
+                <% }) %>
+            <% } %>
+        </div>
+
+        <!-- Form TTD WH -->
+        <form id="formWH" action="/wh/submit" method="POST">
+            <input type="hidden" name="kode_unik" value="<%= data.kode_unik %>">
+            
+            <div class="section-title"><i class="bi bi-person-badge"></i> Identitas & Tanda Tangan Anda (WH)</div>
+            
+            <div class="mb-4">
+                <label class="form-label fw-medium">Pilih Nama Warehouse / Penerima</label>
+                <select class="form-select" name="wh_nama" required>
+                    <option value="" selected disabled>-- Pilih Nama Anda --</option>
+                    <option value="AMY CHAIDIR">AMY CHAIDIR</option>
+                    <option value="RIZKY ENGGAR PRAYOGA">RIZKY ENGGAR PRAYOGA</option>
+                </select>
+            </div>
+
+            <div class="mb-4 text-center">
+                <canvas id="canvasPenerima" class="signature-pad"></canvas>
+                <button type="button" class="btn btn-sm btn-outline-danger mt-2 rounded-pill px-4" onclick="clearCanvas()">
+                    <i class="bi bi-eraser-fill"></i> Hapus Coretan
+                </button>
+                <input type="hidden" name="ttdPenerimaBase64" id="ttdPenerimaBase64">
+            </div>
+
+            <button type="button" class="btn-submit" onclick="submitForm()">
+                <i class="bi bi-check-circle-fill me-2"></i> SAHKAN & CETAK BAST DOKUMEN
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- FULLSCREEN LIGHTBOX VIEW -->
+<div id="imgLightbox" onclick="tutupLightbox()">
+    <span class="close-btn">&times;</span>
+    <img id="lightboxImg" src="">
+</div>
+
+<script>
+    function bukaLightbox(url) {
+        document.getElementById('lightboxImg').src = url;
+        document.getElementById('imgLightbox').style.display = 'block';
+    }
+
+    function tutupLightbox() {
+        document.getElementById('imgLightbox').style.display = 'none';
+    }
+</script>
+
+<script>
+    // Setup Canvas TTD
+    const canvas = document.getElementById('canvasPenerima');
+    const ctx = canvas.getContext('2d');
+    let drawing = false;
+    ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.strokeStyle = '#1e293b';
+
+    const getX = (e) => e.offsetX || (e.touches ? e.touches[0].clientX - canvas.getBoundingClientRect().left : 0);
+    const getY = (e) => e.offsetY || (e.touches ? e.touches[0].clientY - canvas.getBoundingClientRect().top : 0);
+
+    const startDraw = (e) => { drawing = true; ctx.beginPath(); ctx.moveTo(getX(e), getY(e)); };
+    const draw = (e) => { if (!drawing) return; e.preventDefault(); ctx.lineTo(getX(e), getY(e)); ctx.stroke(); };
+    const stopDraw = () => drawing = false;
+    
+    canvas.addEventListener('mousedown', startDraw); canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDraw); canvas.addEventListener('mouseout', stopDraw);
+    canvas.addEventListener('touchstart', startDraw); canvas.addEventListener('touchmove', draw);
+    canvas.addEventListener('touchend', stopDraw);
+
+    function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+
+    function submitForm() {
+        const form = document.getElementById('formWH');
+        if (!form.checkValidity()) return form.reportValidity(); 
+        
+        document.getElementById('ttdPenerimaBase64').value = canvas.toDataURL();
+        
+        const btn = document.querySelector('.btn-submit');
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Mengenerate Dokumen...';
+        btn.style.opacity = '0.8'; btn.style.pointerEvents = 'none';
+        
+        form.submit();
+    }
+</script>
+
+</body>
+</html>
