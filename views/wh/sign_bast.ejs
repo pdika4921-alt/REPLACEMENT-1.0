@@ -10,11 +10,11 @@
     <style>
         body { font-family: 'Poppins', sans-serif; background: #f8fafc; }
         .navbar-custom { background: linear-gradient(135deg, #EE2E24 0%, #b31217 100%); }
-
-        /* PERBAIKAN UTAMA: Canvas TTD diperlebar penuh, tidak ada elemen lain menghalangi */
+        .card-info { background: #fff; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
         .ttd-wrapper {
             position: relative;
             width: 100%;
+            min-height: 300px;
             background: #fff;
             border: 2px dashed #EE2E24;
             border-radius: 12px;
@@ -24,8 +24,7 @@
         #signatureCanvas {
             display: block;
             width: 100%;
-            /* Tinggi canvas diset via JS agar proporsional */
-            touch-action: none; /* Cegah scroll saat TTD di mobile */
+            touch-action: none;
         }
         .ttd-placeholder {
             position: absolute;
@@ -34,12 +33,40 @@
             transform: translate(-50%, -50%);
             color: #cbd5e1;
             font-size: 0.9rem;
-            pointer-events: none; /* Klik tetap diteruskan ke canvas di bawahnya */
+            pointer-events: none;
             text-align: center;
             white-space: nowrap;
         }
         .ttd-placeholder i { font-size: 2rem; display: block; margin-bottom: 6px; }
-        .card-info { background: #fff; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+
+        /* Tabel ONT */
+        .table th { background-color: #f8fafc; font-size: 0.8rem; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; }
+        .badge-kondisi-baik { background-color: #dcfce7; color: #166534; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 500; }
+        .badge-kondisi-rusak { background-color: #fee2e2; color: #991b1b; padding: 3px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 500; }
+
+        /* Eviden foto */
+        .eviden-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+        .eviden-item { position: relative; }
+        .eviden-item img {
+            width: 120px;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .eviden-item img:hover { border-color: #EE2E24; }
+        .eviden-number {
+            position: absolute;
+            top: 4px; left: 4px;
+            background: rgba(238,46,36,0.85);
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
@@ -49,9 +76,9 @@
     </div>
 </nav>
 
-<div class="container mb-5" style="max-width: 750px;">
+<div class="container mb-5" style="max-width: 800px;">
 
-    <!-- Info Dokumen -->
+    <!-- ===== 1. INFO DOKUMEN ===== -->
     <div class="card-info p-4 mb-4">
         <h5 class="fw-bold text-danger mb-3"><i class="bi bi-file-earmark-check me-2"></i> Detail Dokumen BAST</h5>
         <div class="row g-2 small">
@@ -74,7 +101,83 @@
         </div>
     </div>
 
-    <!-- Area Tanda Tangan -->
+    <!-- ===== 2. DAFTAR ONT / PERANGKAT ===== -->
+    <div class="card-info p-4 mb-4">
+        <h5 class="fw-bold mb-1 text-dark"><i class="bi bi-cpu-fill text-danger me-2"></i> Daftar Perangkat ONT</h5>
+        <p class="text-muted small mb-3">Periksa kesesuaian data perangkat sebelum menandatangani.</p>
+
+        <% if (data.perangkat && data.perangkat.length > 0) { %>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle mb-0" style="font-size: 0.85rem;">
+                <thead>
+                    <tr>
+                        <th class="text-center" style="width:40px;">No</th>
+                        <th>SN Lama</th>
+                        <th>SN Baru</th>
+                        <th>No. Internet</th>
+                        <th class="text-center">Kondisi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% data.perangkat.forEach((item, idx) => { %>
+                    <tr>
+                        <td class="text-center text-muted"><%= idx + 1 %></td>
+                        <td class="font-monospace"><%= item.snlama || '-' %></td>
+                        <td class="font-monospace"><%= item.snbaru || '-' %></td>
+                        <td><%= item.noinet || '-' %></td>
+                        <td class="text-center">
+                            <% if (item.kondisi && item.kondisi.toUpperCase().includes('BAIK')) { %>
+                                <span class="badge-kondisi-baik"><%= item.kondisi %></span>
+                            <% } else if (item.kondisi && item.kondisi.toUpperCase().includes('RUSAK')) { %>
+                                <span class="badge-kondisi-rusak"><%= item.kondisi %></span>
+                            <% } else { %>
+                                <span class="text-muted small"><%= item.kondisi || '-' %></span>
+                            <% } %>
+                        </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+                <tfoot>
+                    <tr class="table-light">
+                        <td colspan="5" class="text-end small text-muted fw-medium">
+                            Total: <strong class="text-danger"><%= data.perangkat.length %> ONT</strong>
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        <% } else { %>
+            <div class="alert alert-warning py-2 small mb-0">
+                <i class="bi bi-exclamation-triangle me-1"></i> Tidak ada data perangkat pada BAST ini.
+            </div>
+        <% } %>
+    </div>
+
+    <!-- ===== 3. FOTO EVIDEN ===== -->
+    <div class="card-info p-4 mb-4">
+        <h5 class="fw-bold mb-1 text-dark"><i class="bi bi-images text-danger me-2"></i> Foto Eviden</h5>
+        <p class="text-muted small mb-2">Klik foto untuk memperbesar dan memeriksa bukti fisik perangkat.</p>
+
+        <% if (data.eviden && data.eviden.length > 0) { %>
+            <div class="eviden-grid">
+                <% data.eviden.forEach((path, idx) => { %>
+                <div class="eviden-item">
+                    <span class="eviden-number">Foto <%= idx + 1 %></span>
+                    <img src="/<%= path.replace(/\\/g, '/') %>"
+                         alt="Eviden <%= idx + 1 %>"
+                         onclick="bukaFoto(this.src)"
+                         title="Klik untuk perbesar">
+                </div>
+                <% }) %>
+            </div>
+        <% } else { %>
+            <div class="alert alert-secondary py-2 small mb-0">
+                <i class="bi bi-image me-1"></i> Tidak ada foto eviden yang diunggah.
+            </div>
+        <% } %>
+    </div>
+
+    <!-- ===== 4. AREA TANDA TANGAN ===== -->
     <div class="card-info p-4 mb-4">
         <h5 class="fw-bold mb-1">Tanda Tangan Warehouse</h5>
         <p class="text-muted small mb-3">
@@ -97,16 +200,18 @@
         </div>
     </div>
 
-    <!-- Nama Penerima -->
+    <!-- ===== 5. NAMA PENERIMA (DROPDOWN) ===== -->
     <div class="card-info p-4 mb-4">
         <label class="form-label fw-bold">Nama Penerima (WH) <span class="text-danger">*</span></label>
-        <input type="text" class="form-control" id="namaPenerima"
-            value="<%= username %>"
-            placeholder="Nama lengkap pihak warehouse" required>
+        <select class="form-select" id="namaPenerima" required>
+            <option value="">-- Pilih Nama Petugas WH --</option>
+            <option value="AMY CHAIDIR">AMY CHAIDIR</option>
+            <option value="RIZKI ENGGAR PRAYOGA">RIZKI ENGGAR PRAYOGA</option>
+        </select>
         <div class="form-text">Nama ini akan tercetak di dokumen BAST sebagai pihak penerima.</div>
     </div>
 
-    <!-- Tombol Submit -->
+    <!-- ===== 6. TOMBOL SUBMIT ===== -->
     <div class="d-grid">
         <button type="button" onclick="submitTTD()" class="btn btn-danger btn-lg fw-bold rounded-pill shadow py-3">
             <i class="bi bi-check-circle-fill me-2"></i> Setujui & Simpan Tanda Tangan
@@ -116,45 +221,54 @@
 </div>
 
 <!-- Form tersembunyi untuk submit -->
-<form id="formSubmit" action="/wh/sign/<%= data.kode_unik %>" method="POST" style="display:none;">
-    <input type="hidden" name="ttd_data" id="ttdDataInput">
-    <input type="hidden" name="nama_penerima" id="namaPenerimaInput">
+<form id="formSubmit" action="/wh/submit" method="POST" style="display:none;">
+    <input type="hidden" name="kode_unik" value="<%= data.kode_unik %>">
+    <input type="hidden" name="ttdPenerimaBase64" id="ttdDataInput">
+    <input type="hidden" name="wh_nama" id="namaPenerimaInput">
 </form>
+
+<!-- Modal Perbesar Foto -->
+<div class="modal fade" id="modalFoto" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content bg-transparent border-0">
+            <div class="modal-body text-center p-0 position-relative">
+                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-2"
+                    data-bs-dismiss="modal" style="z-index:10;"></button>
+                <img id="fotoModal" src="" alt="Eviden" class="img-fluid rounded-3 shadow-lg" style="max-height:80vh;">
+            </div>
+        </div>
+    </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     /* ============================================================
-       SETUP CANVAS — proporsional, full-width, fix koordinat
+       SETUP CANVAS
        ============================================================ */
-    const wrapper  = document.getElementById('ttdWrapper');
-    const canvas   = document.getElementById('signatureCanvas');
-    const ctx      = canvas.getContext('2d');
+    const wrapper     = document.getElementById('ttdWrapper');
+    const canvas      = document.getElementById('signatureCanvas');
+    const ctx         = canvas.getContext('2d');
     const placeholder = document.getElementById('ttdPlaceholder');
 
     function setupCanvas() {
-        // Ambil lebar wrapper CSS (display width)
         const cssW = wrapper.clientWidth;
-        const cssH = Math.round(cssW * 0.35); // Rasio tinggi 35% dari lebar
-
-        // Set ukuran piksel fisik canvas = ukuran CSS (DPR handling)
-        const dpr = window.devicePixelRatio || 1;
-        canvas.width  = cssW * dpr;
-        canvas.height = cssH * dpr;
+        const cssH = 300;
+        const dpr  = window.devicePixelRatio || 1;
+        canvas.width        = cssW * dpr;
+        canvas.height       = cssH * dpr;
         canvas.style.width  = cssW + 'px';
         canvas.style.height = cssH + 'px';
-
         ctx.scale(dpr, dpr);
         ctx.strokeStyle = '#1a1a2e';
         ctx.lineWidth   = 2.5;
         ctx.lineCap     = 'round';
         ctx.lineJoin    = 'round';
     }
-
     setupCanvas();
     window.addEventListener('resize', () => { setupCanvas(); hasSigned = false; });
 
     /* ============================================================
-       LOGIKA MENGGAMBAR — koordinat relatif terhadap canvas element
+       LOGIKA MENGGAMBAR
        ============================================================ */
     let drawing  = false;
     let hasSigned = false;
@@ -162,15 +276,9 @@
     function getPos(e) {
         const rect = canvas.getBoundingClientRect();
         if (e.touches) {
-            return {
-                x: e.touches[0].clientX - rect.left,
-                y: e.touches[0].clientY - rect.top
-            };
+            return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
         }
-        return {
-            x: e.clientX - rect.left,
-            y: e.clientY - rect.top
-        };
+        return { x: e.clientX - rect.left, y: e.clientY - rect.top };
     }
 
     function startDraw(e) {
@@ -179,13 +287,8 @@
         const pos = getPos(e);
         ctx.beginPath();
         ctx.moveTo(pos.x, pos.y);
-
-        if (!hasSigned) {
-            hasSigned = true;
-            placeholder.style.display = 'none';
-        }
+        if (!hasSigned) { hasSigned = true; placeholder.style.display = 'none'; }
     }
-
     function draw(e) {
         if (!drawing) return;
         e.preventDefault();
@@ -193,7 +296,6 @@
         ctx.lineTo(pos.x, pos.y);
         ctx.stroke();
     }
-
     function stopDraw(e) {
         if (!drawing) return;
         e.preventDefault();
@@ -201,13 +303,10 @@
         ctx.closePath();
     }
 
-    // Mouse events
     canvas.addEventListener('mousedown',  startDraw);
     canvas.addEventListener('mousemove',  draw);
     canvas.addEventListener('mouseup',    stopDraw);
     canvas.addEventListener('mouseleave', stopDraw);
-
-    // Touch events (mobile)
     canvas.addEventListener('touchstart', startDraw, { passive: false });
     canvas.addEventListener('touchmove',  draw,      { passive: false });
     canvas.addEventListener('touchend',   stopDraw,  { passive: false });
@@ -223,23 +322,27 @@
 
     function submitTTD() {
         const nama = document.getElementById('namaPenerima').value.trim();
-
         if (!hasSigned) {
             alert('Harap tanda tangani terlebih dahulu sebelum menyimpan.');
             return;
         }
         if (!nama) {
-            alert('Harap isi nama penerima WH.');
+            alert('Harap pilih nama penerima WH.');
             document.getElementById('namaPenerima').focus();
             return;
         }
-
-        // Ambil data canvas sebagai base64 PNG
         const dataURL = canvas.toDataURL('image/png');
-
-        document.getElementById('ttdDataInput').value = dataURL;
+        document.getElementById('ttdDataInput').value    = dataURL;
         document.getElementById('namaPenerimaInput').value = nama;
         document.getElementById('formSubmit').submit();
+    }
+
+    /* ============================================================
+       MODAL FOTO EVIDEN
+       ============================================================ */
+    function bukaFoto(src) {
+        document.getElementById('fotoModal').src = src;
+        new bootstrap.Modal(document.getElementById('modalFoto')).show();
     }
 </script>
 </body>
