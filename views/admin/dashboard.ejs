@@ -10,29 +10,17 @@
     <style>
         body { font-family: 'Poppins', sans-serif; background-color: #f4f7f6; }
         .navbar-custom { background: linear-gradient(135deg, #EE2E24 0%, #b31217 100%); }
-        .card-stat { border: none; border-radius: 16px; color: white; box-shadow: 0 4px 20px rgba(0,0,0,0.06); transition: 0.3s; }
-        .card-stat:hover { transform: translateY(-3px); }
         .card-panel { background: #fff; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.02); }
         .nav-pills .nav-link.active { background-color: #EE2E24; box-shadow: 0 4px 12px rgba(238,46,36,0.3); }
         .nav-pills .nav-link { color: #475569; font-weight: 500; border-radius: 12px; transition: 0.2s; }
         .table th { background-color: #f8fafc; font-size: 0.85rem; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; }
-        .badge-completed { background-color: #dcfce7; color: #166534; padding: 6px 14px; border-radius: 20px; font-weight: 500; font-size: 0.75rem; }
-        .badge-pending { background-color: #fef9c3; color: #854d0e; padding: 6px 14px; border-radius: 20px; font-weight: 500; font-size: 0.75rem; }
-        
-        .stat-card {
-        border-radius: 20px;
-        border: none;
-        box-shadow: 0 8px 25px rgba(0,0,0,0.03);
-        transition: all 0.3s ease;
-    }
-    .stat-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 12px 30px rgba(0,0,0,0.08);
-    }
-    .stat-blue { background: linear-gradient(135deg, #f0f7ff 0%, #e1effe 100%); }
-    .stat-green { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); }
-    .stat-yellow { background: linear-gradient(135deg, #fefce8 0%, #fef9c3 100%); }
-        /* Styling Accordion Teknisi */
+        .badge-completed { background-color: #dcfce7; color: #166534; padding: 6px 14px; border-radius: 20px; font-weight: 500; font-size: 0.75rem; display:inline-block; }
+        .badge-pending   { background-color: #fef9c3; color: #854d0e; padding: 6px 14px; border-radius: 20px; font-weight: 500; font-size: 0.75rem; display:inline-block; }
+        .stat-card { border-radius: 20px; border: none; box-shadow: 0 8px 25px rgba(0,0,0,0.03); transition: all 0.3s ease; }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 12px 30px rgba(0,0,0,0.08); }
+        .stat-blue   { background: linear-gradient(135deg, #f0f7ff 0%, #e1effe 100%); }
+        .stat-green  { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); }
+        .stat-yellow { background: linear-gradient(135deg, #fefce8 0%, #fef9c3 100%); }
         .technician-card { border: 1.5px solid #e2e8f0; border-radius: 14px; margin-bottom: 15px; overflow: hidden; transition: 0.2s; background: #fff; }
         .technician-card:hover { border-color: #EE2E24; box-shadow: 0 4px 15px rgba(238,46,36,0.08); }
         .technician-header { background: #fafafa; padding: 18px 25px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
@@ -43,7 +31,7 @@
 
 <nav class="navbar navbar-expand-lg navbar-dark navbar-custom py-3 shadow-sm mb-4">
     <div class="container-fluid px-4">
-        <a class="navbar-brand fw-bold" href="#"><i class="bi bi-speedometer2 me-2"></i> DASHBOARD  SUKMAJAYA</a>
+        <a class="navbar-brand fw-bold" href="#"><i class="bi bi-speedometer2 me-2"></i> DASHBOARD SUKMAJAYA</a>
         <div class="d-flex align-items-center">
             <span class="text-white me-3 fw-medium">Halo, Admin (<%= username %>)</span>
             <a href="/logout" class="btn btn-sm btn-light text-danger fw-bold rounded-pill px-3 shadow-sm">Logout</a>
@@ -52,48 +40,43 @@
 </nav>
 
 <div class="container-fluid px-4 mb-5">
-    
-   <!-- Statistik Kartu Soft Gradient Modern -->
+
+    <!-- Statistik -->
     <div class="row g-4 mb-4">
-        <!-- Card 1: Total Dokumen -->
         <div class="col-md-4">
             <div class="stat-card stat-blue p-4">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <span class="text-uppercase text-muted fw-bold d-block mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">Total Dokumen BAST</span>
+                        <span class="text-uppercase text-muted fw-bold d-block mb-1" style="font-size:0.75rem;letter-spacing:0.5px;">Total Dokumen BAST</span>
                         <h2 class="fw-bold mb-0 text-primary"><%= bastData.length %></h2>
                     </div>
-                    <div class="stat-icon bg-primary text-white rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 55px; height: 55px;">
+                    <div class="bg-primary text-white rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width:55px;height:55px;">
                         <i class="bi bi-file-earmark-text fs-4"></i>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- Card 2: Disetujui Warehouse -->
         <div class="col-md-4">
             <div class="stat-card stat-green p-4">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <span class="text-uppercase text-muted fw-bold d-block mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">Disetujui Warehouse</span>
+                        <span class="text-uppercase text-muted fw-bold d-block mb-1" style="font-size:0.75rem;letter-spacing:0.5px;">Disetujui Warehouse</span>
                         <h2 class="fw-bold mb-0 text-success"><%= bastData.filter(d => d.status === 'COMPLETED').length %></h2>
                     </div>
-                    <div class="stat-icon bg-success text-white rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 55px; height: 55px;">
+                    <div class="bg-success text-white rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width:55px;height:55px;">
                         <i class="bi bi-check-circle-fill fs-4"></i>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- Card 3: Menunggu WH -->
         <div class="col-md-4">
             <div class="stat-card stat-yellow p-4">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <span class="text-uppercase text-muted fw-bold d-block mb-1" style="font-size: 0.75rem; letter-spacing: 0.5px;">Menunggu WH (Pending)</span>
+                        <span class="text-uppercase text-muted fw-bold d-block mb-1" style="font-size:0.75rem;letter-spacing:0.5px;">Menunggu WH (Pending)</span>
                         <h2 class="fw-bold mb-0 text-warning-emphasis"><%= bastData.filter(d => d.status === 'PENDING').length %></h2>
                     </div>
-                    <div class="stat-icon bg-warning text-dark rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width: 55px; height: 55px;">
+                    <div class="bg-warning text-dark rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width:55px;height:55px;">
                         <i class="bi bi-clock-history fs-4"></i>
                     </div>
                 </div>
@@ -101,117 +84,75 @@
         </div>
     </div>
 
-    <<ul class="nav nav-pills mb-4 gap-2 bg-white p-2 rounded-4 shadow-sm d-inline-flex border" id="adminTab" role="tablist">
-    <li class="nav-item" role="presentation">
-        <button class="nav-link active px-4 py-2" id="rekap-tab" data-bs-toggle="pill" data-bs-target="#rekap-pane" type="button"><i class="bi bi-people-fill me-2"></i> Rekap Per Teknisi (ONT)</button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link px-4 py-2" id="bast-tab" data-bs-toggle="pill" data-bs-target="#bast-pane" type="button"><i class="bi bi-file-earmark-pdf-fill me-2"></i> Download Dokumen</button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link px-4 py-2" id="users-tab" data-bs-toggle="pill" data-bs-target="#users-pane" type="button"><i class="bi bi-person-gear me-2"></i> Akun Teknisi</button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link px-4 py-2" id="namateknisi-tab" data-bs-toggle="pill" data-bs-target="#namateknisi-pane" type="button"><i class="bi bi-person-lines-fill me-2"></i> Nama Teknisi</button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button class="nav-link px-4 py-2 text-primary fw-bold" id="rekon-tab" data-bs-toggle="pill" data-bs-target="#rekon-pane" type="button"><i class="bi bi-magic me-2"></i> VLOOKUP Rekon Data</button>
-    </li>
-</ul>
+    <!-- Tab Navigation -->
+    <ul class="nav nav-pills mb-4 gap-2 bg-white p-2 rounded-4 shadow-sm d-inline-flex border" id="adminTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active px-4 py-2" id="rekap-tab" data-bs-toggle="pill" data-bs-target="#rekap-pane" type="button">
+                <i class="bi bi-people-fill me-2"></i> Rekap Per Teknisi (ONT)
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link px-4 py-2" id="bast-tab" data-bs-toggle="pill" data-bs-target="#bast-pane" type="button">
+                <i class="bi bi-file-earmark-pdf-fill me-2"></i> Download Dokumen
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link px-4 py-2" id="users-tab" data-bs-toggle="pill" data-bs-target="#users-pane" type="button">
+                <i class="bi bi-person-gear me-2"></i> Akun Teknisi
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link px-4 py-2" id="namateknisi-tab" data-bs-toggle="pill" data-bs-target="#namateknisi-pane" type="button">
+                <i class="bi bi-person-lines-fill me-2"></i> Nama Teknisi
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link px-4 py-2 text-primary fw-bold" id="rekon-tab" data-bs-toggle="pill" data-bs-target="#rekon-pane" type="button">
+                <i class="bi bi-magic me-2"></i> VLOOKUP Rekon Data
+            </button>
+        </li>
+    </ul>
 
+    <!-- ===== TAB CONTENT ===== -->
     <div class="tab-content" id="adminTabContent">
-        
-    <!-- TAB: MANAJEMEN NAMA TEKNISI DROPDOWN -->
-<div class="tab-pane fade" id="namateknisi-pane" role="tabpanel">
-    <div class="row">
-        <div class="col-md-5 mb-4">
-            <div class="card-panel p-4">
-                <h5 class="fw-bold mb-3 text-danger">
-                    <i class="bi bi-person-plus-fill me-2"></i> Tambah Nama Teknisi
-                </h5>
-                <form action="/admin/teknisi/add" method="POST">
-                    <div class="mb-3">
-                        <label class="form-label fw-medium small">NIK Teknisi</label>
-                        <input type="text" class="form-control" name="nik" 
-                            placeholder="Contoh: 26050119" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-medium small">Nama Lengkap</label>
-                        <input type="text" class="form-control" name="nama" 
-                            placeholder="Contoh: ANDI ARYA WIJAYA" required>
-                    </div>
-                    <button type="submit" class="btn btn-danger w-100 fw-bold rounded-pill py-2">
-                        Tambah ke Dropdown
-                    </button>
-                </form>
-            </div>
-        </div>
-        <div class="col-md-7">
-            <div class="card-panel p-4">
-                <h5 class="fw-bold mb-3"><i class="bi bi-list-ul me-2"></i> Daftar Nama di Dropdown</h5>
-                <div class="table-responsive">
-                    <table class="table table-sm align-middle">
-                        <thead>
-                            <tr>
-                                <th>No</th>
-                                <th>NIK</th>
-                                <th>Nama</th>
-                                <th class="text-center">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <% namaTeknisiList.forEach((t, i) => { %>
-                            <tr>
-                                <td><%= i + 1 %></td>
-                                <td class="font-monospace"><%= t.nik %></td>
-                                <td class="fw-bold"><%= t.nama %></td>
-                                <td class="text-center">
-                                    <a href="/admin/teknisi/delete/<%= t.id %>" 
-                                        class="btn btn-sm btn-outline-danger rounded-pill px-3"
-                                        onclick="return confirm('Hapus nama ini?')">Hapus</a>
-                                </td>
-                            </tr>
-                            <% }) %>
-                            <% if(namaTeknisiList.length === 0) { %>
-                            <tr>
-                                <td colspan="4" class="text-center text-muted py-3">
-                                    Belum ada nama teknisi
-                                </td>
-                            </tr>
-                            <% } %>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-        <!-- TAB 1: REKAPITULASI PER TEKNISI (GROUPING & ACCORDION) -->
+
+        <!-- TAB 1: REKAP PER TEKNISI -->
         <div class="tab-pane fade show active" id="rekap-pane" role="tabpanel">
             <div class="card-panel p-4">
-                <div class="d-flex justify-content-between align-items-center mb-4">
+                <!-- Header dengan tombol Download Excel HANYA di sini -->
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
                     <div>
                         <h5 class="fw-bold mb-1 text-danger"><i class="bi bi-collection-fill me-2"></i> Rekapitulasi Progres ONT Berdasarkan Nama Teknisi</h5>
                         <p class="text-muted small mb-0">Klik pada nama teknisi di bawah untuk melihat rincian SN perangkat yang masuk.</p>
                     </div>
-                    <span class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill fw-semibold">Total Teknisi: <%= Object.keys(groupedRekap).length %> Orang</span>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill fw-semibold">
+                            Total Teknisi: <%= Object.keys(groupedRekap).length %> Orang
+                        </span>
+                        <!-- TOMBOL DOWNLOAD REKAP ONT — HANYA MUNCUL DI SINI -->
+                        <a href="/admin/export/rekap-ont" class="btn btn-success fw-bold rounded-pill px-4 shadow-sm">
+                            <i class="bi bi-file-earmark-excel-fill me-1"></i> Download Excel Rekap ONT
+                        </a>
+                    </div>
                 </div>
 
                 <% if (Object.keys(groupedRekap).length === 0) { %>
-                    <div class="text-center py-5 text-muted">Belum ada rekapitulasi perangkat ONT yang masuk.</div>
+                    <div class="text-center py-5 text-muted">
+                        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                        Belum ada rekapitulasi perangkat ONT yang masuk.
+                    </div>
                 <% } %>
 
-                <!-- Looping Berdasarkan Nama Teknisi -->
-                <% 
+                <%
                    let indexTech = 0;
-                   for (let teknisi in groupedRekap) { 
+                   for (let teknisi in groupedRekap) {
                        indexTech++;
                        let items = groupedRekap[teknisi];
                 %>
                 <div class="technician-card">
                     <div class="technician-header" data-bs-toggle="collapse" data-bs-target="#tech-<%= indexTech %>" aria-expanded="false">
                         <div class="d-flex align-items-center">
-                            <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center fw-bold me-3" style="width: 45px; height: 45px;">
+                            <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center fw-bold me-3" style="width:45px;height:45px;">
                                 <%= teknisi.charAt(0) %>
                             </div>
                             <div>
@@ -219,12 +160,10 @@
                                 <small class="text-muted">Total Perangkat Masuk: <b class="text-danger"><%= items.length %> Unit ONT</b></small>
                             </div>
                         </div>
-                        <div>
-                            <span class="badge bg-light text-secondary border px-3 py-2 rounded-pill fw-medium me-2">Klik untuk Detail SN <i class="bi bi-chevron-down ms-1"></i></span>
-                        </div>
+                        <span class="badge bg-light text-secondary border px-3 py-2 rounded-pill fw-medium">
+                            Klik untuk Detail SN <i class="bi bi-chevron-down ms-1"></i>
+                        </span>
                     </div>
-                    
-                    <!-- Detail Tabel yang Bisa Dibuka/Tutup -->
                     <div id="tech-<%= indexTech %>" class="collapse">
                         <div class="p-3 bg-white border-top">
                             <div class="table-responsive">
@@ -264,6 +203,8 @@
                                             <td>
                                                 <% if(r.status === 'COMPLETED') { %>
                                                     <span class="badge-completed">Selesai</span>
+                                                <% } else if(r.status === 'REJECTED') { %>
+                                                    <span style="background:#fee2e2;color:#991b1b;padding:6px 14px;border-radius:20px;font-weight:500;font-size:0.75rem;">Ditolak</span>
                                                 <% } else { %>
                                                     <span class="badge-pending">Pending</span>
                                                 <% } %>
@@ -277,17 +218,27 @@
                     </div>
                 </div>
                 <% } %>
-
             </div>
         </div>
+        <!-- BATAS AKHIR TAB 1 -->
 
-        <!-- TAB 2: LAPORAN DOKUMEN & APPROVED -->
+        <!-- TAB 2: DOWNLOAD DOKUMEN -->
         <div class="tab-pane fade" id="bast-pane" role="tabpanel">
             <div class="card-panel p-4">
-                <h5 class="fw-bold mb-3 text-danger"><i class="bi bi-file-earmark-arrow-down-fill me-2"></i> Download Dokumen BAST Approved Warehouse</h5>
-                <p class="text-muted small">Unduh dokumen BAST lengkap yang telah disahkan oleh pihak Warehouse (WH).</p>
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-3">
+                    <div>
+                        <h5 class="fw-bold mb-1 text-danger">
+                            <i class="bi bi-file-earmark-arrow-down-fill me-2"></i> Download Dokumen BAST Approved Warehouse
+                        </h5>
+                        <p class="text-muted small mb-0">Unduh dokumen PDF yang telah disahkan WH, atau ekspor seluruh data ke Excel.</p>
+                    </div>
+                    <button type="button" onclick="downloadAllExcel()" class="btn btn-success fw-bold px-4 py-2 rounded-pill shadow-sm flex-shrink-0">
+                        <i class="bi bi-file-earmark-excel-fill me-2"></i> Download Excel Semua Data
+                    </button>
+                </div>
+
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle">
+                    <table class="table table-hover align-middle" id="tabelBast">
                         <thead>
                             <tr>
                                 <th>Kode BAST</th>
@@ -310,13 +261,16 @@
                                 <td>
                                     <% if(d.status === 'COMPLETED') { %>
                                         <span class="badge-completed">Approved (WH)</span>
+                                    <% } else if(d.status === 'REJECTED') { %>
+                                        <span style="background:#fee2e2;color:#991b1b;padding:6px 14px;border-radius:20px;font-weight:500;font-size:0.75rem;display:inline-block;">Ditolak WH</span>
                                     <% } else { %>
                                         <span class="badge-pending">Pending WH</span>
                                     <% } %>
                                 </td>
                                 <td class="text-center">
                                     <% if(d.status === 'COMPLETED') { %>
-                                        <a href="/bast/cetak/<%= d.kode_unik %>" target="_blank" class="btn btn-sm btn-danger rounded-pill px-3 fw-medium shadow-sm">
+                                        <a href="/bast/cetak/<%= d.kode_unik %>" target="_blank"
+                                            class="btn btn-sm btn-danger rounded-pill px-3 fw-medium shadow-sm">
                                             <i class="bi bi-printer-fill me-1"></i> Buka & Cetak PDF
                                         </a>
                                     <% } else { %>
@@ -330,8 +284,9 @@
                 </div>
             </div>
         </div>
+        <!-- BATAS AKHIR TAB 2 -->
 
-       <!-- TAB 3: MANAJEMEN AKUN TEKNISI (Ini batas akhir dari kode Anda sebelumnya) -->
+        <!-- TAB 3: AKUN TEKNISI -->
         <div class="tab-pane fade" id="users-pane" role="tabpanel">
             <div class="row">
                 <div class="col-md-5 mb-4">
@@ -370,7 +325,9 @@
                                         <td class="fw-bold"><%= u.username %></td>
                                         <td><span class="badge bg-secondary-subtle text-secondary px-2 py-1">Teknisi</span></td>
                                         <td class="text-center">
-                                            <a href="/admin/user/delete/<%= u.id %>" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('Yakin ingin menghapus akun ini?')">Hapus</a>
+                                            <a href="/admin/user/delete/<%= u.id %>"
+                                                class="btn btn-sm btn-outline-danger rounded-pill px-3"
+                                                onclick="return confirm('Yakin ingin menghapus akun ini?')">Hapus</a>
                                         </td>
                                     </tr>
                                     <% }) %>
@@ -383,145 +340,147 @@
         </div>
         <!-- BATAS AKHIR TAB 3 -->
 
+        <!-- TAB 4: NAMA TEKNISI DROPDOWN -->
+        <div class="tab-pane fade" id="namateknisi-pane" role="tabpanel">
+            <div class="row">
+                <div class="col-md-5 mb-4">
+                    <div class="card-panel p-4">
+                        <h5 class="fw-bold mb-3 text-danger">
+                            <i class="bi bi-person-plus-fill me-2"></i> Tambah Nama Teknisi
+                        </h5>
+                        <form action="/admin/teknisi/add" method="POST">
+                            <div class="mb-3">
+                                <label class="form-label fw-medium small">NIK Teknisi</label>
+                                <input type="text" class="form-control" name="nik" placeholder="Contoh: 26050119" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-medium small">Nama Lengkap</label>
+                                <input type="text" class="form-control" name="nama" placeholder="Contoh: ANDI ARYA WIJAYA" required>
+                            </div>
+                            <button type="submit" class="btn btn-danger w-100 fw-bold rounded-pill py-2">
+                                Tambah ke Dropdown
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="col-md-7">
+                    <div class="card-panel p-4">
+                        <h5 class="fw-bold mb-3"><i class="bi bi-list-ul me-2"></i> Daftar Nama di Dropdown</h5>
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>No</th>
+                                        <th>NIK</th>
+                                        <th>Nama</th>
+                                        <th class="text-center">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% namaTeknisiList.forEach((t, i) => { %>
+                                    <tr>
+                                        <td><%= i + 1 %></td>
+                                        <td class="font-monospace"><%= t.nik %></td>
+                                        <td class="fw-bold"><%= t.nama %></td>
+                                        <td class="text-center">
+                                            <a href="/admin/teknisi/delete/<%= t.id %>"
+                                                class="btn btn-sm btn-outline-danger rounded-pill px-3"
+                                                onclick="return confirm('Hapus nama ini?')">Hapus</a>
+                                        </td>
+                                    </tr>
+                                    <% }) %>
+                                    <% if(namaTeknisiList.length === 0) { %>
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-3">Belum ada nama teknisi</td>
+                                    </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- BATAS AKHIR TAB 4 -->
 
-        <!-- ================= TEMPELKAN HTML TAB 4 TEPAT DI BAWAH TAB 3 ================= -->
-        <!-- TAB 4: REKONSILIASI (VLOOKUP) EXCEL -->
+        <!-- TAB 5: REKONSILIASI VLOOKUP -->
         <div class="tab-pane fade" id="rekon-pane" role="tabpanel">
             <div class="card-panel p-4 mb-4">
                 <h5 class="fw-bold mb-3 text-primary"><i class="bi bi-file-earmark-spreadsheet-fill me-2"></i> Rekonsiliasi Data Aktual vs Database BAST</h5>
                 <p class="text-muted small">Blok (Ctrl+A / Ctrl+C) seluruh data Excel Anda beserta headernya, lalu paste (Ctrl+V) ke dalam kotak di bawah ini.</p>
-                
+
                 <textarea id="excelPasteArea" class="form-control mb-3 font-monospace" rows="5" placeholder="Paste data Excel dari kolom witel sampai valid_bayar di sini..."></textarea>
-                
+
                 <div class="d-flex gap-2">
-    <button type="button" onclick="prosesRekon()" class="btn btn-primary fw-bold px-4 py-2 rounded-pill shadow-sm">
-        <i class="bi bi-gear-fill me-2"></i> Proses Komparasi (VLOOKUP)
-    </button>
-    <button type="button" onclick="document.getElementById('modalContoh').style.display='flex'" 
-        class="btn btn-outline-secondary fw-bold px-4 py-2 rounded-pill shadow-sm">
-        <i class="bi bi-eye-fill me-2"></i> Lihat Contoh / Template
-    </button>
-</div>
-
-<!-- Modal Contoh Template -->
-<div id="modalContoh" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
-    background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
-    <div style="background:#fff; border-radius:16px; padding:30px; max-width:90%; width:900px; 
-        max-height:85vh; overflow-y:auto; position:relative;">
-        
-        <button onclick="document.getElementById('modalContoh').style.display='none'" 
-            style="position:absolute; top:15px; right:15px; background:#EE2E24; color:white; 
-            border:none; border-radius:50%; width:32px; height:32px; font-size:16px; cursor:pointer;">
-            &times;
-        </button>
-
-        <h5 class="fw-bold text-primary mb-1">
-            <i class="bi bi-file-earmark-spreadsheet me-2"></i> Contoh Format Template Excel
-        </h5>
-        <p class="text-muted small mb-3">
-            Pastikan header kolom Excel kamu <b>sama persis</b> seperti di bawah ini. 
-            Kolom <b>STATUS_WH</b> dan <b>STATUS_REAL</b> boleh kosong, akan diisi otomatis oleh sistem.
-        </p>
-
-        <!-- Kolom Wajib -->
-        <div class="mb-3 p-3 bg-danger-subtle border border-danger rounded-3">
-            <h6 class="fw-bold text-danger mb-2"><i class="bi bi-exclamation-triangle-fill me-1"></i> Kolom Wajib Ada:</h6>
-            <div class="d-flex gap-2 flex-wrap">
-                <span class="badge bg-danger px-3 py-2">SN_PERANGKAT_OLD</span>
-                <span class="badge bg-danger px-3 py-2">STATUS_WH</span>
-                <span class="badge bg-danger px-3 py-2">STATUS_REAL</span>
-            </div>
-        </div>
-
-        <!-- Tabel Contoh -->
-        <div class="table-responsive border rounded-3">
-            <table class="table table-bordered table-sm align-middle mb-0" style="font-size:0.78rem; white-space:nowrap;">
-                <thead style="background:#0e294b; color:white;">
-                    <tr>
-                        <th>WITEL</th>
-                        <th>SERVICE_AREA</th>
-                        <th>ID_STO</th>
-                        <th>NO_INET</th>
-                        <th>NIK</th>
-                        <th class="bg-danger">SN_PERANGKAT_OLD</th>
-                        <th>TYPE_OLD</th>
-                        <th>STATUS</th>
-                        <th class="bg-danger">STATUS_WH</th>
-                        <th class="bg-danger">STATUS_REAL</th>
-                        <th>LAST_ACTIVITY_DATESTAMP</th>
-                        <th>VALID_BAYAR</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>BEKASI</td>
-                        <td>SUKMAJAYA</td>
-                        <td>SKJ</td>
-                        <td>122120211614</td>
-                        <td>26010129</td>
-                        <td class="fw-bold text-danger">FHTT9472E4D0</td>
-                        <td>ONT : HG6243C (Single Band)</td>
-                        <td>complete</td>
-                        <td class="text-muted fst-italic">kosong</td>
-                        <td class="text-muted fst-italic">kosong</td>
-                        <td>2026-07-20</td>
-                        <td>FREELANCE</td>
-                    </tr>
-                    <tr>
-                        <td>BEKASI</td>
-                        <td>SUKMAJAYA</td>
-                        <td>CSL</td>
-                        <td>122120200572</td>
-                        <td>15897286</td>
-                        <td class="fw-bold text-danger">48575443A41F949C</td>
-                        <td>ONT : HG8245H (Single Band)</td>
-                        <td>kendala</td>
-                        <td class="text-muted fst-italic">kosong</td>
-                        <td class="text-muted fst-italic">kosong</td>
-                        <td>2025-11-07</td>
-                        <td></td>
-                    </tr>
-                    <tr>
-                        <td>BEKASI</td>
-                        <td>SUKMAJAYA</td>
-                        <td>CSL</td>
-                        <td>122120212050</td>
-                        <td>25020273</td>
-                        <td class="fw-bold text-danger">ZTEGCC439D44</td>
-                        <td>ONT : F609V5.3 (Single Band)</td>
-                        <td>close</td>
-                        <td class="text-muted fst-italic">kosong</td>
-                        <td class="text-muted fst-italic">kosong</td>
-                        <td>2026-07-06</td>
-                        <td>KONTRAK</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="mt-3 p-3 bg-warning-subtle border border-warning rounded-3">
-            <h6 class="fw-bold text-warning-emphasis mb-2"><i class="bi bi-lightbulb-fill me-1"></i> Cara Pakai:</h6>
-            <ol class="mb-0 small text-dark">
-                <li>Buka file Excel kamu, pastikan ada kolom <b>SN_PERANGKAT_OLD</b>, <b>STATUS_WH</b>, dan <b>STATUS_REAL</b></li>
-                <li>Blok semua data termasuk baris header (<b>Ctrl+A</b>)</li>
-                <li>Copy (<b>Ctrl+C</b>)</li>
-                <li>Kembali ke halaman ini, klik pada kotak teks lalu Paste (<b>Ctrl+V</b>)</li>
-                <li>Klik tombol <b>"Proses Komparasi"</b></li>
-            </ol>
-        </div>
-
-        <div class="mt-3 text-end">
-            <button onclick="document.getElementById('modalContoh').style.display='none'" 
-                class="btn btn-danger rounded-pill px-4 fw-bold">
-                Tutup
-            </button>
-        </div>
-    </div>
-</div>
+                    <button type="button" onclick="prosesRekon()" class="btn btn-primary fw-bold px-4 py-2 rounded-pill shadow-sm">
+                        <i class="bi bi-gear-fill me-2"></i> Proses Komparasi (VLOOKUP)
+                    </button>
+                    <button type="button" onclick="document.getElementById('modalContoh').style.display='flex'"
+                        class="btn btn-outline-secondary fw-bold px-4 py-2 rounded-pill shadow-sm">
+                        <i class="bi bi-eye-fill me-2"></i> Lihat Contoh / Template
+                    </button>
+                </div>
             </div>
 
-            <!-- Area Hasil Pivot/Tabel (Awalnya Tersembunyi) -->
-            <div id="resultArea" class="card-panel p-4" style="display: none;">
+            <!-- Modal Contoh Template -->
+            <div id="modalContoh" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+                <div style="background:#fff;border-radius:16px;padding:30px;max-width:90%;width:900px;max-height:85vh;overflow-y:auto;position:relative;">
+                    <button onclick="document.getElementById('modalContoh').style.display='none'"
+                        style="position:absolute;top:15px;right:15px;background:#EE2E24;color:white;border:none;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;">&times;</button>
+                    <h5 class="fw-bold text-primary mb-1"><i class="bi bi-file-earmark-spreadsheet me-2"></i> Contoh Format Template Excel</h5>
+                    <p class="text-muted small mb-3">Pastikan header kolom Excel kamu <b>sama persis</b> seperti di bawah ini.</p>
+                    <div class="mb-3 p-3 bg-danger-subtle border border-danger rounded-3">
+                        <h6 class="fw-bold text-danger mb-2"><i class="bi bi-exclamation-triangle-fill me-1"></i> Kolom Wajib Ada:</h6>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <span class="badge bg-danger px-3 py-2">SN_PERANGKAT_OLD</span>
+                            <span class="badge bg-danger px-3 py-2">STATUS_WH</span>
+                            <span class="badge bg-danger px-3 py-2">STATUS_REAL</span>
+                        </div>
+                    </div>
+                    <div class="table-responsive border rounded-3">
+                        <table class="table table-bordered table-sm align-middle mb-0" style="font-size:0.78rem;white-space:nowrap;">
+                            <thead style="background:#0e294b;color:white;">
+                                <tr>
+                                    <th>WITEL</th><th>SERVICE_AREA</th><th>ID_STO</th><th>NO_INET</th><th>NIK</th>
+                                    <th class="bg-danger">SN_PERANGKAT_OLD</th><th>TYPE_OLD</th><th>STATUS</th>
+                                    <th class="bg-danger">STATUS_WH</th><th class="bg-danger">STATUS_REAL</th>
+                                    <th>LAST_ACTIVITY_DATESTAMP</th><th>VALID_BAYAR</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>BEKASI</td><td>SUKMAJAYA</td><td>SKJ</td><td>122120211614</td><td>26010129</td>
+                                    <td class="fw-bold text-danger">FHTT9472E4D0</td><td>ONT : HG6243C</td><td>complete</td>
+                                    <td class="text-muted fst-italic">kosong</td><td class="text-muted fst-italic">kosong</td>
+                                    <td>2026-07-20</td><td>FREELANCE</td>
+                                </tr>
+                                <tr>
+                                    <td>BEKASI</td><td>SUKMAJAYA</td><td>CSL</td><td>122120200572</td><td>15897286</td>
+                                    <td class="fw-bold text-danger">48575443A41F949C</td><td>ONT : HG8245H</td><td>kendala</td>
+                                    <td class="text-muted fst-italic">kosong</td><td class="text-muted fst-italic">kosong</td>
+                                    <td>2025-11-07</td><td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-3 p-3 bg-warning-subtle border border-warning rounded-3">
+                        <h6 class="fw-bold text-warning-emphasis mb-2"><i class="bi bi-lightbulb-fill me-1"></i> Cara Pakai:</h6>
+                        <ol class="mb-0 small text-dark">
+                            <li>Buka file Excel kamu, pastikan ada kolom <b>SN_PERANGKAT_OLD</b>, <b>STATUS_WH</b>, dan <b>STATUS_REAL</b></li>
+                            <li>Blok semua data termasuk baris header (<b>Ctrl+A</b>)</li>
+                            <li>Copy (<b>Ctrl+C</b>)</li>
+                            <li>Kembali ke halaman ini, klik pada kotak teks lalu Paste (<b>Ctrl+V</b>)</li>
+                            <li>Klik tombol <b>"Proses Komparasi"</b></li>
+                        </ol>
+                    </div>
+                    <div class="mt-3 text-end">
+                        <button onclick="document.getElementById('modalContoh').style.display='none'" class="btn btn-danger rounded-pill px-4 fw-bold">Tutup</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hasil Rekon -->
+            <div id="resultArea" class="card-panel p-4" style="display:none;">
                 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
                     <h5 class="fw-bold text-success mb-0"><i class="bi bi-check2-all me-2"></i> Hasil Komparasi Berhasil!</h5>
                     <div class="d-flex gap-2">
@@ -534,10 +493,8 @@
                     </div>
                 </div>
 
-                <!-- Panel Report Visual & Tabel Pivot -->
-                <div id="reportArea" class="mb-4 p-4 border rounded-4 bg-light shadow-sm" style="display: none;">
+                <div id="reportArea" class="mb-4 p-4 border rounded-4 bg-light shadow-sm" style="display:none;">
                     <h6 class="fw-bold text-dark mb-3"><i class="bi bi-pie-chart-fill me-2 text-info"></i> Ringkasan Progres & Pencapaian</h6>
-                    
                     <div class="row g-3 text-center mb-4">
                         <div class="col-md-3">
                             <div class="bg-white border rounded-3 p-3 shadow-sm">
@@ -546,70 +503,66 @@
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="bg-success-subtle border-success rounded-3 p-3 shadow-sm border opacity-75">
+                            <div class="bg-success-subtle border-success rounded-3 p-3 shadow-sm border">
                                 <span class="text-success small fw-bold">TOTAL DONE RETURN</span>
                                 <h3 id="totDone" class="fw-bold text-success mb-0 mt-1">0</h3>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="bg-warning-subtle border-warning rounded-3 p-3 shadow-sm border opacity-75">
+                            <div class="bg-warning-subtle border-warning rounded-3 p-3 shadow-sm border">
                                 <span class="text-warning-emphasis small fw-bold">TOTAL PENDING WH</span>
                                 <h3 id="totPending" class="fw-bold text-warning-emphasis mb-0 mt-1">0</h3>
                             </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="bg-danger-subtle border-danger rounded-3 p-3 shadow-sm border opacity-75">
+                            <div class="bg-danger-subtle border-danger rounded-3 p-3 shadow-sm border">
                                 <span class="text-danger small fw-bold">TOTAL NOK / KENDALA</span>
                                 <h3 id="totNok" class="fw-bold text-danger mb-0 mt-1">0</h3>
                             </div>
                         </div>
                     </div>
-                    
                     <div class="bg-white p-3 rounded-3 border shadow-sm mb-4">
                         <div class="d-flex justify-content-between align-items-center mb-1">
                             <span class="fw-bold text-secondary small">Persentase Pencapaian (DONE)</span>
                             <span id="progressText" class="fw-bold text-success fs-5">0%</span>
                         </div>
-                        <div class="progress" style="height: 24px; border-radius: 12px;">
-                            <div id="progressBar" class="progress-bar bg-success progress-bar-striped progress-bar-animated fw-bold" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+                        <div class="progress" style="height:24px;border-radius:12px;">
+                            <div id="progressBar" class="progress-bar bg-success progress-bar-striped progress-bar-animated fw-bold" role="progressbar" style="width:0%;">0%</div>
                         </div>
                     </div>
-
                     <h6 class="fw-bold text-dark mb-2"><i class="bi bi-table me-2 text-primary"></i> Tabel Pivot Progres Berdasarkan Status</h6>
                     <div class="table-responsive border rounded bg-white shadow-sm">
-                        <table class="table table-bordered table-sm text-center align-middle mb-0" style="font-size: 0.85rem;">
-                            <thead style="background-color: #0e294b; color: white;">
+                        <table class="table table-bordered table-sm text-center align-middle mb-0" style="font-size:0.85rem;">
+                            <thead style="background-color:#0e294b;color:white;">
                                 <tr>
-                                    <th class="text-start border-end-0">Count of status</th>
-                                    <th colspan="5" class="text-start border-start-0">Column Labels</th>
-                                </tr>
-                                <tr>
-                                    <th class="text-start fw-semibold">Row Labels</th>
-                                    <th class="fw-semibold">DONE RETURN</th>
-                                    <th class="fw-semibold">PENDING</th>
-                                    <th class="fw-semibold">NOK</th>
-                                    <th class="fw-semibold">Grand Total</th>
-                                    <th class="fw-semibold">%</th>
+                                    <th class="text-start">Row Labels</th>
+                                    <th>DONE RETURN</th>
+                                    <th>PENDING</th>
+                                    <th>NOK</th>
+                                    <th>Grand Total</th>
+                                    <th>%</th>
                                 </tr>
                             </thead>
                             <tbody id="pivotTbody"></tbody>
-                            <tfoot style="background-color: #0e294b; color: white;" class="fw-bold" id="pivotTfoot"></tfoot>
+                            <tfoot style="background-color:#0e294b;color:white;" class="fw-bold" id="pivotTfoot"></tfoot>
                         </table>
                     </div>
                 </div>
-                
-                <!-- Tabel Data Aktual -->
-                <div class="table-responsive border rounded-3 bg-white" style="max-height: 500px; overflow-y: auto;">
-                    <table class="table table-sm table-hover align-middle mb-0" style="font-size: 0.8rem; white-space: nowrap;">
-                        <thead class="table-light" id="rekonThead" style="position: sticky; top: 0; z-index: 1;"></thead>
+
+                <div class="table-responsive border rounded-3 bg-white" style="max-height:500px;overflow-y:auto;">
+                    <table class="table table-sm table-hover align-middle mb-0" style="font-size:0.8rem;white-space:nowrap;">
+                        <thead class="table-light" id="rekonThead" style="position:sticky;top:0;z-index:1;"></thead>
                         <tbody id="rekonTbody"></tbody>
                     </table>
                 </div>
             </div>
         </div>
+        <!-- BATAS AKHIR TAB 5 -->
 
-<!-- ================= TEMPELKAN SCRIPT JAVASCRIPT DI SINI (SEBELUM SCRIPT BOOTSTRAP) ================= -->
-<!-- SCRIPT UNTUK MESIN VLOOKUP FRONTEND -->
+    </div><!-- end tab-content -->
+</div>
+
+<!-- Data SN dari server untuk VLOOKUP -->
 <script id="snDataServer" type="application/json">
     <%- JSON.stringify(snMaster) %>
 </script>
@@ -618,79 +571,50 @@
     function prosesRekon() {
         try {
             const rawText = document.getElementById('excelPasteArea').value;
-            if(!rawText || rawText.trim() === "") {
+            if (!rawText || rawText.trim() === "") {
                 return alert("Kotak teks masih kosong! Silakan paste data Excel terlebih dahulu.");
             }
-
             const rows = rawText.split('\n').map(r => r.trim()).filter(r => r.length > 0);
             if (rows.length < 2) {
-                return alert("Data yang di-paste kurang dari 2 baris (pastikan header dan data ikut ter-copy).");
+                return alert("Data yang di-paste kurang dari 2 baris.");
             }
-
             document.getElementById('resultArea').style.display = 'block';
-
             const headers = rows[0].split('\t').map(h => h.trim());
             const lowerHeaders = headers.map(h => h.toLowerCase().replace(/\s+/g, '_'));
-
-            const idxSnOld = lowerHeaders.findIndex(h => h.includes('sn_perangkat_old') || h === 'sn_perangkat_old');
-            const idxStatusWh = lowerHeaders.findIndex(h => h.includes('status_wh') || h === 'status_wh');
-            const idxStatusReal = lowerHeaders.findIndex(h => h.includes('status_real') || h === 'status_real');
-            const idxStatusAsal = lowerHeaders.findIndex(h => h === 'status');
-
-            if(idxSnOld === -1 || idxStatusWh === -1 || idxStatusReal === -1) {
+            const idxSnOld     = lowerHeaders.findIndex(h => h.includes('sn_perangkat_old'));
+            const idxStatusWh  = lowerHeaders.findIndex(h => h.includes('status_wh'));
+            const idxStatusReal= lowerHeaders.findIndex(h => h.includes('status_real'));
+            const idxStatusAsal= lowerHeaders.findIndex(h => h === 'status');
+            if (idxSnOld === -1 || idxStatusWh === -1 || idxStatusReal === -1) {
                 document.getElementById('resultArea').style.display = 'none';
-                return alert("GAGAL: Kolom wajib 'sn_perangkat_old', 'STATUS WH', atau 'STATUS REAL' tidak ditemukan di header Excel Anda!\n\nHeader terdeteksi:\n" + headers.join(", "));
+                return alert("GAGAL: Kolom wajib tidak ditemukan!\n\nHeader terdeteksi:\n" + headers.join(", "));
             }
-
             let snMasterDb = {};
-            try {
-                snMasterDb = JSON.parse(document.getElementById('snDataServer').textContent);
-            } catch(e) {}
-
+            try { snMasterDb = JSON.parse(document.getElementById('snDataServer').textContent); } catch(e) {}
             let finalExcelData = [headers];
             let htmlThead = '<tr>';
             headers.forEach(h => htmlThead += `<th class="text-uppercase">${h}</th>`);
             htmlThead += '</tr>';
             document.getElementById('rekonThead').innerHTML = htmlThead;
-
-            let htmlTbody = '';
-            let totalData = 0, doneReturn = 0, pending = 0, nok = 0;
-            let pivotData = {}; 
-
-            for(let i = 1; i < rows.length; i++) {
+            let htmlTbody = '', totalData = 0, doneReturn = 0, pending = 0, nok = 0, pivotData = {};
+            for (let i = 1; i < rows.length; i++) {
                 let cols = rows[i].split('\t').map(c => c.trim());
-                if (cols.length < 2) continue; 
-
+                if (cols.length < 2) continue;
                 while (cols.length < headers.length) { cols.push(""); }
-
                 totalData++;
                 let sn = cols[idxSnOld];
                 let statusDb = snMasterDb[sn];
-                
                 let namaStatusAsal = (idxStatusAsal !== -1 && cols[idxStatusAsal]) ? cols[idxStatusAsal].trim().toLowerCase() : 'lainnya';
-                if (!pivotData[namaStatusAsal]) {
-                    pivotData[namaStatusAsal] = { done: 0, pending: 0, nok: 0, total: 0 };
-                }
-
+                if (!pivotData[namaStatusAsal]) pivotData[namaStatusAsal] = { done:0, pending:0, nok:0, total:0 };
                 if (statusDb === 'COMPLETED') {
-                    cols[idxStatusWh] = sn;
-                    cols[idxStatusReal] = 'DONE RETURN';
-                    doneReturn++;
-                    pivotData[namaStatusAsal].done++;
+                    cols[idxStatusWh] = sn; cols[idxStatusReal] = 'DONE RETURN'; doneReturn++; pivotData[namaStatusAsal].done++;
                 } else if (statusDb === 'PENDING') {
-                    cols[idxStatusWh] = sn;
-                    cols[idxStatusReal] = 'PENDING';
-                    pending++;
-                    pivotData[namaStatusAsal].pending++;
+                    cols[idxStatusWh] = sn; cols[idxStatusReal] = 'PENDING'; pending++; pivotData[namaStatusAsal].pending++;
                 } else {
-                    cols[idxStatusReal] = 'NOK';
-                    nok++;
-                    pivotData[namaStatusAsal].nok++;
+                    cols[idxStatusReal] = 'NOK'; nok++; pivotData[namaStatusAsal].nok++;
                 }
-                
                 pivotData[namaStatusAsal].total++;
                 finalExcelData.push(cols);
-
                 htmlTbody += '<tr>';
                 cols.forEach((c, index) => {
                     if (index === idxStatusReal) {
@@ -703,82 +627,67 @@
                 });
                 htmlTbody += '</tr>';
             }
-
             document.getElementById('rekonTbody').innerHTML = htmlTbody;
-            
-            // Pengaman elemen DOM sebelum diisi
-            if(document.getElementById('totData')) document.getElementById('totData').innerText = totalData;
-            if(document.getElementById('totDone')) document.getElementById('totDone').innerText = doneReturn;
-            if(document.getElementById('totPending')) document.getElementById('totPending').innerText = pending;
-            if(document.getElementById('totNok')) document.getElementById('totNok').innerText = nok;
-
+            document.getElementById('totData').innerText = totalData;
+            document.getElementById('totDone').innerText = doneReturn;
+            document.getElementById('totPending').innerText = pending;
+            document.getElementById('totNok').innerText = nok;
             let persentase = totalData > 0 ? Math.round((doneReturn / totalData) * 100) : 0;
-            if(document.getElementById('progressText')) document.getElementById('progressText').innerText = persentase + '%';
-            if(document.getElementById('progressBar')) {
-                document.getElementById('progressBar').style.width = persentase + '%';
-                document.getElementById('progressBar').innerText = persentase + '%';
-            }
-
+            document.getElementById('progressText').innerText = persentase + '%';
+            document.getElementById('progressBar').style.width = persentase + '%';
+            document.getElementById('progressBar').innerText = persentase + '%';
             let htmlPivotTbody = '';
             Object.keys(pivotData).sort().forEach(stat => {
                 let p = pivotData[stat];
                 let persenRow = p.total > 0 ? Math.round((p.done / p.total) * 100) : 0;
                 let capStat = stat.charAt(0).toUpperCase() + stat.slice(1);
-                
-                htmlPivotTbody += `
-                    <tr>
-                        <td class="text-start">${capStat}</td>
-                        <td>${p.done > 0 ? p.done : ''}</td>
-                        <td>${p.pending > 0 ? p.pending : ''}</td>
-                        <td>${p.nok > 0 ? p.nok : ''}</td>
-                        <td class="fw-bold bg-light">${p.total}</td>
-                        <td class="text-primary fw-bold">${persenRow}%</td>
-                    </tr>
-                `;
+                htmlPivotTbody += `<tr><td class="text-start">${capStat}</td><td>${p.done||''}</td><td>${p.pending||''}</td><td>${p.nok||''}</td><td class="fw-bold bg-light">${p.total}</td><td class="text-primary fw-bold">${persenRow}%</td></tr>`;
             });
-            if(document.getElementById('pivotTbody')) document.getElementById('pivotTbody').innerHTML = htmlPivotTbody;
-            if(document.getElementById('pivotTfoot')) {
-                document.getElementById('pivotTfoot').innerHTML = `
-                    <tr>
-                        <td class="text-start">Grand Total</td>
-                        <td>${doneReturn}</td>
-                        <td>${pending}</td>
-                        <td>${nok}</td>
-                        <td>${totalData}</td>
-                        <td>${persentase}%</td>
-                    </tr>
-                `;
-            }
-
+            document.getElementById('pivotTbody').innerHTML = htmlPivotTbody;
+            document.getElementById('pivotTfoot').innerHTML = `<tr><td class="text-start">Grand Total</td><td>${doneReturn}</td><td>${pending}</td><td>${nok}</td><td>${totalData}</td><td>${persentase}%</td></tr>`;
             window.globalExcelData = finalExcelData;
             document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth' });
-
         } catch (err) {
-            console.error("Error VLOOKUP:", err);
-            alert("Terjadi kesalahan saat memproses data: " + err.message);
+            alert("Terjadi kesalahan: " + err.message);
         }
     }
 
     function toggleReport() {
-        const reportArea = document.getElementById('reportArea');
-        if(reportArea) {
-            reportArea.style.display = reportArea.style.display === 'none' ? 'block' : 'none';
-        }
+        const r = document.getElementById('reportArea');
+        r.style.display = r.style.display === 'none' ? 'block' : 'none';
     }
 
     function downloadExcel() {
         if (!window.globalExcelData || window.globalExcelData.length === 0) {
-            return alert("Belum ada data hasil komparasi untuk didownload!");
+            return alert("Belum ada data hasil komparasi!");
         }
-        let tsvContent = window.globalExcelData.map(row => row.join("\t")).join("\n");
-        let blob = new Blob([tsvContent], { type: 'application/vnd.ms-excel' });
-        let url = URL.createObjectURL(blob);
+        let tsv = window.globalExcelData.map(r => r.join("\t")).join("\n");
+        let blob = new Blob([tsv], { type: 'application/vnd.ms-excel' });
         let a = document.createElement('a');
-        a.href = url;
+        a.href = URL.createObjectURL(blob);
         a.download = `Laporan_Rekon_Data_${new Date().toISOString().slice(0,10)}.xls`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
+
+    function downloadAllExcel() {
+        const tabel = document.getElementById('tabelBast');
+        if (!tabel) return alert('Tabel data tidak ditemukan.');
+        const headers = [];
+        tabel.querySelectorAll('thead th').forEach((th, i) => { if (i < 6) headers.push(th.innerText.trim()); });
+        const rows = [headers];
+        tabel.querySelectorAll('tbody tr').forEach(tr => {
+            const cols = [];
+            tr.querySelectorAll('td').forEach((td, i) => { if (i < 6) cols.push(td.innerText.trim()); });
+            if (cols.length > 0) rows.push(cols);
+        });
+        if (rows.length <= 1) return alert('Belum ada data untuk diexport.');
+        const tsv = rows.map(r => r.join('\t')).join('\n');
+        const blob = new Blob(['\uFEFF' + tsv], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `Data_BAST_Sukmajaya_${new Date().toISOString().slice(0,10)}.xls`;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
     }
 </script>
 

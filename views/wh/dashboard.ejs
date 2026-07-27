@@ -11,7 +11,10 @@
         body { font-family: 'Poppins', sans-serif; background-color: #f8fafc; }
         .navbar-custom { background: linear-gradient(135deg, #EE2E24 0%, #b31217 100%); }
         .card-container { background: #fff; border-radius: 16px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; }
-        .badge-pending { background-color: #fef08a; color: #854d0e; }
+        .badge-pending { background-color: #fef08a; color: #854d0e; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .badge-completed { background-color: #dcfce7; color: #166534; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .nav-pills .nav-link.active { background-color: #EE2E24; }
+        .nav-pills .nav-link { color: #475569; font-weight: 500; border-radius: 10px; }
     </style>
 </head>
 <body>
@@ -19,49 +22,248 @@
 <nav class="navbar navbar-expand-lg navbar-dark navbar-custom py-3 shadow-sm mb-4">
     <div class="container">
         <a class="navbar-brand fw-bold" href="#"><i class="bi bi-box-seam me-2"></i> Panel Warehouse (Penerima)</a>
-        <div class="d-flex">
+        <div class="d-flex align-items-center">
+            <span class="text-white me-3 fw-medium small">Halo, <b><%= username %></b></span>
             <a href="/logout" class="btn btn-sm btn-light text-danger fw-bold rounded-pill px-3">Logout</a>
         </div>
     </div>
 </nav>
 
 <div class="container mb-5">
-    <div class="card-container">
-        <h5 class="fw-bold mb-4 text-dark"><i class="bi bi-inbox-fill text-danger me-2"></i> Menunggu Tanda Tangan Anda (PENDING)</h5>
+
+    <!-- Tab Navigation -->
+    <ul class="nav nav-pills mb-4 gap-2 bg-white p-2 rounded-4 shadow-sm d-inline-flex border">
+        <li class="nav-item">
+            <button class="nav-link active px-4 py-2" data-bs-toggle="pill" data-bs-target="#tab-pending" type="button">
+                <i class="bi bi-hourglass-split me-1"></i> Menunggu TTD
+                <% if (pendingData && pendingData.length > 0) { %>
+                    <span class="badge bg-danger ms-1"><%= pendingData.length %></span>
+                <% } %>
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link px-4 py-2" data-bs-toggle="pill" data-bs-target="#tab-selesai" type="button">
+                <i class="bi bi-check-circle-fill me-1"></i> Sudah Disetujui
+            </button>
+        </li>
         
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th>Kode BAST</th>
-                        <th>Tanggal</th>
-                        <th>Lokasi STO</th>
-                        <th>Nama Teknisi</th>
-                        <th class="text-center">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% if (data.length === 0) { %>
-                        <tr><td colspan="5" class="text-center py-4 text-muted">Hore! Tidak ada BAST yang menunggu persetujuan.</td></tr>
-                    <% } %>
-                    <% data.forEach(row => { %>
-                    <tr>
-                        <td><span class="fw-bold text-danger font-monospace"><%= row.kode_unik %></span></td>
-                        <td><%= row.tanggal %></td>
-                        <td><%= row.loksto %></td>
-                        <td><%= row.teknisi_nama %></td>
-                        <td class="text-center">
-                            <a href="/wh/sign/<%= row.kode_unik %>" class="btn btn-sm btn-danger rounded-pill px-3 fw-medium shadow-sm">
-                                <i class="bi bi-pen-fill"></i> Tanda Tangani
-                            </a>
-                        </td>
-                    </tr>
-                    <% }) %>
-                </tbody>
-            </table>
+        <!-- TAMBAHKAN KODE ANDA DI SINI -->
+        <li class="nav-item">
+            <button class="nav-link px-4 py-2" data-bs-toggle="pill" data-bs-target="#tab-ditolak" type="button">
+                <i class="bi bi-x-circle-fill me-1"></i> Ditolak
+            </button>
+        </li>
+        <!-- ========================== -->
+
+    </ul>
+
+    <div class="tab-content">
+
+        <!-- TAB 1: PENDING (MENUNGGU TTD) -->
+        <div class="tab-pane fade show active" id="tab-pending">
+            <div class="card-container">
+                <h5 class="fw-bold mb-1 text-dark"><i class="bi bi-inbox-fill text-danger me-2"></i> Menunggu Tanda Tangan Anda</h5>
+                <p class="text-muted small mb-4">Klik "Tanda Tangani" untuk menyetujui, atau "Tolak" untuk mengembalikan/menghapus BAST.</p>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Kode BAST</th>
+                                <th>Tanggal</th>
+                                <th>Lokasi STO</th>
+                                <th>Nama Teknisi</th>
+                                <th>Jml Perangkat</th>
+                                <th class="text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (!pendingData || pendingData.length === 0) { %>
+                                <tr>
+                                    <td colspan="6" class="text-center py-5 text-muted">
+                                        <i class="bi bi-emoji-smile fs-2 d-block mb-2 text-success"></i>
+                                        Hore! Tidak ada BAST yang menunggu persetujuan.
+                                    </td>
+                                </tr>
+                            <% } %>
+                            <% (pendingData || []).forEach(row => { %>
+                            <tr>
+                                <td><span class="fw-bold text-danger font-monospace"><%= row.kode_unik %></span></td>
+                                <td><%= row.tanggal %></td>
+                                <td><%= row.loksto %></td>
+                                <td><%= row.teknisi_nama %></td>
+                                <td class="text-center">
+                                    <span class="badge bg-secondary-subtle text-secondary border"><%= row.jumlah_perangkat || '-' %> ONT</span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex gap-2 justify-content-center">
+                                        <a href="/wh/sign/<%= row.kode_unik %>" class="btn btn-sm btn-danger rounded-pill px-3 fw-medium shadow-sm">
+                                            <i class="bi bi-pen-fill me-1"></i> Tanda Tangani
+                                        </a>
+                                        <button type="button"
+                                            class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-medium"
+                                            onclick="konfirmasiTolak('<%= row.kode_unik %>')">
+                                            <i class="bi bi-x-circle me-1"></i> Tolak
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: SELESAI / APPROVED -->
+        <div class="tab-pane fade" id="tab-selesai">
+            <div class="card-container">
+                <h5 class="fw-bold mb-1 text-dark"><i class="bi bi-patch-check-fill text-success me-2"></i> BAST yang Sudah Disetujui</h5>
+                <p class="text-muted small mb-4">Daftar BAST yang telah ditandatangani. Klik "Buka PDF" untuk mencetak atau menyimpan dokumen.</p>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Kode BAST</th>
+                                <th>Tanggal</th>
+                                <th>Lokasi STO</th>
+                                <th>Nama Teknisi</th>
+                                <th>Disetujui Oleh</th>
+                                <th>Status</th>
+                                <th class="text-center">Dokumen</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (!completedData || completedData.length === 0) { %>
+                                <tr>
+                                    <td colspan="7" class="text-center py-5 text-muted">
+                                        <i class="bi bi-folder2-open fs-2 d-block mb-2"></i>
+                                        Belum ada dokumen yang disetujui.
+                                    </td>
+                                </tr>
+                            <% } %>
+                            <% (completedData || []).forEach(row => { %>
+                            <tr>
+                                <td><span class="fw-bold text-danger font-monospace"><%= row.kode_unik %></span></td>
+                                <td><%= row.tanggal %></td>
+                                <td><%= row.loksto %></td>
+                                <td><%= row.teknisi_nama %></td>
+                                <td><span class="badge bg-light text-dark border"><%= row.wh_nama || '-' %></span></td>
+                                <td><span class="badge-completed">Approved (WH)</span></td>
+                                <td class="text-center">
+                                    <a href="/bast/cetak/<%= row.kode_unik %>" target="_blank"
+                                        class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-medium">
+                                        <i class="bi bi-printer-fill me-1"></i> Buka PDF
+                                    </a>
+                                </td>
+                            </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- TAB 3: DITOLAK -->
+        <div class="tab-pane fade" id="tab-ditolak">
+            <div class="card-container">
+                <h5 class="fw-bold mb-1 text-dark"><i class="bi bi-x-octagon-fill text-danger me-2"></i> BAST yang Ditolak</h5>
+                <p class="text-muted small mb-4">Daftar BAST yang dikembalikan ke teknisi.</p>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Kode BAST</th>
+                                <th>Tanggal</th>
+                                <th>Nama Teknisi</th>
+                                <th>Jml Perangkat</th>
+                                <th>Alasan Tolak</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (!rejectedData || rejectedData.length === 0) { %>
+                                <tr>
+                                    <td colspan="5" class="text-center py-5 text-muted">Belum ada dokumen yang ditolak.</td>
+                                </tr>
+                            <% } %>
+                            <% (rejectedData || []).forEach(row => { %>
+                            <tr>
+                                <td><span class="fw-bold text-danger font-monospace"><%= row.kode_unik %></span></td>
+                                <td><%= row.tanggal %></td>
+                                <td><%= row.teknisi_nama %></td>
+                                <td class="text-center"><span class="badge bg-secondary-subtle text-secondary border"><%= row.jumlah_perangkat || '-' %> ONT</span></td>
+                                <td><span class="text-danger small fw-bold"><%= row.alasan_tolak || '-' %></span></td>
+                            </tr>
+                            <% }) %>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- end tab-content -->
+</div>
+
+<!-- Modal Konfirmasi Tolak -->
+<div class="modal fade" id="modalTolak" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i> Konfirmasi Tolak BAST</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-2">
+                <p class="text-muted mb-1">Anda akan menolak/menghapus dokumen BAST:</p>
+                <p class="fw-bold text-danger font-monospace fs-5" id="kodeUnikTolak">-</p>
+                <div class="mb-3">
+                    <label class="form-label fw-medium small">Alasan Penolakan <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="alasanTolak" rows="3" placeholder="Contoh: Data tidak sesuai, SN perangkat salah, dll." required></textarea>
+                </div>
+                <div class="alert alert-warning py-2 small mb-0">
+                    <i class="bi bi-info-circle me-1"></i> Tindakan ini akan menghapus dokumen dan tidak dapat dibatalkan.
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-danger rounded-pill px-4 fw-bold" onclick="eksekusiTolak()">
+                    <i class="bi bi-trash-fill me-1"></i> Ya, Tolak & Hapus
+                </button>
+            </div>
         </div>
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let kodeUnikTarget = '';
+
+    function konfirmasiTolak(kodeUnik) {
+        kodeUnikTarget = kodeUnik;
+        document.getElementById('kodeUnikTolak').innerText = kodeUnik;
+        document.getElementById('alasanTolak').value = '';
+        new bootstrap.Modal(document.getElementById('modalTolak')).show();
+    }
+
+    function eksekusiTolak() {
+        const alasan = document.getElementById('alasanTolak').value.trim();
+        if (!alasan) {
+            alert('Harap isi alasan penolakan terlebih dahulu.');
+            document.getElementById('alasanTolak').focus();
+            return;
+        }
+        // Kirim ke endpoint reject via form POST
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/wh/reject/' + kodeUnikTarget;
+        const inputAlasan = document.createElement('input');
+        inputAlasan.type = 'hidden';
+        inputAlasan.name = 'alasan';
+        inputAlasan.value = alasan;
+        form.appendChild(inputAlasan);
+        document.body.appendChild(form);
+        form.submit();
+    }
+</script>
 </body>
 </html>

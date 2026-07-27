@@ -76,8 +76,15 @@
                         <div class="form-floating"><input type="text" class="form-control" name="ttlkerja" placeholder="8 MEI 2026" required><label>Tanggal</label></div>
                     </div>
                     <div class="col-md-4">
-                        <div class="form-floating"><input type="text" class="form-control" name="loksto" placeholder="WH SO TUGU" required><label>Lokasi / STO</label></div>
-                    </div>
+    <div class="form-floating">
+        <select class="form-select" name="loksto" id="lokstoSelect" required>
+            <option value="" disabled selected>-- Pilih --</option>
+            <option value="SKJ">SKJ</option>
+            <option value="CLS">CLS</option>
+        </select>
+        <label for="lokstoSelect">Lokasi / STO</label>
+    </div>
+</div>
                 </div>
 
                 <!-- Data Pihak 1 -->

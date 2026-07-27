@@ -39,10 +39,13 @@
                     <input type="date" class="form-control" name="tanggal" required>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label class="form-label fw-medium">Lokasi / STO</label>
-                    <input type="text" class="form-control" name="loksto" placeholder="Contoh: WH SO TUGU" required>
-                </div>
-            </div>
+    <label class="form-label text-muted small fw-medium">Lokasi / STO</label>
+    <select class="form-select" name="loksto" required>
+        <option value="" disabled selected>-- Pilih Lokasi STO --</option>
+        <option value="SKJ">SKJ</option>
+        <option value="CLS">CLS</option>
+    </select>
+</div>
 
             <!-- 2. Identitas Teknisi -->
             <div class="section-title"><i class="bi bi-person-vcard-fill"></i> 2. Identitas Pihak Pertama (Teknisi)</div>

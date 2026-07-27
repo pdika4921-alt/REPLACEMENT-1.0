@@ -70,21 +70,26 @@
                         <td><%= row.teknisi_nama %></td>
                         <td><span class="badge bg-light text-dark border"><%= row.wh_nama || 'Belum Ditentukan' %></span></td>
                         <td>
-                            <% if (row.status === 'COMPLETED') { %>
-                                <span class="badge-completed"><i class="bi bi-check-circle-fill me-1"></i> Approved (Selesai)</span>
-                            <% } else { %>
-                                <span class="badge-pending"><i class="bi bi-clock-fill me-1"></i> Menunggu Approval WH</span>
-                            <% } %>
-                        </td>
-                        <td class="text-center">
-                            <% if (row.status === 'COMPLETED') { %>
-                                <a href="/bast/cetak/<%= row.kode_unik %>" target="_blank" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-medium shadow-sm">
-                                    <i class="bi bi-printer-fill me-1"></i> Lihat / Cetak PDF
-                                </a>
-                            <% } else { %>
-                                <span class="text-muted small italic">Dalam Proses WH</span>
-                            <% } %>
-                        </td>
+    <% if (row.status === 'COMPLETED') { %>
+        <span class="badge-completed"><i class="bi bi-check-circle-fill me-1"></i> Approved (Selesai)</span>
+    <% } else if (row.status === 'REJECTED') { %>
+        <span class="badge bg-danger text-white px-2 py-1 rounded-pill" style="font-size: 0.75rem;"><i class="bi bi-x-circle-fill me-1"></i> Ditolak WH</span>
+        <div class="small text-muted mt-1">Alasan: <%= row.alasan_tolak || '-' %></div>
+    <% } else { %>
+        <span class="badge-pending"><i class="bi bi-clock-fill me-1"></i> Menunggu Approval WH</span>
+    <% } %>
+</td>
+<td class="text-center">
+    <% if (row.status === 'COMPLETED') { %>
+        <a href="/bast/cetak/<%= row.kode_unik %>" target="_blank" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-medium shadow-sm">
+            <i class="bi bi-printer-fill me-1"></i> Lihat / Cetak PDF
+        </a>
+    <% } else if (row.status === 'REJECTED') { %>
+        <span class="text-danger small fw-bold"><i class="bi bi-dash-circle"></i> Batal</span>
+    <% } else { %>
+        <span class="text-muted small italic">Dalam Proses WH</span>
+    <% } %>
+</td>
                     </tr>
                     <% }) %>
                 </tbody>
