@@ -1,2 +1,5 @@
 [phases.build]
-cmds = ["npm install", "npm rebuild"]
+cmds = ["npm install", "npm rebuild sqlite3 --build-from-source"]
+
+[start]
+cmd = "node app.js"
