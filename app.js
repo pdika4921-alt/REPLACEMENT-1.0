@@ -7,7 +7,13 @@ const crypto = require('crypto');
 const session = require('express-session');
 
 const app = express();
-const db = new sqlite3.Database('./database.sqlite');
+
+// === PERSISTENT VOLUME (Railway) ===
+const dbDir = process.env.RAILWAY_VOLUME_MOUNT_PATH || './data';
+if (!fs.existsSync(dbDir)) {
+  fs.mkdirSync(dbDir, { recursive: true });
+}
+const db = new sqlite3.Database(path.join(dbDir, 'database.sqlite'));
 
 // === AUTO-CREATE DATABASE ===
 db.serialize(() => {
@@ -46,12 +52,18 @@ app.use(express.json({ limit: '200mb' }));
 
 app.use(session({ secret: 'telkom_secret', resave: false, saveUninitialized: false, cookie: { maxAge: 86400000 } }));
 
-const dirs = ['uploads/eviden', 'uploads/ttd', 'uploads/dokumen_bast'];
+const uploadBase = path.join(dbDir, 'uploads');
+const dirs = [
+  path.join(uploadBase, 'eviden'),
+  path.join(uploadBase, 'ttd'),
+  path.join(uploadBase, 'dokumen_bast')
+];
 dirs.forEach(dir => { if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true }); });
 
+// ✅ FIX 1 — multer upload eviden
 const upload = multer({ 
     storage: multer.diskStorage({
-        destination: (req, file, cb) => cb(null, 'uploads/eviden/'),
+        destination: (req, file, cb) => cb(null, path.join(uploadBase, 'eviden/')),
         filename: (req, file, cb) => cb(null, Date.now() + '-' + Math.round(Math.random() * 1E9) + path.extname(file.originalname))
     }) 
 });
@@ -262,7 +274,8 @@ app.post('/teknisi/submit', upload.array('eviden', 10), (req, res) => {
         const kodeUnik  = `BAST-${randomStr}`;
 
         // Simpan TTD teknisi
-        const ttdPath = `uploads/ttd/ttd_teknisi_${kodeUnik}.png`;
+        // ✅ FIX 2 — di route /teknisi/submit
+const ttdPath = path.join(uploadBase, 'ttd', `ttd_teknisi_${kodeUnik}.png`);
         if (data.ttdPemberiBase64) {
             fs.writeFileSync(
                 ttdPath,
@@ -402,7 +415,8 @@ app.post('/wh/submit', checkRole('wh'), (req, res) => {
     const { kode_unik, ttdPenerimaBase64 } = req.body;
     const wh_nama = req.session.nama_lengkap;
 
-    const ttdPath = `uploads/ttd/ttd_wh_${kode_unik}.png`;
+    // ✅ FIX 3 — di route /wh/submit
+const ttdPath = path.join(uploadBase, 'ttd', `ttd_wh_${kode_unik}.png`);
     if (ttdPenerimaBase64) {
         fs.writeFileSync(
             ttdPath,
@@ -443,7 +457,7 @@ app.get('/bast/cetak/:kode', isAuth, (req, res) => {
     });
 });
 
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(uploadBase));
 const xlsx = require('xlsx');
 
 // ================= ROUTE EXPORT EXCEL =================
@@ -503,7 +517,7 @@ app.get('/admin/export/excel', isAuth, (req, res) => {
 // ================= ROUTE REPORT MIGRASI NTE =================
 const multerReport = multer({ 
     storage: multer.diskStorage({
-        destination: (req, file, cb) => cb(null, 'uploads/'),
+        destination: (req, file, cb) => cb(null, path.join(uploadBase, 'eviden/')),
         filename:    (req, file, cb) => cb(null, 'report_' + Date.now() + path.extname(file.originalname))
     }),
     fileFilter: (req, file, cb) => {
