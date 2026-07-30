@@ -4,11 +4,10 @@
   "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app.js",
-    "build": "npm rebuild sqlite3 --build-from-source"
+    "start": "node app.js"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": "18.x"
   },
   "keywords": [],
   "author": "",
