@@ -8,233 +8,403 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <style>
-        body { font-family: 'Poppins', sans-serif; background-color: #f4f7f6; }
-        .navbar-custom { background: linear-gradient(135deg, #EE2E24 0%, #b31217 100%); }
-        .card-panel { background: #fff; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.02); }
-        .nav-pills .nav-link.active { background-color: #EE2E24; box-shadow: 0 4px 12px rgba(238,46,36,0.3); }
-        .nav-pills .nav-link { color: #475569; font-weight: 500; border-radius: 12px; transition: 0.2s; }
-        .table th { background-color: #f8fafc; font-size: 0.85rem; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; }
-        .badge-completed { background-color: #dcfce7; color: #166534; padding: 6px 14px; border-radius: 20px; font-weight: 500; font-size: 0.75rem; display:inline-block; }
-        .badge-pending   { background-color: #fef9c3; color: #854d0e; padding: 6px 14px; border-radius: 20px; font-weight: 500; font-size: 0.75rem; display:inline-block; }
-        .stat-card { border-radius: 20px; border: none; box-shadow: 0 8px 25px rgba(0,0,0,0.03); transition: all 0.3s ease; }
-        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 12px 30px rgba(0,0,0,0.08); }
-        .stat-blue   { background: linear-gradient(135deg, #f0f7ff 0%, #e1effe 100%); }
-        .stat-green  { background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); }
-        .stat-yellow { background: linear-gradient(135deg, #fefce8 0%, #fef9c3 100%); }
-        .technician-card { border: 1.5px solid #e2e8f0; border-radius: 14px; margin-bottom: 15px; overflow: hidden; transition: 0.2s; background: #fff; }
-        .technician-card:hover { border-color: #EE2E24; box-shadow: 0 4px 15px rgba(238,46,36,0.08); }
-        .technician-header { background: #fafafa; padding: 18px 25px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        .technician-header:hover { background: #fff5f5; }
+    :root {
+        --navy:   #0e1f3b;
+        --navy2:  #162d52;
+        --red:    #EE2E24;
+        --red2:   #c42019;
+        --gold:   #f59e0b;
+        --surface:#f0f4f8;
+        --card:   #ffffff;
+        --border: #dde3ec;
+        --text:   #1e293b;
+        --muted:  #64748b;
+    }
+
+    body { font-family: 'Poppins', sans-serif; background: var(--surface); color: var(--text); }
+
+    /* ---- NAVBAR ---- */
+    .navbar-custom {
+        background: linear-gradient(135deg, var(--navy) 0%, var(--navy2) 100%);
+        border-bottom: 3px solid var(--red);
+    }
+    .navbar-brand-logo {
+        background: var(--red);
+        border-radius: 8px;
+        padding: 4px 10px;
+        font-weight: 800;
+        font-size: 0.95rem;
+        letter-spacing: 0.5px;
+    }
+
+    /* ---- STAT CARDS ---- */
+    .stat-card {
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        background: var(--card);
+        box-shadow: 0 2px 12px rgba(14,31,59,0.07);
+        transition: transform .25s, box-shadow .25s;
+        overflow: hidden;
+        position: relative;
+    }
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+    }
+    .stat-card.blue::before  { background: #3b82f6; }
+    .stat-card.green::before { background: #22c55e; }
+    .stat-card.amber::before { background: var(--gold); }
+    .stat-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(14,31,59,0.12); }
+
+    .stat-icon {
+        width: 52px; height: 52px; border-radius: 14px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.4rem;
+    }
+    .stat-icon.blue  { background: #eff6ff; color: #3b82f6; }
+    .stat-icon.green { background: #f0fdf4; color: #22c55e; }
+    .stat-icon.amber { background: #fffbeb; color: var(--gold); }
+
+    /* ---- TAB PILLS ---- */
+    .tab-bar {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 6px;
+        display: inline-flex;
+        gap: 4px;
+        box-shadow: 0 2px 8px rgba(14,31,59,0.05);
+    }
+    .tab-bar .nav-link {
+        color: var(--muted);
+        font-weight: 500;
+        font-size: 0.85rem;
+        border-radius: 10px;
+        padding: 8px 18px;
+        transition: all .2s;
+        border: 1px solid transparent;
+    }
+    .tab-bar .nav-link:hover { color: var(--red); background: #fff5f5; }
+    .tab-bar .nav-link.active {
+        background: var(--navy);
+        color: #fff;
+        border-color: var(--navy);
+        box-shadow: 0 3px 10px rgba(14,31,59,0.25);
+    }
+    .tab-bar .nav-link.active.special {
+        background: linear-gradient(135deg, var(--navy) 0%, #1e4080 100%);
+    }
+
+    /* ---- CARD PANEL ---- */
+    .card-panel {
+        background: var(--card);
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        box-shadow: 0 2px 16px rgba(14,31,59,0.05);
+    }
+
+    /* ---- TABLE ---- */
+    .table th {
+        background: var(--navy);
+        color: rgba(255,255,255,0.85);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        font-weight: 600;
+        border: none;
+    }
+    .table td { border-color: #f1f5f9; vertical-align: middle; font-size: 0.875rem; }
+    .table tbody tr:hover { background: #fafbff; }
+
+    /* ---- BADGE STATUS ---- */
+    .badge-completed { background:#dcfce7; color:#166534; padding:5px 14px; border-radius:20px; font-weight:600; font-size:0.73rem; display:inline-block; }
+    .badge-pending   { background:#fef9c3; color:#854d0e; padding:5px 14px; border-radius:20px; font-weight:600; font-size:0.73rem; display:inline-block; }
+    .badge-rejected  { background:#fee2e2; color:#991b1b; padding:5px 14px; border-radius:20px; font-weight:600; font-size:0.73rem; display:inline-block; }
+
+    /* ---- TECHNICIAN ACCORDION ---- */
+    .technician-card {
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        margin-bottom: 10px;
+        overflow: hidden;
+        background: var(--card);
+        transition: box-shadow .2s;
+    }
+    .technician-card:hover { box-shadow: 0 4px 16px rgba(238,46,36,0.08); border-color: #fca5a5; }
+    .technician-header {
+        background: #f8fafc;
+        padding: 16px 22px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: background .2s;
+    }
+    .technician-header:hover { background: #fff8f8; }
+
+    /* ---- FORM CARDS (tab akun) ---- */
+    .form-card {
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: var(--card);
+        box-shadow: 0 2px 12px rgba(14,31,59,0.05);
+    }
+    .form-card .card-header-custom {
+        background: linear-gradient(135deg, var(--navy) 0%, var(--navy2) 100%);
+        border-radius: 16px 16px 0 0;
+        padding: 18px 24px;
+        color: #fff;
+    }
+    .form-control, .form-select {
+        border-radius: 10px;
+        border: 1.5px solid var(--border);
+        font-size: 0.875rem;
+        transition: border-color .2s, box-shadow .2s;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: var(--red);
+        box-shadow: 0 0 0 3px rgba(238,46,36,0.1);
+    }
+
+    /* ---- ROLE SELECTOR (toggle btn) ---- */
+    .role-toggle { display: flex; gap: 8px; }
+    .role-toggle input[type=radio] { display: none; }
+    .role-toggle label {
+        flex: 1; text-align: center; padding: 9px 0; border-radius: 10px;
+        border: 1.5px solid var(--border); cursor: pointer; font-size: 0.85rem;
+        font-weight: 600; color: var(--muted); transition: all .2s;
+    }
+    .role-toggle input[type=radio]:checked + label {
+        border-color: var(--red); background: #fff0f0; color: var(--red);
+        box-shadow: 0 2px 8px rgba(238,46,36,0.15);
+    }
+    .role-toggle label i { display: block; font-size: 1.3rem; margin-bottom: 3px; }
+
+    /* ---- AVATAR INITIAL ---- */
+    .avatar-initial {
+        width: 42px; height: 42px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 800; font-size: 1rem; flex-shrink: 0;
+    }
+    .avatar-navy { background: var(--navy); color: #fff; }
+    .avatar-red  { background: var(--red);  color: #fff; }
+
+    /* ---- BTN STYLES ---- */
+    .btn-navy {
+        background: var(--navy); color: #fff; border: none;
+        border-radius: 10px; font-weight: 600; font-size: 0.875rem;
+        padding: 10px 22px; transition: background .2s, transform .15s;
+    }
+    .btn-navy:hover { background: var(--navy2); color: #fff; transform: translateY(-1px); }
+    .btn-red {
+        background: var(--red); color: #fff; border: none;
+        border-radius: 10px; font-weight: 600; font-size: 0.875rem;
+        padding: 10px 22px; transition: background .2s, transform .15s;
+    }
+    .btn-red:hover { background: var(--red2); color: #fff; transform: translateY(-1px); }
+
+    /* ---- USER LIST ITEM ---- */
+    .user-item {
+        display: flex; align-items: center; gap: 14px;
+        padding: 12px 16px; border-radius: 12px;
+        border: 1px solid var(--border); background: #fafbff;
+        margin-bottom: 8px; transition: border-color .2s;
+    }
+    .user-item:hover { border-color: #c7d2fe; }
+    .user-item .user-meta { flex: 1; min-width: 0; }
+    .user-item .user-meta .username { font-weight: 700; font-size: 0.9rem; color: var(--text); }
+    .user-item .user-meta .nik { font-size: 0.75rem; color: var(--muted); font-family: monospace; }
+    .user-item .user-meta .sto-badge { font-size: 0.68rem; padding: 2px 6px; border-radius: 6px; background: #e2e8f0; color: #475569; font-weight: 600; margin-left: 6px;}
+
+    .badge-role-teknisi { background:#eff6ff; color:#1d4ed8; padding:3px 10px; border-radius:8px; font-size:0.72rem; font-weight:700; }
+    .badge-role-wh      { background:#fdf4ff; color:#7c3aed; padding:3px 10px; border-radius:8px; font-size:0.72rem; font-weight:700; }
+
+    /* ---- SECTION DIVIDER ---- */
+    .section-label {
+        font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+        letter-spacing: 1px; color: var(--muted); margin: 16px 0 8px;
+        display: flex; align-items: center; gap: 8px;
+    }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
     </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark navbar-custom py-3 shadow-sm mb-4">
+<nav class="navbar navbar-expand-lg navbar-dark navbar-custom py-3 mb-4">
     <div class="container-fluid px-4">
-        <a class="navbar-brand fw-bold" href="#"><i class="bi bi-speedometer2 me-2"></i> DASHBOARD SUKMAJAYA</a>
-        <div class="d-flex align-items-center">
-            <span class="text-white me-3 fw-medium">Halo, Admin (<%= username %>)</span>
-            <a href="/logout" class="btn btn-sm btn-light text-danger fw-bold rounded-pill px-3 shadow-sm">Logout</a>
+        <a class="navbar-brand d-flex align-items-center gap-2 text-decoration-none" href="#">
+            <span class="navbar-brand-logo">BAST</span>
+            <span class="fw-bold fs-6 text-white opacity-90">Telkom Akses</span>
+        </a>
+        <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center gap-2">
+                <div class="rounded-circle bg-white bg-opacity-10 d-flex align-items-center justify-content-center"
+                     style="width:36px;height:36px;">
+                    <i class="bi bi-person-fill text-white"></i>
+                </div>
+                <div class="lh-1">
+                    <div class="text-white fw-semibold" style="font-size:0.85rem;"><%= username %></div>
+                    <div class="text-white opacity-60" style="font-size:0.72rem;">Administrator</div>
+                </div>
+            </div>
+            <a href="/admin/report" class="btn btn-sm btn-warning fw-bold rounded-pill px-3 me-1">
+    <i class="bi bi-bar-chart-line-fill me-1"></i> Report Migrasi
+</a>
         </div>
     </div>
 </nav>
 
 <div class="container-fluid px-4 mb-5">
 
-    <!-- Statistik -->
-    <div class="row g-4 mb-4">
+    <!-- Blok Statistik -->
+    <div class="row g-3 mb-4">
         <div class="col-md-4">
-            <div class="stat-card stat-blue p-4">
+            <div class="stat-card blue p-4">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <span class="text-uppercase text-muted fw-bold d-block mb-1" style="font-size:0.75rem;letter-spacing:0.5px;">Total Dokumen BAST</span>
-                        <h2 class="fw-bold mb-0 text-primary"><%= bastData.length %></h2>
+                        <div class="text-uppercase fw-bold mb-1" style="font-size:0.7rem;color:var(--muted);letter-spacing:.6px;">Total Dokumen BAST</div>
+                        <div class="fw-800 mb-0" style="font-size:2rem;font-weight:800;color:#1e293b;line-height:1.1;"><%= bastData.length %></div>
+                        <div style="font-size:0.75rem;color:var(--muted);">dokumen terdaftar</div>
                     </div>
-                    <div class="bg-primary text-white rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width:55px;height:55px;">
-                        <i class="bi bi-file-earmark-text fs-4"></i>
-                    </div>
+                    <div class="stat-icon blue"><i class="bi bi-file-earmark-text-fill"></i></div>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="stat-card stat-green p-4">
+            <div class="stat-card green p-4">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <span class="text-uppercase text-muted fw-bold d-block mb-1" style="font-size:0.75rem;letter-spacing:0.5px;">Disetujui Warehouse</span>
-                        <h2 class="fw-bold mb-0 text-success"><%= bastData.filter(d => d.status === 'COMPLETED').length %></h2>
+                        <div class="text-uppercase fw-bold mb-1" style="font-size:0.7rem;color:var(--muted);letter-spacing:.6px;">Approved Warehouse</div>
+                        <div class="fw-800 mb-0" style="font-size:2rem;font-weight:800;color:#1e293b;line-height:1.1;"><%= bastData.filter(d => d.status === 'COMPLETED').length %></div>
+                        <div style="font-size:0.75rem;color:var(--muted);">sudah ditandatangani</div>
                     </div>
-                    <div class="bg-success text-white rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width:55px;height:55px;">
-                        <i class="bi bi-check-circle-fill fs-4"></i>
-                    </div>
+                    <div class="stat-icon green"><i class="bi bi-check-circle-fill"></i></div>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="stat-card stat-yellow p-4">
+            <div class="stat-card amber p-4">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
-                        <span class="text-uppercase text-muted fw-bold d-block mb-1" style="font-size:0.75rem;letter-spacing:0.5px;">Menunggu WH (Pending)</span>
-                        <h2 class="fw-bold mb-0 text-warning-emphasis"><%= bastData.filter(d => d.status === 'PENDING').length %></h2>
+                        <div class="text-uppercase fw-bold mb-1" style="font-size:0.7rem;color:var(--muted);letter-spacing:.6px;">Menunggu Persetujuan</div>
+                        <div class="fw-800 mb-0" style="font-size:2rem;font-weight:800;color:#1e293b;line-height:1.1;"><%= bastData.filter(d => d.status === 'PENDING').length %></div>
+                        <div style="font-size:0.75rem;color:var(--muted);">pending di warehouse</div>
                     </div>
-                    <div class="bg-warning text-dark rounded-circle shadow-sm d-flex align-items-center justify-content-center" style="width:55px;height:55px;">
-                        <i class="bi bi-clock-history fs-4"></i>
-                    </div>
+                    <div class="stat-icon amber"><i class="bi bi-clock-history"></i></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Tab Navigation -->
-    <ul class="nav nav-pills mb-4 gap-2 bg-white p-2 rounded-4 shadow-sm d-inline-flex border" id="adminTab" role="tablist">
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active px-4 py-2" id="rekap-tab" data-bs-toggle="pill" data-bs-target="#rekap-pane" type="button">
-                <i class="bi bi-people-fill me-2"></i> Rekap Per Teknisi (ONT)
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link px-4 py-2" id="bast-tab" data-bs-toggle="pill" data-bs-target="#bast-pane" type="button">
-                <i class="bi bi-file-earmark-pdf-fill me-2"></i> Download Dokumen
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link px-4 py-2" id="users-tab" data-bs-toggle="pill" data-bs-target="#users-pane" type="button">
-                <i class="bi bi-person-gear me-2"></i> Akun Teknisi
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link px-4 py-2" id="namateknisi-tab" data-bs-toggle="pill" data-bs-target="#namateknisi-pane" type="button">
-                <i class="bi bi-person-lines-fill me-2"></i> Nama Teknisi
-            </button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link px-4 py-2 text-primary fw-bold" id="rekon-tab" data-bs-toggle="pill" data-bs-target="#rekon-pane" type="button">
-                <i class="bi bi-magic me-2"></i> VLOOKUP Rekon Data
-            </button>
-        </li>
-    </ul>
+    <!-- Navigasi Tab -->
+    <div class="mb-4">
+        <ul class="nav tab-bar" id="adminTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="rekap-tab" data-bs-toggle="pill" data-bs-target="#rekap-pane" type="button">
+                    <i class="bi bi-people-fill me-1"></i> Rekap ONT
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="bast-tab" data-bs-toggle="pill" data-bs-target="#bast-pane" type="button">
+                    <i class="bi bi-file-earmark-pdf-fill me-1"></i> Dokumen
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="users-tab" data-bs-toggle="pill" data-bs-target="#users-pane" type="button">
+                    <i class="bi bi-shield-lock-fill me-1"></i> Kelola Akun
+                </button>
+            </li>
+            <!-- Tab Master Teknisi telah dihilangkan dan digabung dengan Kelola Akun -->
+            <li class="nav-item" role="presentation">
+                <button class="nav-link special" id="rekon-tab" data-bs-toggle="pill" data-bs-target="#rekon-pane" type="button">
+                    <i class="bi bi-magic me-1"></i> VLOOKUP Rekon
+                </button>
+            </li>
+        </ul>
+    </div>
 
-    <!-- ===== TAB CONTENT ===== -->
+    <!-- TAB CONTENT WRAPPER -->
     <div class="tab-content" id="adminTabContent">
-
-        <!-- TAB 1: REKAP PER TEKNISI -->
+        
+        <!-- TAB 1: REKAP ONT -->
         <div class="tab-pane fade show active" id="rekap-pane" role="tabpanel">
-            <div class="card-panel p-4">
-                <!-- Header dengan tombol Download Excel HANYA di sini -->
-                <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
-                    <div>
-                        <h5 class="fw-bold mb-1 text-danger"><i class="bi bi-collection-fill me-2"></i> Rekapitulasi Progres ONT Berdasarkan Nama Teknisi</h5>
-                        <p class="text-muted small mb-0">Klik pada nama teknisi di bawah untuk melihat rincian SN perangkat yang masuk.</p>
-                    </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="badge bg-danger-subtle text-danger px-3 py-2 rounded-pill fw-semibold">
-                            Total Teknisi: <%= Object.keys(groupedRekap).length %> Orang
-                        </span>
-                        <!-- TOMBOL DOWNLOAD REKAP ONT — HANYA MUNCUL DI SINI -->
-                        <a href="/admin/export/rekap-ont" class="btn btn-success fw-bold rounded-pill px-4 shadow-sm">
-                            <i class="bi bi-file-earmark-excel-fill me-1"></i> Download Excel Rekap ONT
-                        </a>
-                    </div>
+            <div class="card-panel p-4 mb-4">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+                    <h5 class="fw-bold mb-0 text-navy"><i class="bi bi-people-fill me-2"></i> Rekapitulasi ONT per Teknisi</h5>
+                    <a href="/admin/export/excel" class="btn btn-success fw-bold px-4 py-2 rounded-pill shadow-sm">
+                        <i class="bi bi-file-earmark-excel-fill me-2"></i> Download Excel (Semua Data)
+                    </a>
                 </div>
-
+                
                 <% if (Object.keys(groupedRekap).length === 0) { %>
-                    <div class="text-center py-5 text-muted">
-                        <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-                        Belum ada rekapitulasi perangkat ONT yang masuk.
-                    </div>
-                <% } %>
-
-                <%
-                   let indexTech = 0;
-                   for (let teknisi in groupedRekap) {
-                       indexTech++;
-                       let items = groupedRekap[teknisi];
-                %>
-                <div class="technician-card">
-                    <div class="technician-header" data-bs-toggle="collapse" data-bs-target="#tech-<%= indexTech %>" aria-expanded="false">
-                        <div class="d-flex align-items-center">
-                            <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center fw-bold me-3" style="width:45px;height:45px;">
-                                <%= teknisi.charAt(0) %>
-                            </div>
-                            <div>
-                                <h6 class="fw-bold mb-0 text-dark"><%= teknisi %></h6>
-                                <small class="text-muted">Total Perangkat Masuk: <b class="text-danger"><%= items.length %> Unit ONT</b></small>
-                            </div>
-                        </div>
-                        <span class="badge bg-light text-secondary border px-3 py-2 rounded-pill fw-medium">
-                            Klik untuk Detail SN <i class="bi bi-chevron-down ms-1"></i>
-                        </span>
-                    </div>
-                    <div id="tech-<%= indexTech %>" class="collapse">
-                        <div class="p-3 bg-white border-top">
-                            <div class="table-responsive">
-                                <table class="table table-sm table-hover align-middle mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th>No</th>
-                                            <th>Kode BAST</th>
-                                            <th>Tanggal</th>
-                                            <th>STO</th>
-                                            <th>Penerima (WH)</th>
-                                            <th>SN Lama</th>
-                                            <th>SN Baru (Masuk)</th>
-                                            <th>No Internet</th>
-                                            <th>Kondisi</th>
-                                            <th>Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <% items.forEach((r, idx) => { %>
-                                        <tr>
-                                            <td class="text-center fw-medium"><%= idx + 1 %></td>
-                                            <td><span class="fw-bold font-monospace text-danger"><%= r.kode_unik %></span></td>
-                                            <td><%= r.tanggal %></td>
-                                            <td><%= r.loksto %></td>
-                                            <td><span class="badge bg-light text-dark border"><%= r.penerima %></span></td>
-                                            <td><span class="font-monospace small text-muted"><%= r.sn_lama %></span></td>
-                                            <td><span class="font-monospace small fw-bold text-success"><%= r.sn_baru %></span></td>
-                                            <td><%= r.no_inet %></td>
-                                            <td>
-                                                <% if(r.kondisi === 'Baik') { %>
-                                                    <span class="badge bg-success-subtle text-success">Baik</span>
-                                                <% } else { %>
-                                                    <span class="badge bg-danger-subtle text-danger">Rusak</span>
-                                                <% } %>
-                                            </td>
-                                            <td>
-                                                <% if(r.status === 'COMPLETED') { %>
-                                                    <span class="badge-completed">Selesai</span>
-                                                <% } else if(r.status === 'REJECTED') { %>
-                                                    <span style="background:#fee2e2;color:#991b1b;padding:6px 14px;border-radius:20px;font-weight:500;font-size:0.75rem;">Ditolak</span>
-                                                <% } else { %>
-                                                    <span class="badge-pending">Pending</span>
-                                                <% } %>
-                                            </td>
-                                        </tr>
-                                        <% }) %>
-                                    </tbody>
-                                </table>
+                    <div class="alert alert-secondary text-center rounded-4 border-0">Belum ada data rekap ONT.</div>
+                <% } else { %>
+                    <div class="row g-3">
+                    <% Object.keys(groupedRekap).forEach((teknisi, idx) => { %>
+                        <div class="col-12">
+                            <div class="technician-card">
+                                <div class="technician-header" data-bs-toggle="collapse" data-bs-target="#collapseRekap<%= idx %>">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <div class="avatar-initial avatar-navy"><%= teknisi.charAt(0).toUpperCase() %></div>
+                                        <div>
+                                            <div class="fw-bold text-dark" style="font-size:1rem;"><%= teknisi %></div>
+                                            <div class="text-muted small">Total Perangkat: <span class="fw-bold text-danger"><%= groupedRekap[teknisi].length %> ONT</span></div>
+                                        </div>
+                                    </div>
+                                    <i class="bi bi-chevron-down text-muted fs-5"></i>
+                                </div>
+                                <div id="collapseRekap<%= idx %>" class="collapse <%= idx === 0 ? 'show' : '' %>">
+                                    <div class="p-3 bg-white">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-hover align-middle mb-0" style="font-size:0.85rem;">
+                                                <thead class="table-light">
+                                                    <tr>
+                                                        <th>Kode BAST</th>
+                                                        <th>Tanggal</th>
+                                                        <th>SN Lama</th>
+                                                        <th>SN Baru</th>
+                                                        <th>Status</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <% groupedRekap[teknisi].forEach(item => { %>
+                                                    <tr>
+                                                        <td class="font-monospace text-danger fw-semibold"><%= item.kode_unik %></td>
+                                                        <td><%= item.tanggal %></td>
+                                                        <td class="font-monospace"><%= item.sn_lama || '-' %></td>
+                                                        <td class="font-monospace text-success fw-bold"><%= item.sn_baru || '-' %></td>
+                                                        <td>
+                                                            <% if(item.status === 'COMPLETED') { %> <span class="badge-completed">Approved</span>
+                                                            <% } else if(item.status === 'REJECTED') { %> <span class="badge-rejected">Ditolak</span>
+                                                            <% } else { %> <span class="badge-pending">Pending WH</span> <% } %>
+                                                        </td>
+                                                    </tr>
+                                                    <% }) %>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                    <% }) %>
                     </div>
-                </div>
                 <% } %>
             </div>
         </div>
-        <!-- BATAS AKHIR TAB 1 -->
 
-        <!-- TAB 2: DOWNLOAD DOKUMEN -->
+        <!-- TAB 2: DOKUMEN BAST -->
         <div class="tab-pane fade" id="bast-pane" role="tabpanel">
-            <div class="card-panel p-4">
+            <div class="card-panel p-4 mb-4">
                 <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-3">
                     <div>
                         <h5 class="fw-bold mb-1 text-danger">
-                            <i class="bi bi-file-earmark-arrow-down-fill me-2"></i> Download Dokumen BAST Approved Warehouse
+                            <i class="bi bi-file-earmark-arrow-down-fill me-2"></i> Download Dokumen BAST
                         </h5>
-                        <p class="text-muted small mb-0">Unduh dokumen PDF yang telah disahkan WH, atau ekspor seluruh data ke Excel.</p>
+                        <p class="text-muted small mb-0">Unduh dokumen PDF yang telah disahkan WH.</p>
                     </div>
-                    <button type="button" onclick="downloadAllExcel()" class="btn btn-success fw-bold px-4 py-2 rounded-pill shadow-sm flex-shrink-0">
-                        <i class="bi bi-file-earmark-excel-fill me-2"></i> Download Excel Semua Data
-                    </button>
                 </div>
 
                 <div class="table-responsive">
@@ -262,7 +432,7 @@
                                     <% if(d.status === 'COMPLETED') { %>
                                         <span class="badge-completed">Approved (WH)</span>
                                     <% } else if(d.status === 'REJECTED') { %>
-                                        <span style="background:#fee2e2;color:#991b1b;padding:6px 14px;border-radius:20px;font-weight:500;font-size:0.75rem;display:inline-block;">Ditolak WH</span>
+                                        <span class="badge-rejected">Ditolak WH</span>
                                     <% } else { %>
                                         <span class="badge-pending">Pending WH</span>
                                     <% } %>
@@ -284,126 +454,159 @@
                 </div>
             </div>
         </div>
-        <!-- BATAS AKHIR TAB 2 -->
 
-        <!-- TAB 3: AKUN TEKNISI -->
+        <!-- TAB 3: KELOLA AKUN TERINTEGRASI -->
         <div class="tab-pane fade" id="users-pane" role="tabpanel">
-            <div class="row">
-                <div class="col-md-5 mb-4">
-                    <div class="card-panel p-4">
-                        <h5 class="fw-bold mb-3 text-danger"><i class="bi bi-person-plus-fill me-2"></i> Tambah Akun Teknisi Baru</h5>
-                        <form action="/admin/user/add" method="POST">
-                            <div class="mb-3">
-                                <label class="form-label fw-medium small">Username Login</label>
-                                <input type="text" class="form-control" name="username" placeholder="Contoh: andiarya" required>
+            <div class="row g-4 mb-4">
+                <!-- FORM BUAT AKUN -->
+                <div class="col-lg-5">
+                    <div class="form-card h-100">
+                        <div class="card-header-custom">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-person-plus-fill fs-5"></i>
+                                <div>
+                                    <div class="fw-700" style="font-weight:700;">Buat Akun Baru</div>
+                                    <div class="opacity-70" style="font-size:0.75rem;">Teknisi otomatis terdaftar ke form input</div>
+                                </div>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-medium small">Password</label>
-                                <input type="password" class="form-control" name="password" placeholder="Password akun" required>
+                        </div>
+                        <div class="p-4">
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold small mb-2">Pilih Role <span class="text-danger">*</span></label>
+                                <div class="role-toggle">
+                                    <input type="radio" name="roleToggle" id="roleTeknisi" value="teknisi" checked onchange="toggleRoleFields()">
+                                    <label for="roleTeknisi">
+                                        <i class="bi bi-tools"></i>
+                                        Teknisi
+                                    </label>
+                                    <input type="radio" name="roleToggle" id="roleWH" value="wh" onchange="toggleRoleFields()">
+                                    <label for="roleWH">
+                                        <i class="bi bi-box-seam"></i>
+                                        Warehouse
+                                    </label>
+                                </div>
                             </div>
-                            <button type="submit" class="btn btn-danger w-100 fw-bold rounded-pill py-2 shadow-sm">Buat Akun Teknisi</button>
-                        </form>
+
+                            <form action="/admin/user/add" method="POST" id="formAkun">
+                                <input type="hidden" name="role" id="hiddenRole" value="teknisi">
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold small">NIK <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="nik" placeholder="Contoh: 26050119" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold small">Nama Lengkap <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="nama_lengkap" id="fieldNama" placeholder="Contoh: ANDI ARYA WIJAYA" required>
+                                    <div class="form-text text-success fw-semibold" id="namaHint">
+                                        Nama ini akan otomatis masuk ke dropdown Teknisi form BAST.
+                                    </div>
+                                </div>
+
+                                <!-- FIELD LOKASI STO BARU -->
+                               <div class="mb-3">
+    <label class="form-label fw-semibold small">Lokasi STO <span class="text-danger">*</span></label>
+    <input type="text" class="form-control text-uppercase" name="sto" 
+           placeholder="Contoh: SKJ / CMG / DPK / BJD" 
+           required autocomplete="off"
+           style="font-family: monospace; font-weight: 600; letter-spacing: 1px;">
+    <div class="form-text text-muted">
+        <i class="bi bi-info-circle me-1"></i>
+        Ketik kode STO: <b>SKJ</b> (Sukmajaya), <b>CMG</b> (Cimanggis), <b>DPK</b> (Depok), 
+        <b>CBN</b> (Cibinong), <b>CSL</b> (Cileungsi), <b>BGR</b> (Bogor), 
+        <b>BJD</b> (Bojong Depok), <b>BKS</b> (Bekasi), <b>ALL</b> (Semua STO)
+    </div>
+</div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold small">
+                                        Username Login
+                                    </label>
+                                    <input type="text" class="form-control bg-light" name="username" id="fieldUsername"
+                                           placeholder="Otomatis dari NIK" readonly
+                                           style="font-family:monospace;color:var(--muted);">
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="form-label fw-semibold small">Password <span class="text-danger">*</span></label>
+                                    <input type="password" class="form-control" name="password" placeholder="Password akun" required>
+                                </div>
+
+                                <button type="submit" class="btn-navy w-100 py-2">
+                                    <i class="bi bi-person-check-fill me-2"></i> Buat Akun & Tambahkan
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-7">
-                    <div class="card-panel p-4">
-                        <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-people me-2"></i> Daftar Akun Teknisi Aktif</h5>
-                        <div class="table-responsive">
-                            <table class="table table-sm align-middle">
-                                <thead>
-                                    <tr>
-                                        <th>No</th>
-                                        <th>Username</th>
-                                        <th>Role</th>
-                                        <th class="text-center">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <% teknisiList.forEach((u, i) => { %>
-                                    <tr>
-                                        <td><%= i + 1 %></td>
-                                        <td class="fw-bold"><%= u.username %></td>
-                                        <td><span class="badge bg-secondary-subtle text-secondary px-2 py-1">Teknisi</span></td>
-                                        <td class="text-center">
-                                            <a href="/admin/user/delete/<%= u.id %>"
-                                                class="btn btn-sm btn-outline-danger rounded-pill px-3"
-                                                onclick="return confirm('Yakin ingin menghapus akun ini?')">Hapus</a>
-                                        </td>
-                                    </tr>
-                                    <% }) %>
-                                </tbody>
-                            </table>
+
+                <!-- DAFTAR AKUN -->
+                <div class="col-lg-7">
+                    <div class="form-card h-100">
+                        <div class="card-header-custom">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-people-fill fs-5"></i>
+                                    <div>
+                                        <div class="fw-700" style="font-weight:700;">Daftar Akun Aktif</div>
+                                        <div class="opacity-70" style="font-size:0.75rem;">Master Data Teknisi &amp; Warehouse</div>
+                                    </div>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <span class="badge bg-light text-dark border" style="font-size:0.72rem;">
+                                        <i class="bi bi-tools me-1"></i> <%= teknisiList.length %>
+                                    </span>
+                                    <span class="badge bg-light text-dark border" style="font-size:0.72rem;">
+                                        <i class="bi bi-box-seam me-1"></i> <%= (whList || []).length %>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-4" style="overflow-y:auto;max-height:680px;">
+                            <!-- TEKNISI LIST -->
+                            <div class="section-label"><i class="bi bi-tools me-1"></i> Akun Teknisi (Tampil di Dropdown)</div>
+                            <% if (teknisiList.length === 0) { %>
+                                <div class="text-center text-muted py-3 small">Belum ada akun teknisi</div>
+                            <% } %>
+                            <% teknisiList.forEach(u => { %>
+                            <div class="user-item">
+                                <div class="avatar-initial avatar-navy">
+                                    <%= (u.nama_lengkap || u.username).charAt(0).toUpperCase() %>
+                                </div>
+                                <div class="user-meta">
+                                    <div class="username"><%= u.nama_lengkap || u.username %> <span class="sto-badge"><%= u.sto || 'ALL' %></span></div>
+                                    <div class="nik">NIK: <%= u.nik || u.username %></div>
+                                </div>
+                                <span class="badge-role-teknisi">Teknisi</span>
+                                <a href="/admin/user/delete/<%= u.id %>" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('Hapus akun <%= u.username %>?')">Hapus</a>
+                            </div>
+                            <% }) %>
+
+                            <!-- WH LIST -->
+                            <div class="section-label mt-4"><i class="bi bi-box-seam me-1"></i> Akun Warehouse</div>
+                            <% if ((whList || []).length === 0) { %>
+                                <div class="text-center text-muted py-3 small">Belum ada akun warehouse</div>
+                            <% } %>
+                            <% (whList || []).forEach(u => { %>
+                            <div class="user-item">
+                                <div class="avatar-initial avatar-red">
+                                    <%= (u.nama_lengkap || u.username).charAt(0).toUpperCase() %>
+                                </div>
+                                <div class="user-meta">
+                                    <div class="username"><%= u.nama_lengkap || u.username %> <span class="sto-badge"><%= u.sto || 'ALL' %></span></div>
+                                    <div class="nik">NIK: <%= u.nik || u.username %></div>
+                                </div>
+                                <span class="badge-role-wh">Warehouse</span>
+                                <a href="/admin/user/delete/<%= u.id %>" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('Hapus akun WH <%= u.username %>?')">Hapus</a>
+                            </div>
+                            <% }) %>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <!-- BATAS AKHIR TAB 3 -->
 
-        <!-- TAB 4: NAMA TEKNISI DROPDOWN -->
-        <div class="tab-pane fade" id="namateknisi-pane" role="tabpanel">
-            <div class="row">
-                <div class="col-md-5 mb-4">
-                    <div class="card-panel p-4">
-                        <h5 class="fw-bold mb-3 text-danger">
-                            <i class="bi bi-person-plus-fill me-2"></i> Tambah Nama Teknisi
-                        </h5>
-                        <form action="/admin/teknisi/add" method="POST">
-                            <div class="mb-3">
-                                <label class="form-label fw-medium small">NIK Teknisi</label>
-                                <input type="text" class="form-control" name="nik" placeholder="Contoh: 26050119" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-medium small">Nama Lengkap</label>
-                                <input type="text" class="form-control" name="nama" placeholder="Contoh: ANDI ARYA WIJAYA" required>
-                            </div>
-                            <button type="submit" class="btn btn-danger w-100 fw-bold rounded-pill py-2">
-                                Tambah ke Dropdown
-                            </button>
-                        </form>
-                    </div>
-                </div>
-                <div class="col-md-7">
-                    <div class="card-panel p-4">
-                        <h5 class="fw-bold mb-3"><i class="bi bi-list-ul me-2"></i> Daftar Nama di Dropdown</h5>
-                        <div class="table-responsive">
-                            <table class="table table-sm align-middle">
-                                <thead>
-                                    <tr>
-                                        <th>No</th>
-                                        <th>NIK</th>
-                                        <th>Nama</th>
-                                        <th class="text-center">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <% namaTeknisiList.forEach((t, i) => { %>
-                                    <tr>
-                                        <td><%= i + 1 %></td>
-                                        <td class="font-monospace"><%= t.nik %></td>
-                                        <td class="fw-bold"><%= t.nama %></td>
-                                        <td class="text-center">
-                                            <a href="/admin/teknisi/delete/<%= t.id %>"
-                                                class="btn btn-sm btn-outline-danger rounded-pill px-3"
-                                                onclick="return confirm('Hapus nama ini?')">Hapus</a>
-                                        </td>
-                                    </tr>
-                                    <% }) %>
-                                    <% if(namaTeknisiList.length === 0) { %>
-                                    <tr>
-                                        <td colspan="4" class="text-center text-muted py-3">Belum ada nama teknisi</td>
-                                    </tr>
-                                    <% } %>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <!-- BATAS AKHIR TAB 4 -->
-
-        <!-- TAB 5: REKONSILIASI VLOOKUP -->
+        <!-- TAB 5: VLOOKUP REKON -->
         <div class="tab-pane fade" id="rekon-pane" role="tabpanel">
             <div class="card-panel p-4 mb-4">
                 <h5 class="fw-bold mb-3 text-primary"><i class="bi bi-file-earmark-spreadsheet-fill me-2"></i> Rekonsiliasi Data Aktual vs Database BAST</h5>
@@ -415,18 +618,16 @@
                     <button type="button" onclick="prosesRekon()" class="btn btn-primary fw-bold px-4 py-2 rounded-pill shadow-sm">
                         <i class="bi bi-gear-fill me-2"></i> Proses Komparasi (VLOOKUP)
                     </button>
-                    <button type="button" onclick="document.getElementById('modalContoh').style.display='flex'"
-                        class="btn btn-outline-secondary fw-bold px-4 py-2 rounded-pill shadow-sm">
-                        <i class="bi bi-eye-fill me-2"></i> Lihat Contoh / Template
+                    <button type="button" onclick="document.getElementById('modalContoh').style.display='flex'" class="btn btn-outline-secondary fw-bold px-4 py-2 rounded-pill shadow-sm">
+                        <i class="bi bi-eye-fill me-2"></i> Lihat Contoh Template
                     </button>
                 </div>
             </div>
 
-            <!-- Modal Contoh Template -->
+            <!-- Modal Contoh Template (di tab VLOOKUP) -->
             <div id="modalContoh" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
                 <div style="background:#fff;border-radius:16px;padding:30px;max-width:90%;width:900px;max-height:85vh;overflow-y:auto;position:relative;">
-                    <button onclick="document.getElementById('modalContoh').style.display='none'"
-                        style="position:absolute;top:15px;right:15px;background:#EE2E24;color:white;border:none;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;">&times;</button>
+                    <button onclick="document.getElementById('modalContoh').style.display='none'" style="position:absolute;top:15px;right:15px;background:#EE2E24;color:white;border:none;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;">&times;</button>
                     <h5 class="fw-bold text-primary mb-1"><i class="bi bi-file-earmark-spreadsheet me-2"></i> Contoh Format Template Excel</h5>
                     <p class="text-muted small mb-3">Pastikan header kolom Excel kamu <b>sama persis</b> seperti di bawah ini.</p>
                     <div class="mb-3 p-3 bg-danger-subtle border border-danger rounded-3">
@@ -454,24 +655,8 @@
                                     <td class="text-muted fst-italic">kosong</td><td class="text-muted fst-italic">kosong</td>
                                     <td>2026-07-20</td><td>FREELANCE</td>
                                 </tr>
-                                <tr>
-                                    <td>BEKASI</td><td>SUKMAJAYA</td><td>CSL</td><td>122120200572</td><td>15897286</td>
-                                    <td class="fw-bold text-danger">48575443A41F949C</td><td>ONT : HG8245H</td><td>kendala</td>
-                                    <td class="text-muted fst-italic">kosong</td><td class="text-muted fst-italic">kosong</td>
-                                    <td>2025-11-07</td><td></td>
-                                </tr>
                             </tbody>
                         </table>
-                    </div>
-                    <div class="mt-3 p-3 bg-warning-subtle border border-warning rounded-3">
-                        <h6 class="fw-bold text-warning-emphasis mb-2"><i class="bi bi-lightbulb-fill me-1"></i> Cara Pakai:</h6>
-                        <ol class="mb-0 small text-dark">
-                            <li>Buka file Excel kamu, pastikan ada kolom <b>SN_PERANGKAT_OLD</b>, <b>STATUS_WH</b>, dan <b>STATUS_REAL</b></li>
-                            <li>Blok semua data termasuk baris header (<b>Ctrl+A</b>)</li>
-                            <li>Copy (<b>Ctrl+C</b>)</li>
-                            <li>Kembali ke halaman ini, klik pada kotak teks lalu Paste (<b>Ctrl+V</b>)</li>
-                            <li>Klik tombol <b>"Proses Komparasi"</b></li>
-                        </ol>
                     </div>
                     <div class="mt-3 text-end">
                         <button onclick="document.getElementById('modalContoh').style.display='none'" class="btn btn-danger rounded-pill px-4 fw-bold">Tutup</button>
@@ -480,7 +665,7 @@
             </div>
 
             <!-- Hasil Rekon -->
-            <div id="resultArea" class="card-panel p-4" style="display:none;">
+            <div id="resultArea" class="card-panel p-4 mb-4" style="display:none;">
                 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
                     <h5 class="fw-bold text-success mb-0"><i class="bi bi-check2-all me-2"></i> Hasil Komparasi Berhasil!</h5>
                     <div class="d-flex gap-2">
@@ -557,9 +742,8 @@
                 </div>
             </div>
         </div>
-        <!-- BATAS AKHIR TAB 5 -->
 
-    </div><!-- end tab-content -->
+    </div> <!-- END TAB CONTENT WRAPPER -->
 </div>
 
 <!-- Data SN dari server untuk VLOOKUP -->
@@ -567,17 +751,36 @@
     <%- JSON.stringify(snMaster) %>
 </script>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    // Sinkronisasi NIK → username (readonly)
+    document.querySelector('input[name="nik"]').addEventListener('input', function() {
+        document.getElementById('fieldUsername').value = this.value;
+    });
+
+    // Toggle role hidden field
+    function toggleRoleFields() {
+        const selectedRole = document.querySelector('input[name="roleToggle"]:checked').value;
+        document.getElementById('hiddenRole').value = selectedRole;
+        const hint = document.getElementById('namaHint');
+        if (selectedRole === 'wh') {
+            hint.textContent = 'Nama ini otomatis tercetak di dokumen BAST sebagai pihak penerima WH.';
+            hint.className = 'form-text text-danger fw-semibold';
+        } else {
+            hint.textContent = 'Nama ini akan otomatis masuk ke dropdown Teknisi form BAST.';
+            hint.className = 'form-text text-success fw-semibold';
+        }
+    }
+
+    // Fungsi VLOOKUP JS
     function prosesRekon() {
         try {
             const rawText = document.getElementById('excelPasteArea').value;
-            if (!rawText || rawText.trim() === "") {
-                return alert("Kotak teks masih kosong! Silakan paste data Excel terlebih dahulu.");
-            }
+            if (!rawText || rawText.trim() === "") return alert("Kotak teks masih kosong! Silakan paste data Excel terlebih dahulu.");
+            
             const rows = rawText.split('\n').map(r => r.trim()).filter(r => r.length > 0);
-            if (rows.length < 2) {
-                return alert("Data yang di-paste kurang dari 2 baris.");
-            }
+            if (rows.length < 2) return alert("Data yang di-paste kurang dari 2 baris.");
+            
             document.getElementById('resultArea').style.display = 'block';
             const headers = rows[0].split('\t').map(h => h.trim());
             const lowerHeaders = headers.map(h => h.toLowerCase().replace(/\s+/g, '_'));
@@ -585,27 +788,34 @@
             const idxStatusWh  = lowerHeaders.findIndex(h => h.includes('status_wh'));
             const idxStatusReal= lowerHeaders.findIndex(h => h.includes('status_real'));
             const idxStatusAsal= lowerHeaders.findIndex(h => h === 'status');
+            
             if (idxSnOld === -1 || idxStatusWh === -1 || idxStatusReal === -1) {
                 document.getElementById('resultArea').style.display = 'none';
                 return alert("GAGAL: Kolom wajib tidak ditemukan!\n\nHeader terdeteksi:\n" + headers.join(", "));
             }
+            
             let snMasterDb = {};
             try { snMasterDb = JSON.parse(document.getElementById('snDataServer').textContent); } catch(e) {}
+            
             let finalExcelData = [headers];
             let htmlThead = '<tr>';
             headers.forEach(h => htmlThead += `<th class="text-uppercase">${h}</th>`);
             htmlThead += '</tr>';
             document.getElementById('rekonThead').innerHTML = htmlThead;
+            
             let htmlTbody = '', totalData = 0, doneReturn = 0, pending = 0, nok = 0, pivotData = {};
+            
             for (let i = 1; i < rows.length; i++) {
                 let cols = rows[i].split('\t').map(c => c.trim());
                 if (cols.length < 2) continue;
-                while (cols.length < headers.length) { cols.push(""); }
+                while (cols.length < headers.length) cols.push("");
                 totalData++;
                 let sn = cols[idxSnOld];
                 let statusDb = snMasterDb[sn];
                 let namaStatusAsal = (idxStatusAsal !== -1 && cols[idxStatusAsal]) ? cols[idxStatusAsal].trim().toLowerCase() : 'lainnya';
+                
                 if (!pivotData[namaStatusAsal]) pivotData[namaStatusAsal] = { done:0, pending:0, nok:0, total:0 };
+                
                 if (statusDb === 'COMPLETED') {
                     cols[idxStatusWh] = sn; cols[idxStatusReal] = 'DONE RETURN'; doneReturn++; pivotData[namaStatusAsal].done++;
                 } else if (statusDb === 'PENDING') {
@@ -615,6 +825,7 @@
                 }
                 pivotData[namaStatusAsal].total++;
                 finalExcelData.push(cols);
+                
                 htmlTbody += '<tr>';
                 cols.forEach((c, index) => {
                     if (index === idxStatusReal) {
@@ -632,10 +843,12 @@
             document.getElementById('totDone').innerText = doneReturn;
             document.getElementById('totPending').innerText = pending;
             document.getElementById('totNok').innerText = nok;
+            
             let persentase = totalData > 0 ? Math.round((doneReturn / totalData) * 100) : 0;
             document.getElementById('progressText').innerText = persentase + '%';
             document.getElementById('progressBar').style.width = persentase + '%';
             document.getElementById('progressBar').innerText = persentase + '%';
+            
             let htmlPivotTbody = '';
             Object.keys(pivotData).sort().forEach(stat => {
                 let p = pivotData[stat];
@@ -645,6 +858,7 @@
             });
             document.getElementById('pivotTbody').innerHTML = htmlPivotTbody;
             document.getElementById('pivotTfoot').innerHTML = `<tr><td class="text-start">Grand Total</td><td>${doneReturn}</td><td>${pending}</td><td>${nok}</td><td>${totalData}</td><td>${persentase}%</td></tr>`;
+            
             window.globalExcelData = finalExcelData;
             document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth' });
         } catch (err) {
@@ -658,9 +872,7 @@
     }
 
     function downloadExcel() {
-        if (!window.globalExcelData || window.globalExcelData.length === 0) {
-            return alert("Belum ada data hasil komparasi!");
-        }
+        if (!window.globalExcelData || window.globalExcelData.length === 0) return alert("Belum ada data hasil komparasi!");
         let tsv = window.globalExcelData.map(r => r.join("\t")).join("\n");
         let blob = new Blob([tsv], { type: 'application/vnd.ms-excel' });
         let a = document.createElement('a');
@@ -668,29 +880,7 @@
         a.download = `Laporan_Rekon_Data_${new Date().toISOString().slice(0,10)}.xls`;
         document.body.appendChild(a); a.click(); document.body.removeChild(a);
     }
-
-    function downloadAllExcel() {
-        const tabel = document.getElementById('tabelBast');
-        if (!tabel) return alert('Tabel data tidak ditemukan.');
-        const headers = [];
-        tabel.querySelectorAll('thead th').forEach((th, i) => { if (i < 6) headers.push(th.innerText.trim()); });
-        const rows = [headers];
-        tabel.querySelectorAll('tbody tr').forEach(tr => {
-            const cols = [];
-            tr.querySelectorAll('td').forEach((td, i) => { if (i < 6) cols.push(td.innerText.trim()); });
-            if (cols.length > 0) rows.push(cols);
-        });
-        if (rows.length <= 1) return alert('Belum ada data untuk diexport.');
-        const tsv = rows.map(r => r.join('\t')).join('\n');
-        const blob = new Blob(['\uFEFF' + tsv], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `Data_BAST_Sukmajaya_${new Date().toISOString().slice(0,10)}.xls`;
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
-        URL.revokeObjectURL(a.href);
-    }
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

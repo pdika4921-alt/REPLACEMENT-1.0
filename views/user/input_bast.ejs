@@ -22,10 +22,9 @@
         .form-floating > .form-control { border-radius: 12px; border: 1.5px solid #e2e8f0; }
         .form-floating > .form-control:focus { border-color: #EE2E24; box-shadow: 0 0 0 4px rgba(238, 46, 36, 0.1); }
         .section-badge { background: #ffe5e5; color: #EE2E24; padding: 8px 15px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; display: inline-block; margin-bottom: 1.5rem; }
-        .ttd-box { border: 2px dashed #cbd5e1; border-radius: 16px; background: #f8fafc; padding: 10px; transition: 0.3s; }
+        .ttd-box { border: 2px dashed #cbd5e1; border-radius: 16px; background: #f8fafc; padding: 0; overflow: hidden; transition: 0.3s; }
         .ttd-box:hover { border-color: #EE2E24; background: #fff; }
-        .signature-pad { width: 100%; height: 180px; touch-action: none; cursor: crosshair; }
-        
+        .signature-pad { width: 100%; height: 200px; touch-action: none; cursor: crosshair; display: block; }
         .btn-submit { background: #EE2E24; color: white; border-radius: 12px; font-weight: 600; padding: 14px; transition: 0.3s; border:none; width: 100%; }
         .btn-submit:hover { background: #c41230; box-shadow: 0 8px 20px rgba(238, 46, 36, 0.3); transform: translateY(-2px); color: white; }
     </style>
@@ -61,81 +60,140 @@
         </div>
         <hr class="text-muted opacity-25 mb-4">
 
-        <!-- ============================================== -->
-        <!-- AREA 1: FORM PEMBERI (TEKNISI)                 -->
-        <!-- ============================================== -->
-        <div id="areaPemberi">
-            <form id="formPemberi">
-                <!-- Data Lokasi -->
-                <div class="section-badge"><i class="bi bi-geo-alt-fill me-1"></i> 1. Informasi Lokasi & Waktu</div>
-                <div class="row g-3 mb-4">
-                    <div class="col-md-4">
-                        <div class="form-floating"><input type="text" class="form-control" name="harikerja" placeholder="SENIN" required><label>Hari</label></div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="form-floating"><input type="text" class="form-control" name="ttlkerja" placeholder="8 MEI 2026" required><label>Tanggal</label></div>
-                    </div>
-                    <div class="col-md-4">
-    <div class="form-floating">
-        <select class="form-select" name="loksto" id="lokstoSelect" required>
-            <option value="" disabled selected>-- Pilih --</option>
-            <option value="SKJ">SKJ</option>
-            <option value="CLS">CLS</option>
-        </select>
-        <label for="lokstoSelect">Lokasi / STO</label>
-    </div>
-</div>
-                </div>
+        <!-- Bagian Lokasi & STO -->
+<div id="areaPemberi">
+  <form id="formPemberi" enctype="multipart/form-data">
 
-                <!-- Data Pihak 1 -->
-                <div class="section-badge"><i class="bi bi-person-badge-fill me-1"></i> 2. Identitas Pihak Pertama (Pemberi)</div>
-                <div class="row g-3 mb-4">
-                    <div class="col-md-4">
-                        <div class="form-floating"><input type="text" class="form-control" name="namapemberi" placeholder="Nama" required><label>Nama / NIK Teknisi</label></div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="form-floating"><input type="text" class="form-control" name="jabatanpemberi" value="Teknisi" required><label>Jabatan</label></div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="form-floating"><input type="text" class="form-control" name="instansipemberi" value="PT. TELKOM AKSES" required><label>Instansi</label></div>
-                    </div>
-                </div>
-
-                <!-- Data Perangkat -->
-                <div class="section-badge"><i class="bi bi-router-fill me-1"></i> 3. Data Perangkat & Eviden</div>
-                <div class="row g-3 mb-4">
-                    <div class="col-md-4">
-                        <div class="form-floating"><input type="text" class="form-control" name="snbrlama" placeholder="SN Lama" required><label>Merk & SN Lama</label></div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="form-floating"><input type="text" class="form-control" name="snbrbaru" placeholder="SN Baru" required><label>Merk & SN Baru</label></div>
-                    </div>
-                    <div class="col-md-4">
-                        <div class="form-floating"><input type="text" class="form-control" name="noinet" placeholder="No Inet" required><label>Nomor Internet</label></div>
-                    </div>
-                    <div class="col-12">
-                        <div class="card border-0 bg-light p-2 rounded-3 border">
-                            <label class="form-label ms-2 text-muted small mb-1">Upload Eviden Foto Lapangan</label>
-                            <input type="file" name="eviden" class="form-control border-0 bg-transparent" accept="image/*" required>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- TTD Pemberi -->
-                <div class="section-badge"><i class="bi bi-pen-fill me-1"></i> 4. Tanda Tangan Teknisi</div>
-                <div class="row mb-5 justify-content-center">
-                    <div class="col-md-8 text-center">
-                        <div class="ttd-box"><canvas id="canvasPemberi" class="signature-pad"></canvas></div>
-                        <button type="button" class="btn btn-sm btn-light text-danger mt-2 rounded-pill shadow-sm" onclick="clearCanvas(canvasPemberi, ctxPemberi)"><i class="bi bi-eraser-fill"></i> Hapus Coretan</button>
-                    </div>
-                </div>
-
-                <button type="button" class="btn-submit" onclick="submitPemberi()" id="btnSubmitPemberi">
-                    <i class="bi bi-cloud-upload-fill me-2"></i> SIMPAN & BUAT KODE UNIK
-                </button>
-            </form>
+    <!-- SECTION 1: Lokasi & Waktu -->
+    <div class="section-badge"><i class="bi bi-geo-alt-fill me-1"></i> 1. Informasi Lokasi & Waktu</div>
+    <div class="row g-3 mb-4">
+      <div class="col-md-6">
+        <div class="form-floating">
+          <input type="date" class="form-control" name="tanggal" id="tanggal" required>
+          <label for="tanggal">Tanggal Pelaksanaan</label>
         </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-floating">
+          <!-- CARI bagian ini di views/user/input/input_bast.ejs dan GANTI: -->
+<select class="form-select" name="loksto" id="lokstoSelect" required>
+    <option value="" disabled selected>-- Pilih Lokasi STO --</option>
+    <% if (typeof stoList !== 'undefined' && stoList.length > 0) { %>
+        <% stoList.forEach(s => { %>
+            <option value="<%= s.sto %>"><%= s.sto %></option>
+        <% }) %>
+    <% } else { %>
+        <option disabled>Belum ada STO terdaftar</option>
+    <% } %>
+</select>
+          <label for="lokstoSelect">Lokasi / STO</label>
+        </div>
+      </div>
+    </div>
 
+    <!-- SECTION 2: Identitas Teknisi (hanya dropdown, tidak duplikat) -->
+    <div class="section-badge"><i class="bi bi-person-badge-fill me-1"></i> 2. Identitas Pihak Pertama (Teknisi)</div>
+    <div class="row g-3 mb-4">
+      <div class="col-md-6">
+        <div class="form-floating">
+          <select class="form-select" name="teknisi_select" id="teknisiSelect" required>
+            <option value="" disabled selected>-- Pilih NIK dan Nama Anda --</option>
+            <% if (typeof namaTeknisiList !== 'undefined' && namaTeknisiList.length > 0) { %>
+              <% namaTeknisiList.forEach(t => { %>
+                <option value="<%= t.nik %> | <%= t.nama %>">
+                  <%= t.nik %> — <%= t.nama %>
+                </option>
+              <% }) %>
+            <% } else { %>
+              <option disabled>Belum ada teknisi terdaftar</option>
+            <% } %>
+          </select>
+          <label for="teknisiSelect">Pilih Nama Teknisi</label>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="form-floating">
+          <input type="text" class="form-control bg-light" id="displayJabatan" value="Teknisi" readonly>
+          <label>Jabatan</label>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="form-floating">
+          <input type="text" class="form-control bg-light" id="displayInstansi" value="PT. TELKOM AKSES" readonly>
+          <label>Instansi</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 3: Data Perangkat (dengan tombol tambah baris) -->
+    <div class="section-badge"><i class="bi bi-router-fill me-1"></i> 3. Data Perangkat & Eviden</div>
+    <div id="perangkatContainer">
+      <div class="row g-3 mb-2 perangkat-row align-items-center">
+        <div class="col-md-3">
+          <div class="form-floating">
+            <input type="text" class="form-control" name="snlama[]" placeholder="SN Lama" required>
+            <label>SN Lama</label>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="form-floating">
+            <input type="text" class="form-control" name="snbaru[]" placeholder="SN Baru" required>
+            <label>SN Baru</label>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="form-floating">
+            <input type="text" class="form-control" name="noinet[]" placeholder="No Inet">
+            <label>Nomor Internet</label>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="form-floating">
+            <select class="form-select" name="kondisi[]">
+              <option value="Baik">Baik</option>
+              <option value="Rusak">Rusak</option>
+              <option value="Hilang">Hilang</option>
+            </select>
+            <label>Kondisi</label>
+          </div>
+        </div>
+        <div class="col-md-1 text-center">
+          <button type="button" class="btn btn-outline-danger btn-sm rounded-circle" onclick="hapusRow(this)" title="Hapus baris">
+            <i class="bi bi-dash-lg"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+    <button type="button" class="btn btn-outline-success btn-sm rounded-pill mb-4 px-4" onclick="tambahBaris()">
+      <i class="bi bi-plus-lg me-1"></i> Tambah Baris Perangkat
+    </button>
+
+    <!-- Upload Eviden -->
+    <div class="mb-4">
+      <label class="form-label fw-semibold small">Upload Foto Eviden Lapangan</label>
+      <input type="file" name="eviden" class="form-control" accept="image/*" multiple>
+    </div>
+
+    <!-- TTD Teknisi -->
+    <div class="section-badge"><i class="bi bi-pen-fill me-1"></i> 4. Tanda Tangan Teknisi</div>
+    <div class="row mb-4 justify-content-center">
+      <div class="col-md-8 text-center">
+        <div class="ttd-box">
+          <canvas id="canvasPemberi" class="signature-pad"></canvas>
+        </div>
+        <button type="button" class="btn btn-sm btn-light text-danger mt-2 rounded-pill shadow-sm"
+          onclick="clearCanvas(canvasPemberi, ctxPemberi)">
+          <i class="bi bi-eraser-fill"></i> Hapus Coretan
+        </button>
+      </div>
+    </div>
+
+    <button type="button" class="btn-submit" onclick="submitPemberi()" id="btnSubmitPemberi">
+      <i class="bi bi-cloud-upload-fill me-2"></i> SIMPAN & BUAT KODE UNIK
+    </button>
+
+  </form>
+</div>
         <!-- ============================================== -->
         <!-- AREA 2: FORM PENERIMA (PIHAK 2)                -->
         <!-- ============================================== -->
@@ -195,25 +253,70 @@
 
     // Inisialisasi Canvas TTD
     function setupCanvas(canvasId) {
-        const canvas = document.getElementById(canvasId);
-        const ctx = canvas.getContext('2d');
-        ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.strokeStyle = '#1e293b'; 
-        let drawing = false;
+    const canvas = document.getElementById(canvasId);
+    const ctx = canvas.getContext('2d');
+    ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.strokeStyle = '#1e293b'; 
+    let drawing = false;
 
-        const startDraw = (e) => { drawing = true; ctx.beginPath(); ctx.moveTo(e.offsetX || e.touches[0].clientX - canvas.getBoundingClientRect().left, e.offsetY || e.touches[0].clientY - canvas.getBoundingClientRect().top); };
-        const draw = (e) => { if (drawing) { e.preventDefault(); ctx.lineTo(e.offsetX || e.touches[0].clientX - canvas.getBoundingClientRect().left, e.offsetY || e.touches[0].clientY - canvas.getBoundingClientRect().top); ctx.stroke(); } };
-        const stopDraw = () => drawing = false;
-
-        canvas.addEventListener('mousedown', startDraw); canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', stopDraw); canvas.addEventListener('mouseout', stopDraw);
-        canvas.addEventListener('touchstart', startDraw); canvas.addEventListener('touchmove', draw);
-        canvas.addEventListener('touchend', stopDraw);
-        return { canvas, ctx };
+    function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        // Hitung scale jika canvas CSS size berbeda dengan pixel size
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        
+        if (e.touches) {
+            return {
+                x: (e.touches[0].clientX - rect.left) * scaleX,
+                y: (e.touches[0].clientY - rect.top) * scaleY
+            };
+        }
+        return {
+            x: (e.clientX - rect.left) * scaleX,
+            y: (e.clientY - rect.top) * scaleY
+        };
     }
 
-    const { canvas: canvasPemberi, ctx: ctxPemberi } = setupCanvas('canvasPemberi');
-    const { canvas: canvasPenerima, ctx: ctxPenerima } = setupCanvas('canvasPenerima');
-    function clearCanvas(canvas, ctx) { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+    const startDraw = (e) => { 
+        e.preventDefault();
+        drawing = true; 
+        const pos = getPos(e);
+        ctx.beginPath(); 
+        ctx.moveTo(pos.x, pos.y); 
+    };
+    
+    const draw = (e) => { 
+        if (!drawing) return;
+        e.preventDefault(); 
+        const pos = getPos(e);
+        ctx.lineTo(pos.x, pos.y); 
+        ctx.stroke(); 
+    };
+    
+    const stopDraw = (e) => { 
+        drawing = false; 
+        ctx.beginPath(); // reset path agar tidak nyambung ke goresan berikutnya
+    };
+
+    // Set ukuran canvas sesuai tampilan agar tidak stretch
+    function resizeCanvas() {
+        const rect = canvas.getBoundingClientRect();
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        canvas.width = rect.width;
+        canvas.height = rect.height || 200;
+        ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.strokeStyle = '#1e293b';
+    }
+    resizeCanvas();
+
+    canvas.addEventListener('mousedown', startDraw); 
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDraw); 
+    canvas.addEventListener('mouseleave', stopDraw);
+    canvas.addEventListener('touchstart', startDraw, { passive: false }); 
+    canvas.addEventListener('touchmove', draw, { passive: false });
+    canvas.addEventListener('touchend', stopDraw);
+    
+    return { canvas, ctx };
+}
 
     // --- PROSES 1: PEMBERI (TEKNISI) ---
     async function submitPemberi() {
@@ -287,6 +390,40 @@
         form.submit();
     }
 </script>
+ <!-- Script tambah/hapus baris perangkat -->
+    <script>
+    function tambahBaris() {
+      const container = document.getElementById('perangkatContainer');
+      const baris = `
+        <div class="row g-3 mb-2 perangkat-row align-items-center">
+          <div class="col-md-3"><div class="form-floating">
+            <input type="text" class="form-control" name="snlama[]" placeholder="SN Lama" required>
+            <label>SN Lama</label></div></div>
+          <div class="col-md-3"><div class="form-floating">
+            <input type="text" class="form-control" name="snbaru[]" placeholder="SN Baru" required>
+            <label>SN Baru</label></div></div>
+          <div class="col-md-3"><div class="form-floating">
+            <input type="text" class="form-control" name="noinet[]" placeholder="No Inet">
+            <label>Nomor Internet</label></div></div>
+          <div class="col-md-2"><div class="form-floating">
+            <select class="form-select" name="kondisi[]">
+              <option value="Baik">Baik</option>
+              <option value="Rusak">Rusak</option>
+              <option value="Hilang">Hilang</option>
+            </select>
+            <label>Kondisi</label></div></div>
+          <div class="col-md-1 text-center">
+            <button type="button" class="btn btn-outline-danger btn-sm rounded-circle"
+              onclick="hapusRow(this)"><i class="bi bi-dash-lg"></i></button>
+          </div>
+        </div>`;
+      container.insertAdjacentHTML('beforeend', baris);
+    }
 
+    function hapusRow(btn) {
+      const rows = document.querySelectorAll('.perangkat-row');
+      if (rows.length > 1) btn.closest('.perangkat-row').remove();
+    }
+    </script>
 </body>
 </html>

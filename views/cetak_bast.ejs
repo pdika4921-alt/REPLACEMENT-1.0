@@ -16,48 +16,65 @@
         
         /* Bilah Tombol Navigasi Atas (Rapi, Berdampingan & Tidak Bentrok) */
         .print-nav-bar {
-            background: #f8f9fa; 
-            padding: 12px 20px; 
-            border-bottom: 1px solid #dee2e6; 
-            display: flex; 
-            justify-content: flex-end; 
-            align-items: center; 
-            gap: 12px; 
-            margin-bottom: 25px;
-            font-family: 'Poppins', sans-serif;
-        }
-        
-        .btn-custom-back {
-            background-color: #6c757d; 
-            color: white; 
-            padding: 8px 18px; 
-            border-radius: 8px; 
-            font-size: 13px; 
-            font-weight: 600; 
-            text-decoration: none; 
-            display: inline-flex; 
-            align-items: center;
-        }
-        .btn-custom-back:hover { background-color: #5a6268; color: white; }
+    background: linear-gradient(135deg, #0e1f3b 0%, #162d52 100%);
+    padding: 14px 24px;
+    border-bottom: 3px solid #EE2E24;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 28px;
+    font-family: 'Poppins', sans-serif;
+}
 
-        .btn-custom-print {
-            background-color: #EE2E24; 
-            color: white; 
-            border: none; 
-            padding: 8px 20px; 
-            border-radius: 8px; 
-            font-size: 13px; 
-            font-weight: 600; 
-            cursor: pointer; 
-            display: inline-flex; 
-            align-items: center;
-        }
-        .btn-custom-print:hover { background-color: #d1221a; }
+.nav-brand {
+    display: flex; align-items: center; gap: 10px; text-decoration: none;
+}
+.nav-brand-badge {
+    background: #EE2E24; color: #fff; border-radius: 8px;
+    padding: 4px 10px; font-weight: 800; font-size: 0.88rem;
+}
+.nav-brand-text {
+    color: rgba(255,255,255,0.85); font-weight: 500; font-size: 0.82rem;
+}
 
-        /* Otomatis sembunyikan tombol saat dicetak ke PDF/Kertas */
-        @media print { 
-            .no-print { display: none !important; } 
-        }
+.btn-nav-back {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    border: 1.5px solid rgba(255,255,255,0.2);
+    padding: 8px 18px;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background .2s;
+}
+.btn-nav-back:hover { background: rgba(255,255,255,0.18); color: #fff; }
+
+.btn-nav-print {
+    background: #EE2E24;
+    color: #fff;
+    border: none;
+    padding: 9px 22px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background .2s, transform .15s;
+    box-shadow: 0 4px 14px rgba(238,46,36,0.3);
+}
+.btn-nav-print:hover { background: #c42019; transform: translateY(-1px); }
+
+@media print {
+    .no-print { display: none !important; }
+}
+
 
         /* Desain Dokumen BAST Asli */
         .kop-surat { font-size: 14pt; font-weight: bold; text-align: center; margin-bottom: 5px; }
@@ -84,14 +101,22 @@
 
     <!-- BILAH TOMBOL AKSI ATAS -->
 <div class="print-nav-bar no-print">
-    <a href="/wh/dashboard" class="btn-custom-back">
-        <i class="bi bi-arrow-left me-1"></i> Kembali
+    <a href="/wh/dashboard" class="btn-nav-back">
+        <i class="bi bi-arrow-left"></i> Kembali
     </a>
-    
-    <button onclick="window.print()" class="btn-custom-print">
-        <i class="bi bi-printer-fill me-2"></i> Cetak / Simpan PDF
+
+    <div class="d-flex align-items-center gap-2">
+        <span style="color:rgba(255,255,255,0.5);font-size:0.78rem;font-family:'Poppins',sans-serif;">
+            Dokumen: <strong style="color:rgba(255,255,255,0.85);font-family:monospace;"><%= data.kode_unik %></strong>
+        </span>
+    </div>
+
+    <button onclick="window.print()" class="btn-nav-print">
+        <i class="bi bi-printer-fill"></i> Cetak / Simpan PDF
     </button>
 </div>
+
+
 
     <!-- Container Utama Dokumen -->
     <div style="padding: 0 20px 20px 20px;">

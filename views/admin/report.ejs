@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Report Migrasi NTE - Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+    <style>
+        :root {
+            --navy: #0e1f3b; --navy2: #162d52;
+            --red: #EE2E24; --red2: #c42019;
+            --surface: #f0f4f8; --card: #ffffff;
+            --border: #dde3ec; --text: #1e293b; --muted: #64748b;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: 'Poppins', sans-serif; background: var(--surface); color: var(--text); }
+
+        /* NAVBAR */
+        .navbar-custom { background: linear-gradient(135deg, var(--navy) 0%, var(--navy2) 100%); border-bottom: 3px solid var(--red); }
+        .navbar-brand-logo { background: var(--red); border-radius: 8px; padding: 4px 10px; font-weight: 800; font-size: 0.95rem; }
+
+        /* UPLOAD */
+        .upload-zone {
+            border: 3px dashed var(--border); border-radius: 20px; background: var(--card);
+            padding: 3rem; text-align: center; cursor: pointer; transition: all 0.3s;
+        }
+        .upload-zone:hover, .upload-zone.dragover { border-color: var(--red); background: #fff5f5; }
+        .upload-zone .icon { font-size: 3.5rem; color: var(--red); margin-bottom: 1rem; }
+        .card-panel { background: var(--card); border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 2px 16px rgba(14,31,59,0.05); }
+
+        /* KPI CARDS */
+        .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1.25rem; }
+        .kpi-card { background: var(--card); border-radius: 16px; border: 1px solid var(--border); padding: 20px; position: relative; overflow: hidden; }
+        .kpi-card::before { content:''; position:absolute; top:0; left:0; width:4px; height:100%; border-radius:2px 0 0 2px; }
+        .kpi-card.blue::before  { background: #2a78d6; }
+        .kpi-card.green::before { background: #1baf7a; }
+        .kpi-card.red::before   { background: var(--red); }
+        .kpi-card.amber::before { background: #eda100; }
+        .kpi-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .6px; font-weight: 600; margin-bottom: 6px; }
+        .kpi-value { font-size: 2.4rem; font-weight: 800; line-height: 1; }
+        .kpi-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+        .kpi-icon { position: absolute; top: 16px; right: 16px; font-size: 1.8rem; opacity: .12; }
+
+        /* PROGRESS */
+        .progress-panel { background: var(--card); border-radius: 16px; border: 1px solid var(--border); padding: 20px; margin-bottom: 1.25rem; }
+        .progress-track { height: 14px; border-radius: 8px; background: #f1f5f9; overflow: hidden; }
+        .progress-fill { height: 100%; border-radius: 8px; background: linear-gradient(90deg, var(--red), #eda100); transition: width 1.2s cubic-bezier(.4,0,.2,1); }
+
+        /* TWO-COL */
+        .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.25rem; }
+        .chart-panel { background: var(--card); border-radius: 16px; border: 1px solid var(--border); padding: 20px; }
+        .panel-title { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 12px; }
+
+        /* MINI BAR */
+        .mini-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+        .mini-bar-label { font-size: 11px; color: var(--muted); width: 130px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .mini-bar-track { flex: 1; height: 8px; background: #f1f5f9; border-radius: 6px; overflow: hidden; }
+        .mini-bar-fill { height: 100%; border-radius: 6px; background: var(--red); transition: width .8s ease; }
+        .mini-bar-val { font-size: 11px; font-weight: 700; color: var(--text); min-width: 18px; text-align: right; }
+
+        /* LEGEND */
+        .legend-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
+        .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--muted); }
+        .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+        /* PIVOT TABLE */
+        .pivot-wrap { background: var(--card); border-radius: 16px; border: 1px solid var(--border); padding: 20px; overflow-x: auto; }
+        table.ptable { width: 100%; border-collapse: collapse; font-size: 12px; }
+        table.ptable th { background: var(--navy); color: rgba(255,255,255,.85); font-size: 10px; text-transform: uppercase; letter-spacing: .5px; font-weight: 600; padding: 10px 10px; text-align: left; }
+        table.ptable th.num { text-align: center; }
+        table.ptable td { padding: 8px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+        table.ptable td.num { text-align: center; }
+        table.ptable tr:hover td { background: #fafbff; }
+        table.ptable tr.grand td { background: var(--navy); color: #fff; font-weight: 700; }
+        
+        /* Collapsible Elements */
+        table.ptable tr.sa-header td { background: #f8fafc; font-weight: 700; cursor: pointer; font-size:12px; }
+        table.ptable tr.sa-header td:first-child { color: var(--navy); }
+        table.ptable tr.sa-header:hover td { background: #eef2f8; }
+        table.ptable tr.sa-header .sa-chevron { float:right; transition: transform .25s; font-size:12px; color:var(--muted); }
+        table.ptable tr.sa-header.collapsed .sa-chevron { transform: rotate(-90deg); }
+        
+        table.ptable tr.sto-row { transition: background .2s; cursor: pointer; }
+        table.ptable tr.sto-row:hover td { background: #eef2f8; }
+        table.ptable tr.sto-row .sto-chevron { float:right; transition: transform .25s; font-size:11px; color:var(--muted); }
+        table.ptable tr.sto-row.collapsed .sto-chevron { transform: rotate(-90deg); }
+        
+        table.ptable tr.tek-row td { background: #ffffff; font-size: 10.5px; border-bottom: 1px dashed #e2e8f0; }
+        table.ptable tr.tek-row:hover td { background: #fafbff; }
+
+        table.ptable tr.hidden { display: none; }
+
+        /* BADGES */
+        .badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; min-width: 30px; text-align: center; }
+        .b-sudah   { background: #dcfce7; color: #166534; }
+        .b-belum   { background: #fee2e2; color: #991b1b; }
+        .b-open    { background: #fef9c3; color: #854d0e; }
+        .b-close   { background: #dcfce7; color: #166534; }
+        .b-assign  { background: #dbeafe; color: #1d4ed8; }
+        .b-kendala { background: #fee2e2; color: #991b1b; }
+
+        /* DETAIL TABLE */
+        .detail-wrap { background: var(--card); border-radius: 16px; border: 1px solid var(--border); padding: 20px; margin-top: 1.25rem; }
+        .table-scroll { max-height: 420px; overflow-y: auto; }
+        table.dtable { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+        table.dtable th { background: var(--navy); color: rgba(255,255,255,.85); font-size: 10px; text-transform: uppercase; letter-spacing: .5px; font-weight: 600; padding: 9px 10px; position: sticky; top: 0; }
+        table.dtable td { padding: 7px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+        table.dtable tr:hover td { background: #fafbff; }
+
+        /* TAB */
+        .tab-bar { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 6px; display: inline-flex; gap: 4px; margin-bottom: 1rem; }
+        .tab-bar .nav-link { color: var(--muted); font-weight: 500; font-size: 0.85rem; border-radius: 10px; padding: 8px 18px; transition: all .2s; border: 1px solid transparent; }
+        .tab-bar .nav-link:hover { color: var(--red); background: #fff5f5; }
+        .tab-bar .nav-link.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+
+        .btn-red { background: var(--red); color:#fff; border:none; border-radius:10px; font-weight:600; font-size:0.875rem; padding:10px 22px; transition:background .2s; }
+        .btn-red:hover { background: var(--red2); color:#fff; }
+
+        #loadingOverlay { display:none; position:fixed; top:0;left:0;width:100%;height:100%; background:rgba(14,31,59,0.75); z-index:9999; align-items:center; justify-content:center; flex-direction:column; color:white; }
+        #loadingOverlay.show { display:flex; }
+
+        @media (max-width: 768px) {
+            .kpi-grid { grid-template-columns: 1fr 1fr; }
+            .two-col { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark navbar-custom py-3 mb-4">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand d-flex align-items-center gap-2 text-decoration-none" href="/admin/dashboard">
+            <span class="navbar-brand-logo">BAST</span>
+            <span class="fw-bold fs-6 text-white opacity-90">Telkom Akses</span>
+        </a>
+        <div class="d-flex align-items-center gap-3">
+            <a href="/admin/dashboard" class="btn btn-sm btn-outline-light rounded-pill px-3 fw-semibold">
+                <i class="bi bi-arrow-left me-1"></i> Kembali
+            </a>
+            <a href="/logout" class="btn btn-sm btn-outline-light rounded-pill px-3 fw-semibold">Logout</a>
+        </div>
+    </div>
+</nav>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay">
+    <div class="spinner-border text-light mb-3" style="width:3rem;height:3rem;"></div>
+    <div class="fw-bold fs-5">Memproses Data Excel...</div>
+    <div class="opacity-75 small mt-1">Melakukan VLOOKUP ke database, harap tunggu</div>
+</div>
+
+<div class="container-fluid px-4 mb-5">
+
+    <!-- Header -->
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+        <div>
+            <h4 class="fw-bold mb-1"><i class="bi bi-bar-chart-line-fill text-danger me-2"></i>Report Migrasi NTE</h4>
+            <p class="text-muted small mb-0">Upload file Excel → VLOOKUP NIK & validasi No. Internet → Lihat pivot report & grafik</p>
+        </div>
+    </div>
+
+    <!-- Upload Area -->
+    <div id="uploadSection" class="card-panel p-4 mb-4">
+        <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+            <div class="icon"><i class="bi bi-file-earmark-arrow-up-fill"></i></div>
+            <h5 class="fw-bold mb-2">Drag & Drop atau Klik untuk Upload</h5>
+            <p class="text-muted small mb-3">File Excel (.xlsx) template Migrasi NTE<br>Kolom AZ (nama teknisi) & BA (status pengembalian) akan diisi otomatis dari database</p>
+            <div class="d-inline-block px-4 py-2 rounded-pill" style="background:var(--red);color:white;font-weight:600;">
+                <i class="bi bi-upload me-2"></i>Pilih File Excel
+            </div>
+            <input type="file" id="fileInput" accept=".xlsx" style="display:none" onchange="handleFile(this.files[0])">
+        </div>
+        <div id="fileInfo" class="mt-3" style="display:none;">
+            <div class="d-flex align-items-center gap-3 p-3 bg-light rounded-3 border">
+                <i class="bi bi-file-earmark-excel-fill text-success fs-3"></i>
+                <div class="flex-grow-1">
+                    <div class="fw-bold" id="fileName">-</div>
+                    <div class="text-muted small" id="fileSize">-</div>
+                </div>
+                <button class="btn btn-red px-4 fw-bold" onclick="prosesFile()">
+                    <i class="bi bi-gear-fill me-2"></i>Proses & VLOOKUP
+                </button>
+                <button class="btn btn-outline-secondary rounded-pill px-3" onclick="resetUpload()">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hasil Section -->
+    <div id="hasilSection" style="display:none;">
+
+        <!-- KPI Cards -->
+        <div class="kpi-grid" id="kpiCards"></div>
+
+        <!-- Progress Bar -->
+        <div class="progress-panel">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-semibold small"><i class="bi bi-arrow-repeat text-danger me-1"></i>Progress Pengembalian Perangkat</span>
+                <span class="fw-bold fs-5" id="progressPct" style="color:var(--red)">0%</span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill" id="progressFill" style="width:0%"></div>
+            </div>
+            <div class="d-flex justify-content-between mt-2">
+                <span class="small text-muted" id="progressDesc">— dari — perangkat telah dikembalikan</span>
+                <button class="btn btn-success btn-sm fw-bold rounded-pill px-3" onclick="downloadExcel()">
+                    <i class="bi bi-file-earmark-excel-fill me-1"></i>Download Excel
+                </button>
+            </div>
+        </div>
+
+        <!-- Tab Nav -->
+        <ul class="nav tab-bar" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#pivotPane" type="button">
+                    <i class="bi bi-grid-3x3-gap-fill me-1"></i> Pivot & Grafik
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#detailPane" type="button">
+                    <i class="bi bi-table me-1"></i> Data Detail
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+
+            <!-- TAB PIVOT -->
+            <div class="tab-pane fade show active" id="pivotPane">
+
+                <!-- Charts -->
+                <div class="two-col mb-4">
+                    <!-- Stacked Bar -->
+                    <div class="chart-panel">
+                        <p class="panel-title"><i class="bi bi-bar-chart-fill me-1 text-danger"></i>Distribusi Status Tiket per Service Area</p>
+                        <div class="legend-row" id="barLegend">
+                            <span class="legend-item"><span class="legend-dot" style="background:#2a78d6"></span>Assign</span>
+                            <span class="legend-item"><span class="legend-dot" style="background:#1baf7a"></span>Close</span>
+                            <span class="legend-item"><span class="legend-dot" style="background:#EE2E24"></span>Kendala</span>
+                            <span class="legend-item"><span class="legend-dot" style="background:#eda100"></span>Open</span>
+                        </div>
+                        <div style="position:relative;height:230px;">
+                            <canvas id="barChart" role="img" aria-label="Bar chart distribusi status tiket per service area"></canvas>
+                        </div>
+                    </div>
+                    <!-- Mini bar + Donut -->
+                    <div class="chart-panel">
+                        <p class="panel-title"><i class="bi bi-exclamation-circle-fill me-1 text-danger"></i>Belum Kembali per Service Area</p>
+                        <div id="miniBars" style="margin-bottom:16px;"></div>
+                        <hr style="border-color:#f1f5f9;margin:10px 0 12px;">
+                        <p class="panel-title"><i class="bi bi-pie-chart-fill me-1"></i>Komposisi Status Tiket</p>
+                        <div class="d-flex align-items-center gap-3">
+                            <div style="position:relative;width:120px;height:120px;flex-shrink:0;">
+                                <canvas id="doughnut" role="img" aria-label="Donut chart komposisi status tiket"></canvas>
+                            </div>
+                            <div id="donutLegend" style="font-size:11px;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pivot Table -->
+                <div class="pivot-wrap mb-4">
+                    <p class="panel-title"><i class="bi bi-grid me-1"></i>Rekapitulasi Hierarki Data <span style="font-size:10px;color:var(--muted);font-weight:400;margin-left:6px;">(Klik baris SA atau STO untuk melihat detail Teknisi)</span></p>
+                    <table class="ptable">
+                        <thead>
+                            <tr>
+                                <th>Service Area</th>
+                                <th>ID STO</th>
+                                <th class="num">Assign</th>
+                                <th class="num">Close</th>
+                                <th class="num">Kendala</th>
+                                <th class="num">Open</th>
+                                <th class="num">Grand Total</th>
+                                <th class="num">Sudah Kembali</th>
+                                <th class="num">Belum Kembali</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pivotBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB DETAIL -->
+            <div class="tab-pane fade" id="detailPane">
+                <div class="detail-wrap">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <p class="panel-title mb-0"><i class="bi bi-table me-1"></i>Data Detail (Kolom Utama)</p>
+                        <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="Cari NIK / No Inet / Status..." style="width:260px;border-radius:8px;" oninput="filterTable()">
+                    </div>
+                    <div class="table-scroll">
+                        <table class="dtable" id="detailTable">
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Service Area</th>
+                                    <th>ID STO</th>
+                                    <th>No Internet</th>
+                                    <th>Status Tiket</th>
+                                    <th>NIK</th>
+                                    <th>SN Perangkat Old</th>
+                                    <th style="background:#1a3a6b;">Nama Teknisi (AZ)</th>
+                                    <th style="background:#1a3a6b;">Status Kembali (BA)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detailBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let globalData = null;
+    let currentFile = null;
+    let barChartInstance = null;
+    let doughnutInstance = null;
+
+    // Drag & Drop
+    const zone = document.getElementById('uploadZone');
+    zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('dragover'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+    zone.addEventListener('drop', (e) => { e.preventDefault(); zone.classList.remove('dragover'); handleFile(e.dataTransfer.files[0]); });
+
+    function handleFile(file) {
+        if (!file || !file.name.endsWith('.xlsx')) return Swal.fire('Format Salah', 'Hanya file .xlsx yang diizinkan!', 'error');
+        currentFile = file;
+        document.getElementById('fileName').textContent = file.name;
+        document.getElementById('fileSize').textContent = (file.size / 1024).toFixed(1) + ' KB';
+        document.getElementById('fileInfo').style.display = 'block';
+    }
+
+    function resetUpload() {
+        currentFile = null;
+        document.getElementById('fileInput').value = '';
+        document.getElementById('fileInfo').style.display = 'none';
+        document.getElementById('hasilSection').style.display = 'none';
+    }
+
+    async function prosesFile() {
+        if (!currentFile) return Swal.fire('Perhatian', 'Pilih file Excel terlebih dahulu!', 'warning');
+        document.getElementById('loadingOverlay').classList.add('show');
+        const formData = new FormData();
+        formData.append('excelFile', currentFile);
+        try {
+            const res = await fetch('/admin/report/proses', { method: 'POST', body: formData });
+            const data = await res.json();
+            document.getElementById('loadingOverlay').classList.remove('show');
+            if (!data.success) return Swal.fire('Gagal', data.message, 'error');
+            globalData = data;
+            renderHasil(data);
+        } catch(e) {
+            document.getElementById('loadingOverlay').classList.remove('show');
+            Swal.fire('Error', 'Gagal memproses file: ' + e.message, 'error');
+        }
+    }
+
+    function renderHasil(data) {
+        document.getElementById('hasilSection').style.display = 'block';
+
+        const total  = data.summary.total;
+        const sudah  = data.summary.sudah;
+        const belum  = data.summary.belum;
+        const pct    = total > 0 ? Math.round((sudah / total) * 100) : 0;
+        const saCount = Object.keys(data.pivot).length;
+
+        // KPI Cards
+        document.getElementById('kpiCards').innerHTML = `
+            <div class="kpi-card blue">
+                <i class="bi bi-database kpi-icon"></i>
+                <div class="kpi-label">Total Data</div>
+                <div class="kpi-value">${total}</div>
+                <div class="kpi-sub">baris dari Excel</div>
+            </div>
+            <div class="kpi-card green">
+                <i class="bi bi-check-circle kpi-icon"></i>
+                <div class="kpi-label">Sudah Kembali</div>
+                <div class="kpi-value" style="color:#1baf7a">${sudah}</div>
+                <div class="kpi-sub">perangkat dikembalikan</div>
+            </div>
+            <div class="kpi-card red">
+                <i class="bi bi-exclamation-circle kpi-icon"></i>
+                <div class="kpi-label">Belum Kembali</div>
+                <div class="kpi-value" style="color:#EE2E24">${belum}</div>
+                <div class="kpi-sub">masih belum ada data</div>
+            </div>
+            <div class="kpi-card amber">
+                <i class="bi bi-geo-alt kpi-icon"></i>
+                <div class="kpi-label">Service Area</div>
+                <div class="kpi-value" style="color:#eda100">${saCount}</div>
+                <div class="kpi-sub">wilayah aktif</div>
+            </div>
+        `;
+
+        // Progress
+        document.getElementById('progressPct').textContent = pct + '%';
+        setTimeout(() => document.getElementById('progressFill').style.width = pct + '%', 200);
+        document.getElementById('progressDesc').textContent = `${sudah} dari ${total} perangkat telah dikembalikan`;
+
+        // Hitung sudah/belum per STO
+        const stoKembali = {};
+        data.rows.forEach(r => {
+            const sto    = r[5];
+            const status = r[52];
+            if (!stoKembali[sto]) stoKembali[sto] = { sudah: 0, belum: 0 };
+            if (status === 'SUDAH') stoKembali[sto].sudah++;
+            else stoKembali[sto].belum++;
+        });
+
+        // Pass 'data.rows' ke fungsi pivot agar kita bisa memproses detail Teknisi
+        renderPivot(data.pivot, stoKembali, data.rows);
+        renderCharts(data.pivot, stoKembali, data.rows);
+        renderDetail(data.headers, data.rows);
+
+        setTimeout(() => document.getElementById('hasilSection').scrollIntoView({ behavior: 'smooth' }), 300);
+    }
+
+    /* ===== PIVOT TABLE — Hierarki 3 Level (SA > STO > Teknisi) ===== */
+    function renderPivot(pivot, stoKembali, rows) {
+        
+        // 1. Ekstrak data statistik per teknisi secara dinamis
+        const tekStats = {};
+        rows.forEach(r => {
+            const sa = r[3] || '-';
+            const sto = r[5] || '-';
+            const statusTiket = String(r[35]||'').toLowerCase();
+            const tek = r[51] || '(Tidak Diketahui)';
+            const statusKembali = r[52];
+
+            if (!tekStats[sa]) tekStats[sa] = {};
+            if (!tekStats[sa][sto]) tekStats[sa][sto] = {};
+            if (!tekStats[sa][sto][tek]) tekStats[sa][sto][tek] = { assign:0, close:0, kendala:0, open:0, total:0, sudah:0, belum:0 };
+
+            let t = tekStats[sa][sto][tek];
+            t.total++;
+            if (statusTiket === 'assign' || statusTiket === 'asign') t.assign++;
+            else if (statusTiket === 'close') t.close++;
+            else if (statusTiket === 'kendala') t.kendala++;
+            else t.open++; 
+
+            if (statusKembali === 'SUDAH') t.sudah++;
+            else t.belum++;
+        });
+
+        let html = '';
+        let grand = { assign:0, close:0, kendala:0, open:0, total:0, sudah:0, belum:0 };
+        let saIdx = 0;
+        let stoIdx = 0;
+
+        Object.keys(pivot).sort().forEach(sa => {
+            const stoList = Object.keys(pivot[sa]).sort();
+            let saT = { assign:0, close:0, kendala:0, open:0, total:0, sudah:0, belum:0 };
+            const grpId = 'sagrp' + saIdx++;
+
+            stoList.forEach(sto => {
+                const d  = pivot[sa][sto];
+                const sk = stoKembali[sto] || { sudah:0, belum:0 };
+                saT.assign  += d.assign;  saT.close   += d.close;
+                saT.kendala += d.kendala; saT.open    += d.open;
+                saT.total   += d.total;   saT.sudah   += sk.sudah; saT.belum += sk.belum;
+            });
+
+            // Level 1: Baris Service Area
+            html += `<tr class="sa-header collapsed" onclick="toggleSA('${grpId}', this)">
+                <td colspan="2">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span>${sa}</span>
+                        <i class="bi bi-chevron-down sa-chevron"></i>
+                    </div>
+                </td>
+                <td class="num" style="font-weight:700">${saT.assign||''}</td>
+                <td class="num" style="font-weight:700">${saT.close||''}</td>
+                <td class="num" style="font-weight:700">${saT.kendala||''}</td>
+                <td class="num" style="font-weight:700">${saT.open||''}</td>
+                <td class="num" style="font-weight:700">${saT.total}</td>
+                <td class="num"><span class="badge b-sudah">${saT.sudah}</span></td>
+                <td class="num"><span class="badge b-belum">${saT.belum}</span></td>
+            </tr>`;
+
+            // Level 2: Baris STO (Awalnya disembunyikan/hidden)
+            stoList.forEach(sto => {
+                const d  = pivot[sa][sto];
+                const sk = stoKembali[sto] || { sudah:0, belum:0 };
+                const stoGrpId = 'stogrp' + stoIdx++;
+
+                html += `<tr class="sto-row collapsed hidden" data-group="${grpId}" data-sto-target="${stoGrpId}" onclick="toggleSTO('${stoGrpId}', this)">
+                    <td style="padding-left:28px;font-size:11px;color:var(--muted)">↳ ${sa}</td>
+                    <td>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="sto-code">${sto}</span>
+                            <i class="bi bi-chevron-down sto-chevron"></i>
+                        </div>
+                    </td>
+                    <td class="num">${d.assign  ? `<span class="badge b-assign">${d.assign}</span>`  : ''}</td>
+                    <td class="num">${d.close   ? `<span class="badge b-close">${d.close}</span>`    : ''}</td>
+                    <td class="num">${d.kendala ? `<span class="badge b-kendala">${d.kendala}</span>`: ''}</td>
+                    <td class="num">${d.open    ? `<span class="badge b-open">${d.open}</span>`      : ''}</td>
+                    <td class="num" style="font-weight:700">${d.total}</td>
+                    <td class="num"><span class="badge b-sudah">${sk.sudah||0}</span></td>
+                    <td class="num"><span class="badge b-belum">${sk.belum||0}</span></td>
+                </tr>`;
+
+                // Level 3: Baris Detail Teknisi (Awalnya disembunyikan/hidden)
+                const tekData = tekStats[sa] && tekStats[sa][sto] ? tekStats[sa][sto] : {};
+                Object.keys(tekData).sort().forEach(tek => {
+                    const t = tekData[tek];
+                    
+                    // --- REVISI: Persentase dihitung HANYA dari (Sudah Kembali / Close) ---
+                    let pct = t.close > 0 ? Math.round((t.sudah / t.close) * 100) : 0;
+                    if (pct > 100) pct = 100; // Mencegah persentase melebihi 100% jika ada anomali
+                    
+                    // Warna persentase progress teknisi
+                    let pctColor = pct === 100 ? '#166534' : (pct >= 50 ? '#854d0e' : '#991b1b');
+
+                    html += `<tr class="tek-row hidden" data-sto-group="${stoGrpId}">
+                        <td colspan="2" style="padding-left:45px;">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <span style="color:var(--navy);font-weight:600;">
+                                    <i class="bi bi-person-fill me-1 text-muted" style="font-size:12px;"></i> ${tek}
+                                </span>
+                                <span style="font-weight:800; font-size:11px; color:${pctColor};">${pct}%</span>
+                            </div>
+                        </td>
+                        <td class="num" style="color:var(--muted)">${t.assign||''}</td>
+                        <td class="num" style="color:var(--muted)">${t.close||''}</td>
+                        <td class="num" style="color:var(--muted)">${t.kendala||''}</td>
+                        <td class="num" style="color:var(--muted)">${t.open||''}</td>
+                        <td class="num" style="font-weight:700">${t.total}</td>
+                        <td class="num">${t.sudah > 0 ? `<span class="badge b-sudah" style="background-color:transparent;border:1px solid #166534;color:#166534">${t.sudah}</span>` : ''}</td>
+                        <td class="num">${t.belum > 0 ? `<span class="badge b-belum" style="background-color:transparent;border:1px solid #991b1b;color:#991b1b">${t.belum}</span>` : ''}</td>
+                    </tr>`;
+                });
+            });
+
+            grand.assign  += saT.assign;  grand.close   += saT.close;
+            grand.kendala += saT.kendala; grand.open    += saT.open;
+            grand.total   += saT.total;   grand.sudah   += saT.sudah; grand.belum += saT.belum;
+        });
+
+        html += `<tr class="grand">
+            <td colspan="2">Grand Total</td>
+            <td class="num">${grand.assign  || ''}</td>
+            <td class="num">${grand.close   || ''}</td>
+            <td class="num">${grand.kendala || ''}</td>
+            <td class="num">${grand.open    || ''}</td>
+            <td class="num">${grand.total}</td>
+            <td class="num">${grand.sudah}</td>
+            <td class="num">${grand.belum}</td>
+        </tr>`;
+
+        document.getElementById('pivotBody').innerHTML = html;
+    }
+
+    // Fungsi Toggle Service Area (Membuka STO)
+    function toggleSA(grpId, headerRow) {
+        const rows = document.querySelectorAll(`tr.sto-row[data-group="${grpId}"]`);
+        if (!rows.length) return;
+        const isHidden = rows[0].classList.contains('hidden');
+
+        rows.forEach(r => {
+            r.classList.toggle('hidden', !isHidden);
+            // Jika SA ditutup, pastikan anak rincian STO (Teknisi) ikut tersembunyi dengan rapi
+            if (!isHidden) {
+                const stoGrpId = r.getAttribute('data-sto-target');
+                document.querySelectorAll(`tr.tek-row[data-sto-group="${stoGrpId}"]`).forEach(tr => tr.classList.add('hidden'));
+                r.classList.add('collapsed'); // Kembalikan panah STO ke posisi awal
+            }
+        });
+        headerRow.classList.toggle('collapsed', !isHidden);
+    }
+
+    // Fungsi Toggle STO (Membuka Teknisi)
+    function toggleSTO(stoGrpId, stoRow) {
+        const tekRows = document.querySelectorAll(`tr.tek-row[data-sto-group="${stoGrpId}"]`);
+        if (!tekRows.length) return;
+        const isHidden = tekRows[0].classList.contains('hidden');
+
+        tekRows.forEach(r => r.classList.toggle('hidden', !isHidden));
+        stoRow.classList.toggle('collapsed', !isHidden);
+    }
+
+    /* ===== CHARTS ===== */
+    function renderCharts(pivot, stoKembali, rows) {
+        // --- Stacked bar per SA ---
+        const saNames   = Object.keys(pivot).sort();
+        const shortNames = saNames.map(s => s.length > 13 ? s.slice(0,12)+'…' : s);
+        const assignArr  = saNames.map(sa => Object.values(pivot[sa]).reduce((a,d)=>a+d.assign,0));
+        const closeArr   = saNames.map(sa => Object.values(pivot[sa]).reduce((a,d)=>a+d.close,0));
+        const kendalaArr = saNames.map(sa => Object.values(pivot[sa]).reduce((a,d)=>a+d.kendala,0));
+        const openArr    = saNames.map(sa => Object.values(pivot[sa]).reduce((a,d)=>a+d.open,0));
+
+        if (barChartInstance) barChartInstance.destroy();
+        barChartInstance = new Chart(document.getElementById('barChart'), {
+            type: 'bar',
+            data: {
+                labels: shortNames,
+                datasets: [
+                    { label:'Assign',  data: assignArr,  backgroundColor:'#2a78d6', borderRadius:3, maxBarThickness:20 },
+                    { label:'Close',   data: closeArr,   backgroundColor:'#1baf7a', borderRadius:3, maxBarThickness:20 },
+                    { label:'Kendala', data: kendalaArr, backgroundColor:'#EE2E24', borderRadius:3, maxBarThickness:20 },
+                    { label:'Open',    data: openArr,    backgroundColor:'#eda100', borderRadius:3, maxBarThickness:20 },
+                ]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { mode:'index', intersect:false } },
+                scales: {
+                    x: { stacked:true, grid:{ display:false }, ticks:{ color:'#64748b', font:{ size:10 }, maxRotation:35 } },
+                    y: { stacked:true, grid:{ color:'#f1f5f9' }, ticks:{ color:'#64748b', font:{ size:10 }, stepSize:1 } }
+                }
+            }
+        });
+
+        // --- Mini bar: belum kembali per SA ---
+        const saBelumaArr = saNames.map(sa => {
+            return Object.keys(pivot[sa]).reduce((sum, sto) => sum + (stoKembali[sto]?.belum||0), 0);
+        });
+        const maxB = Math.max(...saBelumaArr, 1);
+        const mb = document.getElementById('miniBars');
+        mb.innerHTML = '';
+        saNames.forEach((sa, i) => {
+            const pct = Math.round(saBelumaArr[i] / maxB * 100);
+            const lbl = sa.length > 20 ? sa.slice(0,18)+'…' : sa;
+            mb.innerHTML += `
+                <div class="mini-bar-row">
+                    <span class="mini-bar-label" title="${sa}">${lbl}</span>
+                    <div class="mini-bar-track"><div class="mini-bar-fill" style="width:0%" data-target="${pct}"></div></div>
+                    <span class="mini-bar-val">${saBelumaArr[i]}</span>
+                </div>`;
+        });
+        setTimeout(() => {
+            document.querySelectorAll('.mini-bar-fill[data-target]').forEach(el => {
+                el.style.transition = 'width .8s ease';
+                el.style.width = el.getAttribute('data-target') + '%';
+            });
+        }, 200);
+
+        // --- Donut: komposisi status ---
+        const totAssign  = assignArr.reduce((a,b)=>a+b,0);
+        const totClose   = closeArr.reduce((a,b)=>a+b,0);
+        const totKendala = kendalaArr.reduce((a,b)=>a+b,0);
+        const totOpen    = openArr.reduce((a,b)=>a+b,0);
+        const totAll     = totAssign + totClose + totKendala + totOpen;
+        const donutData  = [
+            { label:'Assign',  val: totAssign,  color:'#2a78d6' },
+            { label:'Close',   val: totClose,   color:'#1baf7a' },
+            { label:'Kendala', val: totKendala, color:'#EE2E24' },
+            { label:'Open',    val: totOpen,    color:'#eda100' },
+        ].filter(d => d.val > 0);
+
+        if (doughnutInstance) doughnutInstance.destroy();
+        doughnutInstance = new Chart(document.getElementById('doughnut'), {
+            type: 'doughnut',
+            data: {
+                labels: donutData.map(d=>d.label),
+                datasets: [{ data: donutData.map(d=>d.val), backgroundColor: donutData.map(d=>d.color), borderWidth:2, borderColor:'#fff' }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, cutout:'65%',
+                plugins: { legend:{ display:false }, tooltip:{ callbacks:{ label: c=>`${c.label}: ${c.parsed}` } } }
+            }
+        });
+
+        document.getElementById('donutLegend').innerHTML = donutData.map(d => {
+            const pct = totAll > 0 ? Math.round(d.val/totAll*100) : 0;
+            return `<div style="display:flex;align-items:center;gap:6px;margin-bottom:7px;">
+                <span style="width:10px;height:10px;border-radius:2px;background:${d.color};flex-shrink:0;"></span>
+                <span style="color:#64748b">${d.label}</span>
+                <span style="font-weight:700;margin-left:auto;padding-left:8px;">${d.val} <span style="color:#94a3b8;font-weight:400">(${pct}%)</span></span>
+            </div>`;
+        }).join('');
+    }
+
+    /* ===== DETAIL TABLE ===== */
+    function renderDetail(headers, rows) {
+        let html = '';
+        rows.forEach((row, i) => {
+            const statusTiket  = String(row[35] || '').toLowerCase();
+            const statusKembali = row[52];
+            let badgeStatus = '';
+            if      (statusTiket === 'open')                       badgeStatus = `<span class="badge b-open">Open</span>`;
+            else if (statusTiket === 'close')                      badgeStatus = `<span class="badge b-close">Close</span>`;
+            else if (statusTiket === 'kendala')                    badgeStatus = `<span class="badge b-kendala">Kendala</span>`;
+            else if (statusTiket === 'assign' || statusTiket === 'asign') badgeStatus = `<span class="badge b-assign">Assign</span>`;
+            else                                                   badgeStatus = `<span class="badge b-open">${row[35]||'-'}</span>`;
+
+            html += `<tr>
+                <td style="color:#94a3b8;font-size:11px">${i+1}</td>
+                <td style="font-size:11px">${row[3]||'-'}</td>
+                <td><span class="sto-code">${row[5]||'-'}</span></td>
+                <td style="font-family:monospace;font-size:11px">${row[6]||'-'}</td>
+                <td>${badgeStatus}</td>
+                <td style="font-family:monospace;font-size:11px">${row[16]||'-'}</td>
+                <td style="font-family:monospace;font-size:11px">${String(row[21]||'-').replace(/<br>/g,' ').substring(0,25)}</td>
+                <td style="font-weight:600;color:#1a3a6b;font-size:11px">${row[51]||'<span style="color:#94a3b8;font-style:italic">-</span>'}</td>
+                <td>${statusKembali === 'SUDAH'
+                    ? '<span class="badge b-sudah">SUDAH</span>'
+                    : '<span class="badge b-belum">BELUM</span>'}</td>
+            </tr>`;
+        });
+        document.getElementById('detailBody').innerHTML = html;
+    }
+
+    function filterTable() {
+        const q = document.getElementById('searchInput').value.toLowerCase();
+        document.querySelectorAll('#detailBody tr').forEach(tr => {
+            tr.style.display = tr.textContent.toLowerCase().includes(q) ? '' : 'none';
+        });
+    }
+
+    function downloadExcel() {
+        if (!globalData) return;
+        Swal.fire({
+            title: 'Download Excel',
+            text: 'File Excel yang sudah berisi kolom Nama Teknisi (AZ) dan Status Pengembalian (BA) akan didownload.',
+            icon: 'info',
+            confirmButtonText: 'Download',
+            confirmButtonColor: '#EE2E24',
+            showCancelButton: true,
+            cancelButtonText: 'Batal'
+        }).then(result => {
+            if (!result.isConfirmed) return;
+            fetch('/admin/report/download', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ headers: globalData.headers, rows: globalData.rows })
+            }).then(res => res.blob()).then(blob => {
+                const url = URL.createObjectURL(blob);
+                const a   = document.createElement('a');
+                a.href     = url;
+                a.download = `Report_Migrasi_${new Date().toISOString().slice(0,10)}.xlsx`;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            });
+        });
+    }
+</script>
+</body>
+</html>

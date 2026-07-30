@@ -15,7 +15,7 @@
         .section-title { font-weight: 600; color: #EE2E24; margin-bottom: 1rem; border-bottom: 2px dashed #ffe5e5; padding-bottom: 10px; }
         .form-control, .form-select { border-radius: 8px; border: 1px solid #ced4da; }
         .form-control:focus, .form-select:focus { border-color: #EE2E24; box-shadow: 0 0 0 0.25rem rgba(238, 46, 36, 0.25); }
-        .signature-pad { width: 100%; height: 200px; border: 2px dashed #cbd5e1; border-radius: 12px; background: #f8fafc; cursor: crosshair; }
+        .signature-pad { width: 100%; height: 200px; border: 2px dashed #cbd5e1; border-radius: 12px; background: #f8fafc; cursor: crosshair; display: block; }
         .btn-submit { background: #EE2E24; color: white; font-weight: bold; width: 100%; border-radius: 12px; padding: 12px; border: none; }
         .table-perangkat th { background: #f8fafc; font-size: 0.85rem; color: #475569; }
     </style>
@@ -40,11 +40,17 @@
                 </div>
                 <div class="col-md-6 mb-3">
     <label class="form-label text-muted small fw-medium">Lokasi / STO</label>
-    <select class="form-select" name="loksto" required>
-        <option value="" disabled selected>-- Pilih Lokasi STO --</option>
-        <option value="SKJ">SKJ</option>
-        <option value="CLS">CSL</option>
-    </select>
+    <!-- CARI bagian ini di views/user/input/input_bast.ejs dan GANTI: -->
+<select class="form-select" name="loksto" id="lokstoSelect" required>
+    <option value="" disabled selected>-- Pilih Lokasi STO --</option>
+    <% if (typeof stoList !== 'undefined' && stoList.length > 0) { %>
+        <% stoList.forEach(s => { %>
+            <option value="<%= s.sto %>"><%= s.sto %></option>
+        <% }) %>
+    <% } else { %>
+        <option disabled>Belum ada STO terdaftar</option>
+    <% } %>
+</select>
 </div>
 
             <!-- 2. Identitas Teknisi -->
@@ -183,19 +189,60 @@
     let drawing = false;
     ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.strokeStyle = '#1e293b';
 
-    const startDraw = (e) => { drawing = true; ctx.beginPath(); ctx.moveTo(getX(e), getY(e)); };
-    const draw = (e) => { if (!drawing) return; e.preventDefault(); ctx.lineTo(getX(e), getY(e)); ctx.stroke(); };
-    const stopDraw = () => drawing = false;
-    
-    const getX = (e) => e.offsetX || (e.touches ? e.touches[0].clientX - canvas.getBoundingClientRect().left : 0);
-    const getY = (e) => e.offsetY || (e.touches ? e.touches[0].clientY - canvas.getBoundingClientRect().top : 0);
+    // Sesuaikan ukuran pixel canvas dengan tampilan CSS
+function resizeCanvas() {
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height || 200;
+    ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.strokeStyle = '#1e293b';
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
 
-    canvas.addEventListener('mousedown', startDraw); canvas.addEventListener('mousemove', draw);
-    canvas.addEventListener('mouseup', stopDraw); canvas.addEventListener('mouseout', stopDraw);
-    canvas.addEventListener('touchstart', startDraw); canvas.addEventListener('touchmove', draw);
-    canvas.addEventListener('touchend', stopDraw);
+function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    if (e.touches) {
+        return {
+            x: (e.touches[0].clientX - rect.left) * scaleX,
+            y: (e.touches[0].clientY - rect.top) * scaleY
+        };
+    }
+    return {
+        x: (e.clientX - rect.left) * scaleX,
+        y: (e.clientY - rect.top) * scaleY
+    };
+}
 
-    function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); }
+const startDraw = (e) => { 
+    e.preventDefault();
+    drawing = true; 
+    const pos = getPos(e);
+    ctx.beginPath(); 
+    ctx.moveTo(pos.x, pos.y); 
+};
+
+const draw = (e) => { 
+    if (!drawing) return; 
+    e.preventDefault(); 
+    const pos = getPos(e);
+    ctx.lineTo(pos.x, pos.y); 
+    ctx.stroke(); 
+};
+
+const stopDraw = () => { 
+    drawing = false; 
+    ctx.beginPath();
+};
+
+canvas.addEventListener('mousedown', startDraw); 
+canvas.addEventListener('mousemove', draw);
+canvas.addEventListener('mouseup', stopDraw); 
+canvas.addEventListener('mouseleave', stopDraw);
+canvas.addEventListener('touchstart', startDraw, { passive: false }); 
+canvas.addEventListener('touchmove', draw, { passive: false });
+canvas.addEventListener('touchend', stopDraw);
 
     // Proses Submit (Kirim Data ke Server)
    // Proses Submit (Kirim Data ke Server)

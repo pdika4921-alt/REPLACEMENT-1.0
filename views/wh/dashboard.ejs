@@ -8,101 +8,257 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <style>
-        body { font-family: 'Poppins', sans-serif; background-color: #f8fafc; }
-        .navbar-custom { background: linear-gradient(135deg, #EE2E24 0%, #b31217 100%); }
-        .card-container { background: #fff; border-radius: 16px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; }
-        .badge-pending { background-color: #fef08a; color: #854d0e; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
-        .badge-completed { background-color: #dcfce7; color: #166534; padding: 5px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
-        .nav-pills .nav-link.active { background-color: #EE2E24; }
-        .nav-pills .nav-link { color: #475569; font-weight: 500; border-radius: 10px; }
+    :root {
+        --navy:   #0e1f3b;
+        --navy2:  #162d52;
+        --red:    #EE2E24;
+        --red2:   #c42019;
+        --surface:#f0f4f8;
+        --card:   #ffffff;
+        --border: #dde3ec;
+        --text:   #1e293b;
+        --muted:  #64748b;
+    }
+    body { font-family: 'Poppins', sans-serif; background: var(--surface); color: var(--text); }
+
+    /* NAVBAR */
+    .navbar-custom {
+        background: linear-gradient(135deg, var(--navy) 0%, var(--navy2) 100%);
+        border-bottom: 3px solid var(--red);
+    }
+
+    /* TAB BAR */
+    .tab-bar {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 6px;
+        display: inline-flex;
+        gap: 4px;
+        box-shadow: 0 2px 8px rgba(14,31,59,0.05);
+    }
+    .tab-bar .nav-link {
+        color: var(--muted); font-weight: 500; font-size: 0.85rem;
+        border-radius: 10px; padding: 9px 20px;
+        transition: all .2s; border: 1px solid transparent;
+    }
+    .tab-bar .nav-link:hover { color: var(--red); background: #fff5f5; }
+    .tab-bar .nav-link.active {
+        background: var(--navy); color: #fff;
+        border-color: var(--navy);
+        box-shadow: 0 3px 10px rgba(14,31,59,0.25);
+    }
+
+    /* CARD */
+    .card-container {
+        background: var(--card);
+        border-radius: 20px;
+        padding: 28px;
+        box-shadow: 0 2px 16px rgba(14,31,59,0.05);
+        border: 1px solid var(--border);
+    }
+
+    /* TABLE */
+    .table th {
+        background: var(--navy); color: rgba(255,255,255,0.85);
+        font-size: 0.72rem; text-transform: uppercase;
+        letter-spacing: .5px; font-weight: 600; border: none;
+    }
+    .table td { font-size: 0.855rem; border-color: #f1f5f9; vertical-align: middle; }
+    .table tbody tr:hover { background: #fafbff; }
+
+    /* BADGE */
+    .badge-pending   { background:#fef9c3; color:#854d0e; padding:4px 12px; border-radius:8px; font-size:0.72rem; font-weight:700; }
+    .badge-completed { background:#dcfce7; color:#166534; padding:4px 12px; border-radius:8px; font-size:0.72rem; font-weight:700; }
+    .badge-rejected  { background:#fee2e2; color:#991b1b; padding:4px 12px; border-radius:8px; font-size:0.72rem; font-weight:700; }
+
+    /* WH IDENTITY STRIP */
+    .wh-strip {
+        background: linear-gradient(135deg, var(--navy) 0%, #1e4080 100%);
+        border-radius: 16px; padding: 18px 24px;
+        display: flex; align-items: center; gap: 16px;
+        margin-bottom: 24px; color: #fff;
+    }
+    .wh-avatar {
+        width: 50px; height: 50px; border-radius: 14px;
+        background: rgba(255,255,255,0.15);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.3rem; font-weight: 800;
+    }
+    .wh-strip .wh-name { font-weight: 700; font-size: 1rem; }
+    .wh-strip .wh-sub  { font-size: 0.75rem; opacity: .65; }
+    .wh-badge {
+        margin-left: auto; background: var(--red);
+        border-radius: 8px; padding: 5px 14px;
+        font-size: 0.72rem; font-weight: 700; letter-spacing: .5px;
+    }
+
+    /* EMPTY STATE */
+    .empty-state { text-align: center; padding: 50px 0; }
+    .empty-state i { font-size: 2.8rem; display: block; margin-bottom: 10px; }
+
+    /* STAT MINI ROW */
+    .stat-mini {
+        background: var(--card); border: 1px solid var(--border);
+        border-radius: 14px; padding: 16px 20px;
+        display: flex; align-items: center; gap: 14px;
+        box-shadow: 0 1px 6px rgba(14,31,59,0.04);
+    }
+    .stat-mini .stat-dot {
+        width: 42px; height: 42px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.1rem; flex-shrink: 0;
+    }
+    .stat-dot.amber { background: #fffbeb; color: #d97706; }
+    .stat-dot.green { background: #f0fdf4; color: #16a34a; }
+    .stat-dot.red   { background: #fff0f0; color: var(--red); }
     </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark navbar-custom py-3 shadow-sm mb-4">
+<nav class="navbar navbar-expand-lg navbar-dark navbar-custom py-3 mb-4">
     <div class="container">
-        <a class="navbar-brand fw-bold" href="#"><i class="bi bi-box-seam me-2"></i> Panel Warehouse (Penerima)</a>
-        <div class="d-flex align-items-center">
-            <span class="text-white me-3 fw-medium small">Halo, <b><%= username %></b></span>
-            <a href="/logout" class="btn btn-sm btn-light text-danger fw-bold rounded-pill px-3">Logout</a>
+        <a class="navbar-brand d-flex align-items-center gap-2 text-decoration-none" href="#">
+            <div style="background:var(--red);border-radius:8px;padding:4px 10px;font-weight:800;font-size:0.9rem;">BAST</div>
+            <span class="fw-semibold" style="font-size:0.9rem;">Panel Warehouse</span>
+        </a>
+        <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center gap-2">
+                <div class="rounded-circle bg-white bg-opacity-10 d-flex align-items-center justify-content-center"
+                     style="width:34px;height:34px;">
+                    <i class="bi bi-box-seam-fill text-white" style="font-size:0.85rem;"></i>
+                </div>
+                <div class="lh-1">
+                    <div class="text-white fw-semibold" style="font-size:0.82rem;"><%= username %></div>
+                    <div class="text-white opacity-60" style="font-size:0.68rem;">Warehouse</div>
+                </div>
+            </div>
+            <a href="/logout" class="btn btn-sm btn-outline-light rounded-pill px-3 fw-semibold">Logout</a>
         </div>
     </div>
 </nav>
 
 <div class="container mb-5">
 
-    <!-- Tab Navigation -->
-    <ul class="nav nav-pills mb-4 gap-2 bg-white p-2 rounded-4 shadow-sm d-inline-flex border">
-        <li class="nav-item">
-            <button class="nav-link active px-4 py-2" data-bs-toggle="pill" data-bs-target="#tab-pending" type="button">
-                <i class="bi bi-hourglass-split me-1"></i> Menunggu TTD
-                <% if (pendingData && pendingData.length > 0) { %>
-                    <span class="badge bg-danger ms-1"><%= pendingData.length %></span>
-                <% } %>
-            </button>
-        </li>
-        <li class="nav-item">
-            <button class="nav-link px-4 py-2" data-bs-toggle="pill" data-bs-target="#tab-selesai" type="button">
-                <i class="bi bi-check-circle-fill me-1"></i> Sudah Disetujui
-            </button>
-        </li>
-        
-        <!-- TAMBAHKAN KODE ANDA DI SINI -->
-        <li class="nav-item">
-            <button class="nav-link px-4 py-2" data-bs-toggle="pill" data-bs-target="#tab-ditolak" type="button">
-                <i class="bi bi-x-circle-fill me-1"></i> Ditolak
-            </button>
-        </li>
-        <!-- ========================== -->
+    <!-- WH Identity Strip (Penerima) -->
+    <div class="wh-strip">
+        <div class="wh-avatar"><%= username.charAt(0).toUpperCase() %></div>
+        <div>
+            <div class="wh-name"><%= username %></div>
+            <div class="wh-sub">Petugas Penerima · Warehouse Sukmajaya</div>
+        </div>
+        <span class="wh-badge">AKTIF</span>
+    </div>
 
-    </ul>
+    <!-- Stat mini -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="stat-mini">
+                <div class="stat-dot amber"><i class="bi bi-hourglass-split"></i></div>
+                <div>
+                    <div class="fw-700" style="font-size:1.4rem;font-weight:800;"><%= (pendingData||[]).length %></div>
+                    <div class="text-muted" style="font-size:0.78rem;">Menunggu TTD</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-mini">
+                <div class="stat-dot green"><i class="bi bi-check-circle-fill"></i></div>
+                <div>
+                    <div class="fw-700" style="font-size:1.4rem;font-weight:800;"><%= (completedData||[]).length %></div>
+                    <div class="text-muted" style="font-size:0.78rem;">Sudah Disetujui</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-mini">
+                <div class="stat-dot red"><i class="bi bi-x-circle-fill"></i></div>
+                <div>
+                    <div class="fw-700" style="font-size:1.4rem;font-weight:800;"><%= (rejectedData||[]).length %></div>
+                    <div class="text-muted" style="font-size:0.78rem;">Ditolak</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="mb-4">
+        <ul class="nav tab-bar" id="whTab" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-pending" type="button">
+                    <i class="bi bi-hourglass-split me-1"></i> Menunggu TTD
+                    <% if (pendingData && pendingData.length > 0) { %>
+                        <span class="badge bg-danger ms-1" style="font-size:0.65rem;"><%= pendingData.length %></span>
+                    <% } %>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-selesai" type="button">
+                    <i class="bi bi-check-circle-fill me-1"></i> Sudah Disetujui
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-ditolak" type="button">
+                    <i class="bi bi-x-circle-fill me-1"></i> Ditolak
+                </button>
+            </li>
+        </ul>
+    </div>
 
     <div class="tab-content">
-
-        <!-- TAB 1: PENDING (MENUNGGU TTD) -->
+        <!-- TAB PENDING -->
         <div class="tab-pane fade show active" id="tab-pending">
             <div class="card-container">
-                <h5 class="fw-bold mb-1 text-dark"><i class="bi bi-inbox-fill text-danger me-2"></i> Menunggu Tanda Tangan Anda</h5>
-                <p class="text-muted small mb-4">Klik "Tanda Tangani" untuk menyetujui, atau "Tolak" untuk mengembalikan/menghapus BAST.</p>
-                
+                <div class="d-flex align-items-start gap-3 mb-4">
+                    <div style="width:42px;height:42px;border-radius:12px;background:#fffbeb;color:#d97706;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">
+                        <i class="bi bi-inbox-fill"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold" style="font-size:1rem;">Menunggu Tanda Tangan Anda</div>
+                        <div class="text-muted" style="font-size:0.82rem;">Klik "Tanda Tangani" untuk menyetujui, atau "Tolak" untuk mengembalikan BAST.</div>
+                    </div>
+                </div>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
-                        <thead class="table-light">
+                        <thead>
                             <tr>
                                 <th>Kode BAST</th>
                                 <th>Tanggal</th>
                                 <th>Lokasi STO</th>
                                 <th>Nama Teknisi</th>
-                                <th>Jml Perangkat</th>
+                                <th class="text-center">Jml ONT</th>
                                 <th class="text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             <% if (!pendingData || pendingData.length === 0) { %>
                                 <tr>
-                                    <td colspan="6" class="text-center py-5 text-muted">
-                                        <i class="bi bi-emoji-smile fs-2 d-block mb-2 text-success"></i>
-                                        Hore! Tidak ada BAST yang menunggu persetujuan.
+                                    <td colspan="6">
+                                        <div class="empty-state text-muted">
+                                            <i class="bi bi-emoji-smile text-success"></i>
+                                            Tidak ada BAST yang menunggu persetujuan
+                                        </div>
                                     </td>
                                 </tr>
                             <% } %>
                             <% (pendingData || []).forEach(row => { %>
                             <tr>
-                                <td><span class="fw-bold text-danger font-monospace"><%= row.kode_unik %></span></td>
+                                <td><span class="fw-bold font-monospace" style="color:var(--red);"><%= row.kode_unik %></span></td>
                                 <td><%= row.tanggal %></td>
                                 <td><%= row.loksto %></td>
                                 <td><%= row.teknisi_nama %></td>
                                 <td class="text-center">
-                                    <span class="badge bg-secondary-subtle text-secondary border"><%= row.jumlah_perangkat || '-' %> ONT</span>
+                                    <span class="badge bg-light text-dark border" style="font-size:0.75rem;"><%= row.jumlah_perangkat || '-' %> ONT</span>
                                 </td>
                                 <td class="text-center">
                                     <div class="d-flex gap-2 justify-content-center">
-                                        <a href="/wh/sign/<%= row.kode_unik %>" class="btn btn-sm btn-danger rounded-pill px-3 fw-medium shadow-sm">
+                                        <a href="/wh/sign/<%= row.kode_unik %>"
+                                           class="btn btn-sm fw-semibold rounded-pill px-3"
+                                           style="background:var(--navy);color:#fff;font-size:0.78rem;">
                                             <i class="bi bi-pen-fill me-1"></i> Tanda Tangani
                                         </a>
-                                        <button type="button"
-                                            class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-medium"
-                                            onclick="konfirmasiTolak('<%= row.kode_unik %>')">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-semibold"
+                                            style="font-size:0.78rem;" onclick="konfirmasiTolak('<%= row.kode_unik %>')">
                                             <i class="bi bi-x-circle me-1"></i> Tolak
                                         </button>
                                     </div>
@@ -115,47 +271,57 @@
             </div>
         </div>
 
-        <!-- TAB 2: SELESAI / APPROVED -->
+        <!-- TAB SELESAI -->
         <div class="tab-pane fade" id="tab-selesai">
             <div class="card-container">
-                <h5 class="fw-bold mb-1 text-dark"><i class="bi bi-patch-check-fill text-success me-2"></i> BAST yang Sudah Disetujui</h5>
-                <p class="text-muted small mb-4">Daftar BAST yang telah ditandatangani. Klik "Buka PDF" untuk mencetak atau menyimpan dokumen.</p>
-                
+                <div class="d-flex align-items-start gap-3 mb-4">
+                    <div style="width:42px;height:42px;border-radius:12px;background:#f0fdf4;color:#16a34a;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">
+                        <i class="bi bi-patch-check-fill"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold" style="font-size:1rem;">BAST yang Sudah Disetujui</div>
+                        <div class="text-muted" style="font-size:0.82rem;">Daftar dokumen yang disahkan dan eviden fotonya.</div>
+                    </div>
+                </div>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
-                        <thead class="table-light">
+                        <thead>
                             <tr>
                                 <th>Kode BAST</th>
                                 <th>Tanggal</th>
-                                <th>Lokasi STO</th>
                                 <th>Nama Teknisi</th>
-                                <th>Disetujui Oleh</th>
-                                <th>Status</th>
-                                <th class="text-center">Dokumen</th>
+                                <th>Penerima (WH)</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-center">Dokumen & Eviden</th>
                             </tr>
                         </thead>
                         <tbody>
                             <% if (!completedData || completedData.length === 0) { %>
                                 <tr>
-                                    <td colspan="7" class="text-center py-5 text-muted">
-                                        <i class="bi bi-folder2-open fs-2 d-block mb-2"></i>
-                                        Belum ada dokumen yang disetujui.
+                                    <td colspan="6">
+                                        <div class="empty-state text-muted">
+                                            <i class="bi bi-folder2-open"></i>
+                                            Belum ada dokumen yang disetujui
+                                        </div>
                                     </td>
                                 </tr>
                             <% } %>
                             <% (completedData || []).forEach(row => { %>
                             <tr>
-                                <td><span class="fw-bold text-danger font-monospace"><%= row.kode_unik %></span></td>
+                                <td><span class="fw-bold font-monospace" style="color:var(--red);"><%= row.kode_unik %></span></td>
                                 <td><%= row.tanggal %></td>
-                                <td><%= row.loksto %></td>
                                 <td><%= row.teknisi_nama %></td>
-                                <td><span class="badge bg-light text-dark border"><%= row.wh_nama || '-' %></span></td>
-                                <td><span class="badge-completed">Approved (WH)</span></td>
+                                <td><span class="badge bg-light text-dark border fw-bold" style="font-size:0.75rem;"><%= row.wh_nama || '-' %></span></td>
+                                <td class="text-center"><span class="badge-completed">Approved</span></td>
                                 <td class="text-center">
-                                    <a href="/bast/cetak/<%= row.kode_unik %>" target="_blank"
-                                        class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-medium">
-                                        <i class="bi bi-printer-fill me-1"></i> Buka PDF
-                                    </a>
+                                    <div class="d-flex gap-2 justify-content-center">
+                                        <a href="/bast/cetak/<%= row.kode_unik %>" target="_blank" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-semibold" style="font-size:0.75rem;">
+                                            <i class="bi bi-file-pdf-fill"></i> PDF
+                                        </a>
+                                        <button class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold" style="font-size:0.75rem;" data-eviden="<%= row.eviden_json %>" onclick="lihatEviden(this)">
+                                            <i class="bi bi-images"></i> Eviden
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                             <% }) %>
@@ -164,36 +330,52 @@
                 </div>
             </div>
         </div>
-        <!-- TAB 3: DITOLAK -->
+
+        <!-- TAB DITOLAK -->
         <div class="tab-pane fade" id="tab-ditolak">
             <div class="card-container">
-                <h5 class="fw-bold mb-1 text-dark"><i class="bi bi-x-octagon-fill text-danger me-2"></i> BAST yang Ditolak</h5>
-                <p class="text-muted small mb-4">Daftar BAST yang dikembalikan ke teknisi.</p>
-                
+                <div class="d-flex align-items-start gap-3 mb-4">
+                    <div style="width:42px;height:42px;border-radius:12px;background:#fff0f0;color:var(--red);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;">
+                        <i class="bi bi-x-octagon-fill"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold" style="font-size:1rem;">BAST yang Ditolak</div>
+                        <div class="text-muted" style="font-size:0.82rem;">Daftar BAST yang dikembalikan ke teknisi.</div>
+                    </div>
+                </div>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
-                        <thead class="table-light">
+                        <thead>
                             <tr>
                                 <th>Kode BAST</th>
                                 <th>Tanggal</th>
                                 <th>Nama Teknisi</th>
-                                <th>Jml Perangkat</th>
                                 <th>Alasan Tolak</th>
+                                <th class="text-center">Cek Eviden</th>
                             </tr>
                         </thead>
                         <tbody>
                             <% if (!rejectedData || rejectedData.length === 0) { %>
                                 <tr>
-                                    <td colspan="5" class="text-center py-5 text-muted">Belum ada dokumen yang ditolak.</td>
+                                    <td colspan="5">
+                                        <div class="empty-state text-muted">
+                                            <i class="bi bi-check2-all text-success"></i>
+                                            Tidak ada dokumen yang ditolak
+                                        </div>
+                                    </td>
                                 </tr>
                             <% } %>
                             <% (rejectedData || []).forEach(row => { %>
                             <tr>
-                                <td><span class="fw-bold text-danger font-monospace"><%= row.kode_unik %></span></td>
+                                <td><span class="fw-bold font-monospace" style="color:var(--red);"><%= row.kode_unik %></span></td>
                                 <td><%= row.tanggal %></td>
                                 <td><%= row.teknisi_nama %></td>
-                                <td class="text-center"><span class="badge bg-secondary-subtle text-secondary border"><%= row.jumlah_perangkat || '-' %> ONT</span></td>
-                                <td><span class="text-danger small fw-bold"><%= row.alasan_tolak || '-' %></span></td>
+                                <td><span class="text-danger small fw-semibold"><%= row.alasan_tolak || '-' %></span></td>
+                                <td class="text-center">
+                                    <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-semibold" style="font-size:0.75rem;" data-eviden="<%= row.eviden_json %>" onclick="lihatEviden(this)">
+                                        <i class="bi bi-images"></i> Lihat
+                                    </button>
+                                </td>
                             </tr>
                             <% }) %>
                         </tbody>
@@ -202,42 +384,70 @@
             </div>
         </div>
 
-    </div><!-- end tab-content -->
+    </div>
 </div>
 
-<!-- Modal Konfirmasi Tolak -->
+<!-- Modal Tolak BAST -->
 <div class="modal fade" id="modalTolak" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow rounded-4">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title fw-bold text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i> Konfirmasi Tolak BAST</h5>
+    <div class="modal-dialog modal-dialog-centered" style="max-width:440px;">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-0 pb-0 pt-4 px-4">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width:44px;height:44px;border-radius:12px;background:#fee2e2;color:#991b1b;display:flex;align-items:center;justify-content:center;font-size:1.2rem;">
+                        <i class="bi bi-exclamation-triangle-fill"></i>
+                    </div>
+                    <div>
+                        <div class="fw-bold" style="color:var(--text);">Tolak Dokumen BAST</div>
+                        <div class="text-muted" style="font-size:0.78rem;">Dokumen akan dikembalikan ke teknisi</div>
+                    </div>
+                </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body pt-2">
-                <p class="text-muted mb-1">Anda akan menolak/menghapus dokumen BAST:</p>
-                <p class="fw-bold text-danger font-monospace fs-5" id="kodeUnikTolak">-</p>
-                <div class="mb-3">
-                    <label class="form-label fw-medium small">Alasan Penolakan <span class="text-danger">*</span></label>
-                    <textarea class="form-control" id="alasanTolak" rows="3" placeholder="Contoh: Data tidak sesuai, SN perangkat salah, dll." required></textarea>
+            <div class="modal-body px-4 py-3">
+                <div class="p-3 rounded-3 mb-3" style="background:#f8fafc;border:1px solid var(--border);">
+                    <div class="text-muted" style="font-size:0.75rem;">Kode BAST</div>
+                    <div class="fw-bold font-monospace" style="color:var(--red);font-size:1rem;" id="kodeUnikTolak">-</div>
                 </div>
-                <div class="alert alert-warning py-2 small mb-0">
-                    <i class="bi bi-info-circle me-1"></i> Tindakan ini akan menghapus dokumen dan tidak dapat dibatalkan.
+                <div class="mb-2">
+                    <label class="form-label fw-semibold small">Alasan Penolakan <span class="text-danger">*</span></label>
+                    <textarea class="form-control rounded-3" id="alasanTolak" rows="3"
+                        placeholder="Contoh: Data SN tidak sesuai, foto eviden kurang jelas, dll."
+                        style="border:1.5px solid var(--border);font-size:0.85rem;resize:none;"></textarea>
+                </div>
+                <div class="small text-muted p-2 rounded-3" style="background:#fffbeb;border:1px solid #fde68a;">
+                    <i class="bi bi-info-circle me-1 text-warning"></i> Tindakan ini tidak dapat dibatalkan.
                 </div>
             </div>
-            <div class="modal-footer border-0 pt-0">
-                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Batal</button>
-                <button type="button" class="btn btn-danger rounded-pill px-4 fw-bold" onclick="eksekusiTolak()">
-                    <i class="bi bi-trash-fill me-1"></i> Ya, Tolak & Hapus
+            <div class="modal-footer border-0 px-4 pb-4 pt-0 gap-2">
+                <button type="button" class="btn btn-light rounded-pill px-4 fw-semibold" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn rounded-pill px-4 fw-bold" style="background:var(--red);color:#fff;" onclick="eksekusiTolak()">
+                    <i class="bi bi-trash-fill me-1"></i> Tolak Dokumen
                 </button>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Modal Lihat Eviden (Fitur Baru) -->
+<div class="modal fade" id="modalEviden" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-transparent border-0 shadow-none">
+            <div class="modal-body p-0 position-relative text-center">
+                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" style="z-index:9;"></button>
+                <div id="evidenContainer" class="d-flex overflow-auto gap-3 p-4 rounded-4" style="background:rgba(14,31,59,0.95); max-height:85vh; border:1px solid #334155;">
+                    <!-- Gambar akan dimuat via JS di sini -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     let kodeUnikTarget = '';
 
+    // Fungsi Tolak BAST
     function konfirmasiTolak(kodeUnik) {
         kodeUnikTarget = kodeUnik;
         document.getElementById('kodeUnikTolak').innerText = kodeUnik;
@@ -252,7 +462,6 @@
             document.getElementById('alasanTolak').focus();
             return;
         }
-        // Kirim ke endpoint reject via form POST
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = '/wh/reject/' + kodeUnikTarget;
@@ -263,6 +472,31 @@
         form.appendChild(inputAlasan);
         document.body.appendChild(form);
         form.submit();
+    }
+
+    // Fungsi Lihat Eviden
+    function lihatEviden(btn) {
+        const container = document.getElementById('evidenContainer');
+        container.innerHTML = '';
+        try {
+            const arr = JSON.parse(btn.getAttribute('data-eviden') || '[]');
+            if (arr.length === 0) {
+                container.innerHTML = '<div class="text-white w-100 p-5 text-center">Tidak ada foto eviden yang diunggah.</div>';
+            } else {
+                arr.forEach((path, i) => {
+                    const cleanPath = path.replace(/\\/g, '/');
+                    container.innerHTML += `
+                        <div class="flex-shrink-0" style="position:relative;">
+                            <span class="badge bg-danger position-absolute top-0 start-0 m-2" style="font-size:0.7rem;">Foto ${i+1}</span>
+                            <img src="/${cleanPath}" class="rounded" style="height:350px; max-width:90vw; object-fit:contain; border:2px solid #1e293b; cursor:pointer;" onclick="window.open(this.src, '_blank')" title="Klik untuk membuka ukuran penuh">
+                        </div>
+                    `;
+                });
+            }
+            new bootstrap.Modal(document.getElementById('modalEviden')).show();
+        } catch(e) {
+            alert('Gagal memuat foto eviden');
+        }
     }
 </script>
 </body>
