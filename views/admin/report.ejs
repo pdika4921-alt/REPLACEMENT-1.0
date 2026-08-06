@@ -127,9 +127,78 @@
             .kpi-grid { grid-template-columns: 1fr 1fr; }
             .two-col { grid-template-columns: 1fr; }
         }
+
+        /* ===== POLISH & ANIMATION ===== */
+        body { overflow-x: hidden; }
+
+        .bg-deco { position: fixed; border-radius: 50%; filter: blur(60px); opacity: .14; pointer-events: none; z-index: 0; }
+        .bg-deco.d1 { width: 400px; height: 400px; top: -90px; right: -80px; background: var(--red); animation: floatBlob 12s ease-in-out infinite; }
+        .bg-deco.d2 { width: 320px; height: 320px; bottom: -90px; left: -80px; background: #2a78d6; animation: floatBlob 14s ease-in-out 2.2s infinite; }
+
+        .navbar, .container-fluid { position: relative; z-index: 1; }
+
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes floatBlob { 0%, 100% { transform: translate(0,0) scale(1); } 50% { transform: translate(26px,-22px) scale(1.07); } }
+
+        .anim-up { opacity: 0; animation: fadeUp .6s cubic-bezier(.22,1,.36,1) both; }
+        .anim-up-dyn { opacity: 0; animation: fadeUp .5s cubic-bezier(.22,1,.36,1) both; }
+
+        .card-panel, .kpi-card, .chart-panel, .progress-panel, .pivot-wrap, .detail-wrap { transition: transform .2s, box-shadow .2s, border-color .2s; }
+        .kpi-card:hover, .chart-panel:hover, .pivot-wrap:hover, .detail-wrap:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(14,31,59,.1); }
+
+        .upload-zone { position: relative; overflow: hidden; }
+        .upload-zone::after {
+            content: ''; position: absolute; top: 0; bottom: 0; width: 110px;
+            background: linear-gradient(105deg, transparent, rgba(238,46,36,.14), transparent);
+            transform: skewX(-20deg); animation: shine 4s ease-in-out infinite;
+        }
+        @keyframes shine { 0% { left: -140px; } 60%, 100% { left: 130%; } }
+
+        .tab-bar { box-shadow: 0 4px 14px rgba(14,31,59,.06); }
+
+        @media (prefers-reduced-motion: reduce) {
+            .anim-up, .anim-up-dyn, .bg-deco, .upload-zone::after { animation: none !important; transition: none !important; }
+            .anim-up, .anim-up-dyn { opacity: 1; }
+            .bg-deco { display: none; }
+        }
+
+        /* ===== EXTRA ANIMATIONS ===== */
+        .reveal { opacity: 0; transform: translateY(26px); transition: opacity .6s cubic-bezier(.22,1,.36,1), transform .6s cubic-bezier(.22,1,.36,1); }
+        .reveal.reveal-visible { opacity: 1; transform: none; }
+
+        .kpi-card { position: relative; overflow: hidden; }
+        .kpi-card::after {
+            content: ''; position: absolute; top: 0; bottom: 0; left: -60%; width: 40%;
+            background: linear-gradient(105deg, transparent, rgba(255,255,255,.5), transparent);
+            transform: skewX(-20deg); animation: kpiShine 4.5s ease-in-out infinite;
+            pointer-events: none;
+        }
+        @keyframes kpiShine { 0% { left: -60%; } 55%, 100% { left: 130%; } }
+
+        .upload-zone .icon { animation: iconFloat 3s ease-in-out infinite; }
+        @keyframes iconFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+        table.dtable tbody tr { animation: drowIn .4s cubic-bezier(.22,1,.36,1) both; }
+        table.dtable tbody tr:nth-child(2) { animation-delay: .04s; }
+        table.dtable tbody tr:nth-child(3) { animation-delay: .08s; }
+        table.dtable tbody tr:nth-child(4) { animation-delay: .12s; }
+        table.dtable tbody tr:nth-child(5) { animation-delay: .16s; }
+        table.dtable tbody tr:nth-child(6) { animation-delay: .2s; }
+        table.dtable tbody tr:nth-child(n+7) { animation-delay: .24s; }
+        @keyframes drowIn { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+
+        .chart-panel, .progress-panel, .pivot-wrap, .detail-wrap { transition: transform .2s, box-shadow .2s; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .reveal, .kpi-card::after, .upload-zone .icon, table.dtable tbody tr { animation: none !important; transition: none !important; }
+            .reveal { opacity: 1; transform: none; }
+        }
     </style>
 </head>
 <body>
+
+<div class="bg-deco d1"></div>
+<div class="bg-deco d2"></div>
 
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark navbar-custom py-3 mb-4">
@@ -157,7 +226,7 @@
 <div class="container-fluid px-4 mb-5">
 
     <!-- Header -->
-    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3 anim-up">
         <div>
             <h4 class="fw-bold mb-1"><i class="bi bi-bar-chart-line-fill text-danger me-2"></i>Replacement NTE</h4>
             <p class="text-muted small mb-0">Upload file Excel → VLOOKUP NIK & validasi No. Internet → Lihat pivot report & grafik</p>
@@ -165,7 +234,7 @@
     </div>
 
     <!-- Upload Area -->
-    <div id="uploadSection" class="card-panel p-4 mb-4">
+    <div id="uploadSection" class="card-panel p-4 mb-4 anim-up">
         <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
             <div class="icon"><i class="bi bi-file-earmark-arrow-up-fill"></i></div>
             <h5 class="fw-bold mb-2">Drag & Drop atau Klik untuk Upload</h5>
@@ -199,7 +268,7 @@
         <div class="kpi-grid" id="kpiCards"></div>
 
         <!-- Progress Bar -->
-        <div class="progress-panel">
+        <div class="progress-panel reveal">
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <span class="fw-semibold small"><i class="bi bi-arrow-repeat text-danger me-1"></i>Progress Pengembalian Perangkat</span>
                 <span class="fw-bold fs-5" id="progressPct" style="color:var(--red)">0%</span>
@@ -216,7 +285,7 @@
         </div>
 
         <!-- Tab Nav -->
-        <ul class="nav tab-bar" role="tablist">
+        <ul class="nav tab-bar reveal" role="tablist">
             <li class="nav-item">
                 <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#pivotPane" type="button">
                     <i class="bi bi-grid-3x3-gap-fill me-1"></i> Pivot & Grafik
@@ -237,7 +306,7 @@
                 <!-- Charts -->
                 <div class="two-col mb-4">
                     <!-- Stacked Bar -->
-                    <div class="chart-panel">
+                    <div class="chart-panel reveal">
                         <p class="panel-title"><i class="bi bi-bar-chart-fill me-1 text-danger"></i>Distribusi Status Tiket per Service Area</p>
                         <div class="legend-row" id="barLegend">
                             <span class="legend-item"><span class="legend-dot" style="background:#2a78d6"></span>Assign</span>
@@ -250,7 +319,7 @@
                         </div>
                     </div>
                     <!-- Mini bar + Donut -->
-                    <div class="chart-panel">
+                    <div class="chart-panel reveal">
                         <p class="panel-title"><i class="bi bi-exclamation-circle-fill me-1 text-danger"></i>Belum Kembali per Service Area</p>
                         <div id="miniBars" style="margin-bottom:16px;"></div>
                         <hr style="border-color:#f1f5f9;margin:10px 0 12px;">
@@ -265,7 +334,7 @@
                 </div>
 
                 <!-- Pivot Table -->
-                <div class="pivot-wrap mb-4">
+                <div class="pivot-wrap mb-4 reveal">
                     <p class="panel-title"><i class="bi bi-grid me-1"></i>Rekapitulasi Hierarki Data <span style="font-size:10px;color:var(--muted);font-weight:400;margin-left:6px;">(Klik baris SA atau STO untuk melihat detail Teknisi)</span></p>
                     <table class="ptable">
                         <thead>
@@ -288,7 +357,7 @@
 
             <!-- TAB DETAIL -->
             <div class="tab-pane fade" id="detailPane">
-                <div class="detail-wrap">
+                <div class="detail-wrap reveal">
                     <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
                         <p class="panel-title mb-0"><i class="bi bi-table me-1"></i>Data Detail (Kolom Utama)</p>
                         <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="Cari NIK / No Inet / Status..." style="width:260px;border-radius:8px;" oninput="filterTable()">
@@ -375,28 +444,28 @@
 
         // KPI Cards
         document.getElementById('kpiCards').innerHTML = `
-            <div class="kpi-card blue">
+            <div class="kpi-card blue anim-up-dyn">
                 <i class="bi bi-database kpi-icon"></i>
                 <div class="kpi-label">Total Data</div>
-                <div class="kpi-value">${total}</div>
+                <div class="kpi-value" data-count="${total}">${total}</div>
                 <div class="kpi-sub">baris dari Excel</div>
             </div>
-            <div class="kpi-card green">
+            <div class="kpi-card green anim-up-dyn">
                 <i class="bi bi-check-circle kpi-icon"></i>
                 <div class="kpi-label">Sudah Kembali</div>
-                <div class="kpi-value" style="color:#1baf7a">${sudah}</div>
+                <div class="kpi-value" style="color:#1baf7a" data-count="${sudah}">${sudah}</div>
                 <div class="kpi-sub">perangkat dikembalikan</div>
             </div>
-            <div class="kpi-card red">
+            <div class="kpi-card red anim-up-dyn">
                 <i class="bi bi-exclamation-circle kpi-icon"></i>
                 <div class="kpi-label">Belum Kembali</div>
-                <div class="kpi-value" style="color:#EE2E24">${belum}</div>
+                <div class="kpi-value" style="color:#EE2E24" data-count="${belum}">${belum}</div>
                 <div class="kpi-sub">masih belum ada data</div>
             </div>
-            <div class="kpi-card amber">
+            <div class="kpi-card amber anim-up-dyn">
                 <i class="bi bi-geo-alt kpi-icon"></i>
                 <div class="kpi-label">Service Area</div>
-                <div class="kpi-value" style="color:#eda100">${saCount}</div>
+                <div class="kpi-value" style="color:#eda100" data-count="${saCount}">${saCount}</div>
                 <div class="kpi-sub">wilayah aktif</div>
             </div>
         `;
@@ -422,6 +491,7 @@
         renderDetail(data.headers, data.rows);
 
         setTimeout(() => document.getElementById('hasilSection').scrollIntoView({ behavior: 'smooth' }), 300);
+        if (typeof afterRender === 'function') afterRender();
     }
 
     /* ===== PIVOT TABLE — Hierarki 3 Level (SA > STO > Teknisi) ===== */
@@ -743,6 +813,42 @@
             });
         });
     }
+</script>
+
+<script>
+    function countUp(el, target) {
+        var dur = 900, start = null;
+        function step(now) {
+            if (!start) start = now;
+            var p = Math.min((now - start) / dur, 1);
+            el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
+            if (p < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+    }
+    function afterRender() {
+        document.querySelectorAll('.anim-up-dyn').forEach(function (el, i) {
+            el.style.animationDelay = (i * 90) + 'ms';
+        });
+        document.querySelectorAll('.kpi-value[data-count]').forEach(function (el) {
+            countUp(el, parseInt(el.getAttribute('data-count'), 10) || 0);
+        });
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.anim-up').forEach(function (el, i) {
+            el.style.animationDelay = (i * 70) + 'ms';
+        });
+        if ('IntersectionObserver' in window) {
+            var io = new IntersectionObserver(function (entries) {
+                entries.forEach(function (e) {
+                    if (e.isIntersecting) { e.target.classList.add('reveal-visible'); io.unobserve(e.target); }
+                });
+            }, { threshold: 0.08 });
+            document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+        } else {
+            document.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('reveal-visible'); });
+        }
+    });
 </script>
 </body>
 </html>

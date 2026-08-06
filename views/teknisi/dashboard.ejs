@@ -4,47 +4,239 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Teknisi - Telkom Akses</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#EE2E24">
     <style>
-        body { font-family: 'Poppins', sans-serif; background-color: #f4f7f6; }
-        .navbar-custom { background: linear-gradient(135deg, #EE2E24 0%, #b31217 100%); }
-        .card-panel { background: #fff; border-radius: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 20px rgba(0,0,0,0.02); }
-        .table th { background-color: #f8fafc; font-size: 0.85rem; color: #475569; text-transform: uppercase; letter-spacing: 0.5px; }
-        .badge-completed { background-color: #dcfce7; color: #166534; padding: 6px 14px; border-radius: 20px; font-weight: 500; font-size: 0.75rem; }
-        .badge-pending { background-color: #fef9c3; color: #854d0e; padding: 6px 14px; border-radius: 20px; font-weight: 500; font-size: 0.75rem; }
+        :root {
+            --navy:   #0e1f3b;
+            --navy2:  #162d52;
+            --red:    #EE2E24;
+            --red2:   #c42019;
+            --gold:   #f59e0b;
+            --surface:#f0f4f8;
+            --card:   #ffffff;
+            --border: #dde3ec;
+            --text:   #1e293b;
+            --muted:  #64748b;
+        }
+        body { font-family: 'Poppins', sans-serif; background: var(--surface); color: var(--text); overflow-x: hidden; min-height: 100vh; }
+
+        /* Blob dekoratif */
+        .bg-deco { position: fixed; border-radius: 50%; filter: blur(60px); opacity: .16; pointer-events: none; z-index: 0; }
+        .bg-deco.d1 { width: 380px; height: 380px; top: -90px; right: -70px; background: var(--red); animation: floatBlob 12s ease-in-out infinite; }
+        .bg-deco.d2 { width: 300px; height: 300px; bottom: -80px; left: -70px; background: var(--navy); animation: floatBlob 14s ease-in-out 2.2s infinite; }
+
+        /* NAVBAR */
+        .navbar-custom {
+            background:
+                radial-gradient(900px 500px at 85% -20%, rgba(238,46,36,.28), transparent 60%),
+                linear-gradient(135deg, var(--navy) 0%, var(--navy2) 100%);
+            border-bottom: 3px solid var(--red);
+        }
+        .navbar-brand-logo { background: var(--red); border-radius: 8px; padding: 4px 10px; font-weight: 800; font-size: .9rem; letter-spacing: .5px; }
+
+        /* WELCOME STRIP */
+        .welcome-strip {
+            position: relative; overflow: hidden;
+            background: linear-gradient(135deg, var(--navy) 0%, #1e4080 100%);
+            border-radius: 18px; padding: 22px 26px;
+            display: flex; align-items: center; gap: 16px;
+            margin-bottom: 24px; color: #fff;
+        }
+        .welcome-strip::after {
+            content: ''; position: absolute; top: 0; bottom: 0; width: 90px;
+            background: linear-gradient(105deg, transparent, rgba(255,255,255,.28), transparent);
+            transform: skewX(-20deg); animation: shine 3.6s ease-in-out infinite;
+        }
+        .welcome-avatar {
+            width: 54px; height: 54px; border-radius: 15px;
+            background: rgba(255,255,255,.15);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem; font-weight: 800; flex-shrink: 0;
+        }
+        .welcome-name { font-weight: 700; font-size: 1.05rem; }
+        .welcome-sub { font-size: .76rem; opacity: .68; }
+        .welcome-badge { margin-left: auto; background: var(--red); border-radius: 8px; padding: 5px 14px; font-size: .72rem; font-weight: 700; letter-spacing: .5px; }
+
+        /* CARD */
+        .card-panel {
+            position: relative; z-index: 1;
+            background: var(--card); border-radius: 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 2px 16px rgba(14,31,59,.05);
+            transition: transform .2s, box-shadow .2s;
+        }
+        .card-panel:hover { box-shadow: 0 10px 28px rgba(14,31,59,.08); }
+
+        /* STAT MINI */
+        .stat-mini {
+            background: var(--card); border: 1px solid var(--border);
+            border-radius: 16px; padding: 18px 20px;
+            display: flex; align-items: center; gap: 14px;
+            box-shadow: 0 2px 10px rgba(14,31,59,.05);
+            transition: transform .2s, box-shadow .2s;
+        }
+        .stat-mini:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(14,31,59,.1); }
+        .stat-dot { width: 46px; height: 46px; border-radius: 13px; display: flex; align-items: center; justify-content: center; font-size: 1.15rem; flex-shrink: 0; }
+        .stat-dot.navy  { background: #eff6ff; color: #2a78d6; }
+        .stat-dot.green { background: #f0fdf4; color: #16a34a; }
+        .stat-dot.amber { background: #fffbeb; color: #d97706; }
+        .stat-dot.red   { background: #fff0f0; color: var(--red); }
+
+        /* TABLE */
+        .table th {
+            background: var(--navy); color: rgba(255,255,255,.88);
+            font-size: .72rem; text-transform: uppercase;
+            letter-spacing: .5px; font-weight: 600; border: none;
+        }
+        .table td { font-size: .86rem; border-color: #f1f5f9; vertical-align: middle; }
+        .table tbody tr { transition: background .2s, transform .15s; }
+        .table tbody tr:hover { background: #fafbff; transform: translateX(3px); }
+
+        /* BADGE */
+        .badge-completed { background: #dcfce7; color: #166534; padding: 5px 14px; border-radius: 20px; font-weight: 600; font-size: .73rem; display: inline-block; }
+        .badge-pending   { background: #fef9c3; color: #854d0e; padding: 5px 14px; border-radius: 20px; font-weight: 600; font-size: .73rem; display: inline-block; }
+        .badge-rejected  { background: #fee2e2; color: #991b1b; padding: 5px 14px; border-radius: 20px; font-weight: 600; font-size: .73rem; display: inline-block; }
+
+        .btn-create {
+            background: linear-gradient(135deg, var(--red) 0%, var(--red2) 100%);
+            color: #fff; border: none; border-radius: 999px;
+            font-weight: 700; padding: 11px 26px; box-shadow: 0 10px 26px rgba(238,46,36,.3);
+            transition: transform .2s, box-shadow .2s;
+            animation: pulseCta 2.6s ease-in-out infinite;
+        }
+        .btn-create:hover { transform: translateY(-2px); box-shadow: 0 14px 32px rgba(238,46,36,.42); color: #fff; }
+
+        @keyframes pulseCta { 0%, 100% { box-shadow: 0 10px 26px rgba(238,46,36,.3); } 50% { box-shadow: 0 10px 36px rgba(238,46,36,.5); } }
+        @keyframes shine { 0% { left: -120px; } 60%, 100% { left: 120%; } }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes floatBlob { 0%, 100% { transform: translate(0,0) scale(1); } 50% { transform: translate(26px,-22px) scale(1.07); } }
+
+        .anim-up { opacity: 0; animation: fadeUp .6s cubic-bezier(.22,1,.36,1) both; }
+        .navbar, .container { position: relative; z-index: 1; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .anim-up, .bg-deco, .welcome-strip::after, .btn-create { animation: none !important; transition: none !important; }
+            .anim-up { opacity: 1; }
+            .bg-deco { display: none; }
+        }
+
+        /* ===== DARK MODE ===== */
+        body.dark {
+            --surface:#0f172a; --card:#1e293b; --navy2:#1e4080; --border:#334155; --text:#e2e8f0; --muted:#94a3b8;
+            background: var(--surface); color: var(--text);
+        }
+        body.dark .card-panel, body.dark .stat-mini { background:#1e293b; border-color:#334155; }
+        body.dark .table th { background:#0f172a; }
+        body.dark .table tbody tr:hover { background:#16283f; }
+        body.dark .text-dark { color:#e2e8f0 !important; }
+        body.dark .text-muted { color:#94a3b8 !important; }
+        body.dark .bg-light { background:#16283f !important; }
     </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark navbar-custom py-3 shadow-sm mb-4">
+<div class="bg-deco d1"></div>
+<div class="bg-deco d2"></div>
+
+<nav class="navbar navbar-expand-lg navbar-dark navbar-custom py-3 mb-4">
     <div class="container px-4">
-        <a class="navbar-brand fw-bold" href="#"><i class="bi bi-tools me-2"></i> Panel Teknisi (Pemberi)</a>
-        <div class="d-flex align-items-center">
-            <a href="/logout" class="btn btn-sm btn-light text-danger fw-bold rounded-pill px-3 shadow-sm">Logout</a>
+        <a class="navbar-brand d-flex align-items-center gap-2 text-decoration-none" href="#">
+            <span class="navbar-brand-logo">BAST</span>
+            <span class="fw-bold fs-6 text-white opacity-90">TELKOM AKSES</span>
+        </a>
+        <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center gap-2">
+                <div class="rounded-circle bg-white bg-opacity-10 d-flex align-items-center justify-content-center" style="width:36px;height:36px;">
+                    <i class="bi bi-person-fill text-white"></i>
+                </div>
+                <div class="lh-1">
+                    <div class="text-white fw-semibold" style="font-size:.85rem;"><%= nama_lengkap %></div>
+                    <div class="text-white opacity-60" style="font-size:.7rem;">Teknisi</div>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" id="darkToggle" class="btn btn-sm btn-outline-light rounded-pill px-3 fw-semibold" onclick="toggleDark()" title="Mode Gelap/Terang"><i class="bi bi-moon-stars-fill"></i></button>
+                <button class="btn btn-sm btn-outline-light rounded-pill px-3 fw-semibold" onclick="openGantiPw()">
+                    <i class="bi bi-key me-1"></i> Ubah Password
+                </button>
+                <a href="/logout" class="btn btn-sm btn-danger rounded-pill px-3 fw-semibold">Logout</a>
+            </div>
         </div>
     </div>
 </nav>
 
 <div class="container mb-5">
-    
-    <!-- Header Aksi Cepat -->
-    <div class="card-panel p-4 mb-4">
+
+    <!-- Welcome Strip -->
+    <div class="welcome-strip anim-up">
+        <div class="welcome-avatar"><%= String(nama_lengkap || username).charAt(0).toUpperCase() %></div>
+        <div>
+            <div class="welcome-name"><%= nama_lengkap %></div>
+            <div class="welcome-sub">Teknisi Pemberi · Monitoring status persetujuan BAST</div>
+        </div>
+        <span class="welcome-badge">AKTIF</span>
+    </div>
+
+    <!-- Statistik -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3 col-6 anim-up">
+            <div class="stat-mini">
+                <div class="stat-dot navy"><i class="bi bi-file-earmark-text-fill"></i></div>
+                <div>
+                    <div class="fw-bold" style="font-size:1.45rem;font-weight:800;" data-count="<%= data.length %>"><%= data.length %></div>
+                    <div class="text-muted" style="font-size:.76rem;">Total BAST</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 anim-up">
+            <div class="stat-mini">
+                <div class="stat-dot green"><i class="bi bi-check-circle-fill"></i></div>
+                <div>
+                    <div class="fw-bold" style="font-size:1.45rem;font-weight:800;" data-count="<%= data.filter(d => d.status === 'COMPLETED').length %>"><%= data.filter(d => d.status === 'COMPLETED').length %></div>
+                    <div class="text-muted" style="font-size:.76rem;">Approved</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 anim-up">
+            <div class="stat-mini">
+                <div class="stat-dot amber"><i class="bi bi-hourglass-split"></i></div>
+                <div>
+                    <div class="fw-bold" style="font-size:1.45rem;font-weight:800;" data-count="<%= data.filter(d => d.status === 'PENDING').length %>"><%= data.filter(d => d.status === 'PENDING').length %></div>
+                    <div class="text-muted" style="font-size:.76rem;">Menunggu WH</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-6 anim-up">
+            <div class="stat-mini">
+                <div class="stat-dot red"><i class="bi bi-x-circle-fill"></i></div>
+                <div>
+                    <div class="fw-bold" style="font-size:1.45rem;font-weight:800;" data-count="<%= data.filter(d => d.status === 'REJECTED').length %>"><%= data.filter(d => d.status === 'REJECTED').length %></div>
+                    <div class="text-muted" style="font-size:.76rem;">Ditolak</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inbox & Monitoring -->
+    <div class="card-panel p-4 mb-4 anim-up">
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
             <div>
-                <h4 class="fw-bold mb-1 text-dark"><i class="bi bi-inbox-fill text-danger me-2"></i> Inbox & Monitoring Status BAST</h4>
+                <h4 class="fw-bold mb-1 text-dark"><i class="bi bi-inbox-fill text-danger me-2"></i> Inbox &amp; Monitoring Status BAST</h4>
                 <p class="text-muted small mb-0">Pantau apakah dokumen pengiriman perangkat Anda sudah disetujui oleh Warehouse.</p>
             </div>
-            <a href="/teknisi/input" class="btn btn-danger fw-bold rounded-pill px-4 py-2 shadow-sm">
+            <a href="/teknisi/input" class="btn btn-create">
                 <i class="bi bi-plus-lg me-1"></i> Buat BAST Baru
             </a>
         </div>
     </div>
 
-    <!-- Tabel Monitoring / Inbox Status BAST -->
-    <div class="card-panel p-4">
-        <h5 class="fw-bold mb-3 text-danger"><i class="bi bi-list-check me-2"></i> Riwayat & Status Persetujuan Warehouse</h5>
+    <!-- Tabel Monitoring -->
+    <div class="card-panel p-4 anim-up">
+        <h5 class="fw-bold mb-3 text-danger"><i class="bi bi-list-check me-2"></i> Riwayat &amp; Status Persetujuan Warehouse</h5>
         <div class="table-responsive">
             <table class="table table-hover align-middle">
                 <thead>
@@ -60,7 +252,10 @@
                 </thead>
                 <tbody>
                     <% if (data.length === 0) { %>
-                        <tr><td colspan="7" class="text-center py-5 text-muted">Belum ada riwayat pengiriman BAST.</td></tr>
+                        <tr><td colspan="7" class="text-center py-5 text-muted">
+                            <i class="bi bi-inbox" style="font-size:2.5rem;display:block;opacity:.3;"></i>
+                            Belum ada riwayat pengiriman BAST.
+                        </td></tr>
                     <% } %>
                     <% data.forEach(row => { %>
                     <tr>
@@ -73,8 +268,8 @@
     <% if (row.status === 'COMPLETED') { %>
         <span class="badge-completed"><i class="bi bi-check-circle-fill me-1"></i> Approved (Selesai)</span>
     <% } else if (row.status === 'REJECTED') { %>
-        <span class="badge bg-danger text-white px-2 py-1 rounded-pill" style="font-size: 0.75rem;"><i class="bi bi-x-circle-fill me-1"></i> Ditolak WH</span>
-        <div class="small text-muted mt-1">Alasan: <%= row.alasan_tolak || '-' %></div>
+        <span class="badge-rejected"><i class="bi bi-x-circle-fill me-1"></i> Ditolak WH</span>
+        <div class="small text-muted mt-1"><i class="bi bi-info-circle me-1"></i>Alasan: <%= row.alasan_tolak || '-' %></div>
     <% } else { %>
         <span class="badge-pending"><i class="bi bi-clock-fill me-1"></i> Menunggu Approval WH</span>
     <% } %>
@@ -87,7 +282,14 @@
     <% } else if (row.status === 'REJECTED') { %>
         <span class="text-danger small fw-bold"><i class="bi bi-dash-circle"></i> Batal</span>
     <% } else { %>
-        <span class="text-muted small italic">Dalam Proses WH</span>
+        <a href="/teknisi/edit/<%= row.kode_unik %>" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold">
+            <i class="bi bi-pencil me-1"></i> Edit
+        </a>
+        <form action="/teknisi/cancel/<%= row.kode_unik %>" method="POST" style="display:inline-block;" onsubmit="return confirm('Batalkan BAST <%= row.kode_unik %>? Data yang masih menunggu akan dihapus.')">
+            <button type="submit" class="btn btn-sm btn-outline-warning rounded-pill px-3 fw-semibold">
+                <i class="bi bi-x-circle me-1"></i> Batalkan
+            </button>
+        </form>
     <% } %>
 </td>
                     </tr>
@@ -100,5 +302,104 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- MODAL UBAH PASSWORD -->
+<div class="modal fade" id="modalGantiPw" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:420px;">
+        <div class="modal-content" style="border-radius:16px;border:none;overflow:hidden;">
+            <div class="modal-header" style="background:linear-gradient(135deg,#0e1f3b,#1e4080);color:#fff;border:none;">
+                <h6 class="modal-title fw-bold"><i class="bi bi-shield-lock me-1"></i> Ubah Password</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="pwAlert" class="alert d-none small mb-3"></div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">Password Lama</label>
+                    <input type="password" class="form-control" id="pwOld" placeholder="Password saat ini">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">Password Baru</label>
+                    <input type="password" class="form-control" id="pwNew" placeholder="Password baru (min. 4 karakter)">
+                </div>
+                <div class="mb-1">
+                    <label class="form-label fw-semibold small">Konfirmasi Password Baru</label>
+                    <input type="password" class="form-control" id="pwConfirm" placeholder="Ulangi password baru">
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn" id="btnSimpanPw" style="background:#0e1f3b;color:#fff;font-weight:600;" onclick="simpanPassword()">Simpan Password</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openGantiPw() {
+        document.getElementById('pwAlert').classList.add('d-none');
+        ['pwOld','pwNew','pwConfirm'].forEach(i => document.getElementById(i).value = '');
+        new bootstrap.Modal(document.getElementById('modalGantiPw')).show();
+    }
+    function simpanPassword() {
+        const oldp = document.getElementById('pwOld').value;
+        const np   = document.getElementById('pwNew').value;
+        const cp   = document.getElementById('pwConfirm').value;
+        const alertEl = document.getElementById('pwAlert');
+        const msg = (t, ok) => { alertEl.className = 'alert small mb-3 ' + (ok ? 'alert-success' : 'alert-danger'); alertEl.textContent = t; };
+        if (!oldp) return msg('Masukkan password lama.', false);
+        if (!np || np.length < 4) return msg('Password baru minimal 4 karakter.', false);
+        if (np !== cp) return msg('Konfirmasi password tidak sama.', false);
+        const btn = document.getElementById('btnSimpanPw'); btn.disabled = true;
+        fetch('/change-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ old_password: oldp, new_password: np })
+        })
+        .then(r => r.json())
+        .then(d => {
+            if (d.success) {
+                msg(d.message || 'Password berhasil diubah.', true);
+                setTimeout(() => bootstrap.Modal.getInstance(document.getElementById('modalGantiPw')).hide(), 1200);
+            } else {
+                msg(d.message || 'Gagal mengubah password.', false);
+            }
+        })
+        .catch(() => msg('Kendala koneksi ke server.', false))
+        .finally(() => { btn.disabled = false; });
+    }
+</script>
+<script>
+    (function () {
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.anim-up').forEach(function (el, i) {
+                el.style.animationDelay = (i * 80) + 'ms';
+            });
+            document.querySelectorAll('[data-count]').forEach(function (el) {
+                var target = parseInt(el.getAttribute('data-count'), 10) || 0;
+                var dur = 900, start = null;
+                function step(now) {
+                    if (!start) start = now;
+                    var p = Math.min((now - start) / dur, 1);
+                    el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
+                    if (p < 1) requestAnimationFrame(step);
+                }
+                requestAnimationFrame(step);
+            });
+        });
+    })();
+</script>
+<script>
+    (function () {
+        function applyDark(dark) {
+            document.body.classList.toggle('dark', dark);
+            var btn = document.getElementById('darkToggle');
+            if (btn) btn.innerHTML = dark ? '<i class="bi bi-sun-fill"></i>' : '<i class="bi bi-moon-stars-fill"></i>';
+            try { localStorage.setItem('bast_dark', dark ? '1' : '0'); } catch (e) {}
+        }
+        try { applyDark(localStorage.getItem('bast_dark') === '1'); } catch (e) {}
+        window.toggleDark = function () { applyDark(!document.body.classList.contains('dark')); };
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(function () {});
+    })();
+</script>
 </body>
 </html>

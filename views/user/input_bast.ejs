@@ -27,18 +27,45 @@
         .signature-pad { width: 100%; height: 200px; touch-action: none; cursor: crosshair; display: block; }
         .btn-submit { background: #EE2E24; color: white; border-radius: 12px; font-weight: 600; padding: 14px; transition: 0.3s; border:none; width: 100%; }
         .btn-submit:hover { background: #c41230; box-shadow: 0 8px 20px rgba(238, 46, 36, 0.3); transform: translateY(-2px); color: white; }
+
+        /* ===== POLISH & ANIMATION ===== */
+        body { overflow-x: hidden; }
+        .header-modern { position: relative; overflow: hidden; }
+        .header-modern::before, .header-modern::after {
+            content: ''; position: absolute; border-radius: 50%;
+            background: rgba(255,255,255,.14); pointer-events: none;
+        }
+        .header-modern::before { width: 220px; height: 220px; top: -90px; right: -40px; animation: floatCircle 9s ease-in-out infinite; }
+        .header-modern::after  { width: 140px; height: 140px; bottom: -55px; left: -30px; animation: floatCircle 11s ease-in-out 1.5s infinite; }
+        .header-modern > .container { position: relative; z-index: 1; }
+
+        @keyframes floatCircle { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(18px,14px); } }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+        .anim-up { opacity: 0; animation: fadeUp .6s cubic-bezier(.22,1,.36,1) both; }
+
+        .form-container { transition: transform .2s, box-shadow .2s; }
+        .form-container:hover { box-shadow: 0 18px 40px rgba(0,0,0,.08); }
+        .ttd-box { transition: border-color .3s, box-shadow .3s, background .3s; }
+        .ttd-box:hover { box-shadow: 0 0 0 4px rgba(238,46,36,.08); }
+        .btn-submit { animation: pulseCta 2.6s ease-in-out infinite; }
+        @keyframes pulseCta { 0%, 100% { box-shadow: 0 0 0 0 rgba(238,46,36,.32); } 50% { box-shadow: 0 0 0 12px rgba(238,46,36,0); } }
+
+        @media (prefers-reduced-motion: reduce) {
+            .anim-up, .header-modern::before, .header-modern::after, .btn-submit { animation: none !important; transition: none !important; }
+            .anim-up { opacity: 1; }
+        }
     </style>
 </head>
 <body>
 
-<div class="header-modern text-center">
+<div class="header-modern text-center anim-up">
     <div class="container">
         <h3 class="fw-bold"><i class="bi bi-file-earmark-text"></i> Form BAST Digital</h3>
     </div>
 </div>
 
 <div class="container">
-    <div class="form-container">
+    <div class="form-container anim-up">
         
         <!-- Pilihan Peran -->
         <div class="text-center mb-4">
@@ -46,13 +73,13 @@
             <div class="row justify-content-center g-3">
                 <div class="col-6 col-md-5">
                     <input type="radio" class="btn-check" name="userRole" id="rolePemberi" autocomplete="off" checked onclick="toggleMode('pemberi')">
-                    <label class="btn w-100 p-3 role-btn" for="rolePemberi">
+                    <label class="btn w-100 p-3 role-btn anim-up" for="rolePemberi">
                         <i class="bi bi-person-up fs-2 d-block mb-1"></i> Teknisi (Pemberi)
                     </label>
                 </div>
                 <div class="col-6 col-md-5">
                     <input type="radio" class="btn-check" name="userRole" id="rolePenerima" autocomplete="off" onclick="toggleMode('penerima')">
-                    <label class="btn w-100 p-3 role-btn" for="rolePenerima">
+                    <label class="btn w-100 p-3 role-btn anim-up" for="rolePenerima">
                         <i class="bi bi-person-down fs-2 d-block mb-1"></i> Pihak 2 (Penerima)
                     </label>
                 </div>
@@ -65,7 +92,7 @@
   <form id="formPemberi" enctype="multipart/form-data">
 
     <!-- SECTION 1: Lokasi & Waktu -->
-    <div class="section-badge"><i class="bi bi-geo-alt-fill me-1"></i> 1. Informasi Lokasi & Waktu</div>
+    <div class="section-badge anim-up"><i class="bi bi-geo-alt-fill me-1"></i> 1. Informasi Lokasi & Waktu</div>
     <div class="row g-3 mb-4">
       <div class="col-md-6">
         <div class="form-floating">
@@ -92,7 +119,7 @@
     </div>
 
     <!-- SECTION 2: Identitas Teknisi (hanya dropdown, tidak duplikat) -->
-    <div class="section-badge"><i class="bi bi-person-badge-fill me-1"></i> 2. Identitas Pihak Pertama (Teknisi)</div>
+    <div class="section-badge anim-up"><i class="bi bi-person-badge-fill me-1"></i> 2. Identitas Pihak Pertama (Teknisi)</div>
     <div class="row g-3 mb-4">
       <div class="col-md-6">
         <div class="form-floating">
@@ -126,7 +153,7 @@
     </div>
 
     <!-- SECTION 3: Data Perangkat (dengan tombol tambah baris) -->
-    <div class="section-badge"><i class="bi bi-router-fill me-1"></i> 3. Data Perangkat & Eviden</div>
+    <div class="section-badge anim-up"><i class="bi bi-router-fill me-1"></i> 3. Data Perangkat & Eviden</div>
     <div id="perangkatContainer">
       <div class="row g-3 mb-2 perangkat-row align-items-center">
         <div class="col-md-3">
@@ -175,7 +202,7 @@
     </div>
 
     <!-- TTD Teknisi -->
-    <div class="section-badge"><i class="bi bi-pen-fill me-1"></i> 4. Tanda Tangan Teknisi</div>
+    <div class="section-badge anim-up"><i class="bi bi-pen-fill me-1"></i> 4. Tanda Tangan Teknisi</div>
     <div class="row mb-4 justify-content-center">
       <div class="col-md-8 text-center">
         <div class="ttd-box">
@@ -213,7 +240,7 @@
             <form id="formPenerima" style="display: none;" action="/user/submit-penerima" method="POST">
                 <input type="hidden" name="kode_unik" id="hiddenKodeUnik">
                 
-                <div class="section-badge"><i class="bi bi-person-fill-add me-1"></i> Identitas Penerima</div>
+                <div class="section-badge anim-up"><i class="bi bi-person-fill-add me-1"></i> Identitas Penerima</div>
                 <div class="row g-3 mb-4">
                     <div class="col-md-4">
                         <div class="form-floating"><input type="text" class="form-control" name="namapenerima" placeholder="Nama" required><label>Nama Penerima</label></div>
@@ -226,7 +253,7 @@
                     </div>
                 </div>
 
-                <div class="section-badge"><i class="bi bi-pen-fill me-1"></i> Tanda Tangan Penerima</div>
+                <div class="section-badge anim-up"><i class="bi bi-pen-fill me-1"></i> Tanda Tangan Penerima</div>
                 <div class="row mb-5 justify-content-center">
                     <div class="col-md-8 text-center">
                         <div class="ttd-box"><canvas id="canvasPenerima" class="signature-pad"></canvas></div>
@@ -425,5 +452,13 @@
       if (rows.length > 1) btn.closest('.perangkat-row').remove();
     }
     </script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.anim-up').forEach(function (el, i) {
+            el.style.animationDelay = (i * 60) + 'ms';
+        });
+    });
+</script>
 </body>
 </html>

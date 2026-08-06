@@ -7,6 +7,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#EE2E24">
     <style>
     :root {
         --navy:   #0e1f3b;
@@ -217,6 +220,8 @@
     .user-item .user-meta .username { font-weight: 700; font-size: 0.9rem; color: var(--text); }
     .user-item .user-meta .nik { font-size: 0.75rem; color: var(--muted); font-family: monospace; }
     .user-item .user-meta .sto-badge { font-size: 0.68rem; padding: 2px 6px; border-radius: 6px; background: #e2e8f0; color: #475569; font-weight: 600; margin-left: 6px;}
+    .user-item .user-meta .sa-badge { font-size: 0.65rem; padding: 2px 7px; border-radius: 6px; background: #eff6ff; color: #1d4ed8; font-weight: 700; margin-left: 4px; white-space: nowrap;}
+    .user-item .user-meta .sa-badge i { font-size: 0.6rem; margin-right: 3px; }
 
     .badge-role-teknisi { background:#eff6ff; color:#1d4ed8; padding:3px 10px; border-radius:8px; font-size:0.72rem; font-weight:700; }
     .badge-role-wh      { background:#fdf4ff; color:#7c3aed; padding:3px 10px; border-radius:8px; font-size:0.72rem; font-weight:700; }
@@ -228,11 +233,135 @@
         display: flex; align-items: center; gap: 8px;
     }
     .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* ---- STAT SUMMARY (rekap) ---- */
+    .sum-stat {
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: var(--card);
+        padding: 14px 18px;
+        box-shadow: 0 2px 10px rgba(14,31,59,0.05);
+        transition: transform .2s, box-shadow .2s;
+    }
+    .sum-stat:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(14,31,59,0.1); }
+    .sum-stat .sum-label { font-size:0.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.6px; color:var(--muted); }
+    .sum-stat .sum-value { font-size:1.6rem; font-weight:800; line-height:1.1; color:var(--navy); }
+    .sum-stat .sum-icon { width:38px; height:38px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:1.1rem; flex-shrink:0; }
+    .sum-blue  { background:#eff6ff; color:#3b82f6; }
+    .sum-green { background:#f0fdf4; color:#22c55e; }
+    .sum-amber { background:#fffbeb; color:#f59e0b; }
+    .sum-red   { background:#fef2f2; color:#ef4444; }
+
+    /* ---- TECH BADGES (rekap) ---- */
+    .tech-badge {
+        display:inline-block; font-size:0.7rem; font-weight:600; padding:3px 10px;
+        border-radius:20px; white-space:nowrap;
+    }
+    .tech-badge.sto { background:#e2e8f0; color:#334155; }
+    .tech-badge.sa  { background:#eff6ff; color:#1d4ed8; }
+
+    /* ===== EXTRA ANIMATIONS ===== */
+    body { overflow-x: hidden; }
+
+    .bg-deco { position: fixed; border-radius: 50%; filter: blur(60px); opacity: .15; pointer-events: none; z-index: 0; }
+    .bg-deco.d1 { width: 400px; height: 400px; top: -90px; right: -80px; background: var(--red); animation: floatBlob 12s ease-in-out infinite; }
+    .bg-deco.d2 { width: 320px; height: 320px; bottom: -90px; left: -80px; background: var(--navy); animation: floatBlob 14s ease-in-out 2.2s infinite; }
+    .bg-deco.d3 { width: 200px; height: 200px; top: 45%; left: 10%; background: var(--gold); opacity: .1; animation: floatBlob 16s ease-in-out 3s infinite; }
+
+    .navbar, .container-fluid { position: relative; z-index: 1; }
+
+    @keyframes floatBlob { 0%, 100% { transform: translate(0,0) scale(1); } 50% { transform: translate(26px,-22px) scale(1.07); } }
+    @keyframes shineSweep { 0% { left: -60%; } 60%, 100% { left: 130%; } }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+
+    .anim-up { opacity: 0; animation: fadeUp .6s cubic-bezier(.22,1,.36,1) both; }
+
+    /* Sapuan cahaya pada kartu statistik */
+    .stat-card { position: relative; overflow: hidden; }
+    .stat-card::after {
+        content: ''; position: absolute; top: 0; bottom: 0; width: 40%;
+        background: linear-gradient(105deg, transparent, rgba(255,255,255,.55), transparent);
+        transform: skewX(-20deg); animation: shineSweep 5s ease-in-out infinite;
+        pointer-events: none;
+    }
+
+    /* Scroll reveal */
+    .reveal { opacity: 0; transform: translateY(28px); transition: opacity .6s cubic-bezier(.22,1,.36,1), transform .6s cubic-bezier(.22,1,.36,1); }
+    .reveal.reveal-visible { opacity: 1; transform: none; }
+
+    /* Tab pill */
+    .tab-bar .nav-link { transition: all .25s; }
+    .tab-bar .nav-link:hover { transform: translateY(-2px); }
+
+    /* Baris tabel masuk bertahap */
+    .table tbody tr { animation: rowIn .45s cubic-bezier(.22,1,.36,1) both; }
+    .table tbody tr:nth-child(2) { animation-delay: .05s; }
+    .table tbody tr:nth-child(3) { animation-delay: .1s; }
+    .table tbody tr:nth-child(4) { animation-delay: .15s; }
+    .table tbody tr:nth-child(5) { animation-delay: .2s; }
+    .table tbody tr:nth-child(6) { animation-delay: .25s; }
+    .table tbody tr:nth-child(7) { animation-delay: .3s; }
+    .table tbody tr:nth-child(8) { animation-delay: .35s; }
+    .table tbody tr:nth-child(n+9) { animation-delay: .4s; }
+    @keyframes rowIn { from { opacity: 0; transform: translateX(-12px); } to { opacity: 1; transform: translateX(0); } }
+
+    /* Hover lift */
+    .card-panel, .stat-card, .technician-card { transition: transform .2s, box-shadow .25s; }
+    .card-panel:hover, .technician-card:hover { transform: translateY(-3px); box-shadow: 0 14px 32px rgba(14,31,59,.1); }
+
+    /* Tombol download berdenyut */
+    .btn-success { animation: pulseGreen 2.6s ease-in-out infinite; }
+    @keyframes pulseGreen { 0%, 100% { box-shadow: 0 6px 16px rgba(34,197,94,.25); } 50% { box-shadow: 0 8px 26px rgba(34,197,94,.45); } }
+
+    /* Ikon stat */
+    .stat-icon { transition: transform .3s ease; }
+    .stat-card:hover .stat-icon { transform: scale(1.18) rotate(-6deg); }
+
+    /* Judul gradien bergerak */
+    .title-gradient {
+        background: linear-gradient(90deg, var(--navy), var(--red), var(--gold), var(--navy));
+        background-size: 300% 100%;
+        -webkit-background-clip: text; background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: gradMove 6s linear infinite;
+    }
+    @keyframes gradMove { 0% { background-position: 0% 50%; } 100% { background-position: 300% 50%; } }
+
+    @media (prefers-reduced-motion: reduce) {
+        .bg-deco, .stat-card::after, .btn-success, .table tbody tr, .title-gradient, .stat-icon, .tab-bar .nav-link { animation: none !important; transition: none !important; }
+        .bg-deco { display: none; }
+        .reveal { opacity: 1; transform: none; }
+    }
+
+    /* ===== DARK MODE ===== */
+    body.dark {
+        --surface:#0f172a; --card:#1e293b; --navy2:#1e4080; --border:#334155; --text:#e2e8f0; --muted:#94a3b8;
+        background: var(--surface); color: var(--text);
+    }
+    body.dark .card-panel, body.dark .stat-card, body.dark .stat-mini, body.dark .tab-bar,
+    body.dark .form-card, body.dark .sum-stat, body.dark .technician-card, body.dark .card-section { background:#1e293b; border-color:#334155; }
+    body.dark .table th { background:#0f172a; }
+    body.dark .table tbody tr:hover { background:#16283f; }
+    body.dark .technician-header { background:#16283f; }
+    body.dark .technician-header:hover { background:#1b2f4b; }
+    body.dark .text-dark { color:#e2e8f0 !important; }
+    body.dark .text-muted { color:#94a3b8 !important; }
+    body.dark .form-control, body.dark .form-select { background:#0f172a; border-color:#334155; color:#e2e8f0; }
+    body.dark .bg-white { background:#1e293b !important; }
+    body.dark .bg-light { background:#16283f !important; }
+    body.dark .alert-secondary { background:#16283f; color:#cbd5e1; border-color:#334155; }
+    body.dark .user-item { background:#16283f; border-color:#334155; }
+    body.dark .avatar-initial.avatar-navy { background:#1e4080; }
+    body.dark .sum-stat .sum-value { color:#e2e8f0; }
     </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark navbar-custom py-3 mb-4">
+<div class="bg-deco d1"></div>
+<div class="bg-deco d2"></div>
+<div class="bg-deco d3"></div>
+
+<nav class="navbar navbar-expand-lg navbar-dark navbar-custom py-3 mb-4 anim-up">
     <div class="container-fluid px-4">
         <a class="navbar-brand d-flex align-items-center gap-2 text-decoration-none" href="#">
             <span class="navbar-brand-logo">BAST</span>
@@ -252,6 +381,11 @@
             <a href="/admin/report" class="btn btn-sm btn-warning fw-bold rounded-pill px-3 me-1">
     <i class="bi bi-bar-chart-line-fill me-1"></i> Report Migrasi
 </a>
+<a href="/admin/backup" class="btn btn-sm btn-outline-light fw-bold rounded-pill px-3 me-1"
+   title="Unduh backup database">
+    <i class="bi bi-database-down me-1"></i> Backup DB
+</a>
+<button type="button" id="darkToggle" class="btn btn-sm btn-outline-light rounded-pill px-3 me-1" onclick="toggleDark()" title="Mode Gelap/Terang"><i class="bi bi-moon-stars-fill"></i></button>
 <a href="/logout" class="btn btn-sm btn-danger fw-bold rounded-pill px-3"
    onclick="return confirm('Yakin ingin logout?')">
     <i class="bi bi-box-arrow-right me-1"></i> Logout
@@ -264,36 +398,36 @@
 
     <!-- Blok Statistik -->
     <div class="row g-3 mb-4">
-        <div class="col-md-4">
+        <div class="col-md-4 anim-up">
             <div class="stat-card blue p-4">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-uppercase fw-bold mb-1" style="font-size:0.7rem;color:var(--muted);letter-spacing:.6px;">Total Dokumen BAST</div>
-                        <div class="fw-800 mb-0" style="font-size:2rem;font-weight:800;color:#1e293b;line-height:1.1;"><%= bastData.length %></div>
+                        <div class="fw-800 mb-0" style="font-size:2rem;font-weight:800;color:#1e293b;line-height:1.1;" data-count="<%= bastData.length %>"><%= bastData.length %></div>
                         <div style="font-size:0.75rem;color:var(--muted);">dokumen terdaftar</div>
                     </div>
                     <div class="stat-icon blue"><i class="bi bi-file-earmark-text-fill"></i></div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-4 anim-up">
             <div class="stat-card green p-4">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-uppercase fw-bold mb-1" style="font-size:0.7rem;color:var(--muted);letter-spacing:.6px;">Approved Warehouse</div>
-                        <div class="fw-800 mb-0" style="font-size:2rem;font-weight:800;color:#1e293b;line-height:1.1;"><%= bastData.filter(d => d.status === 'COMPLETED').length %></div>
+                        <div class="fw-800 mb-0" style="font-size:2rem;font-weight:800;color:#1e293b;line-height:1.1;" data-count="<%= bastData.filter(d => d.status === 'COMPLETED').length %>"><%= bastData.filter(d => d.status === 'COMPLETED').length %></div>
                         <div style="font-size:0.75rem;color:var(--muted);">sudah ditandatangani</div>
                     </div>
                     <div class="stat-icon green"><i class="bi bi-check-circle-fill"></i></div>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-4 anim-up">
             <div class="stat-card amber p-4">
                 <div class="d-flex align-items-center justify-content-between">
                     <div>
                         <div class="text-uppercase fw-bold mb-1" style="font-size:0.7rem;color:var(--muted);letter-spacing:.6px;">Menunggu Persetujuan</div>
-                        <div class="fw-800 mb-0" style="font-size:2rem;font-weight:800;color:#1e293b;line-height:1.1;"><%= bastData.filter(d => d.status === 'PENDING').length %></div>
+                        <div class="fw-800 mb-0" style="font-size:2rem;font-weight:800;color:#1e293b;line-height:1.1;" data-count="<%= bastData.filter(d => d.status === 'PENDING').length %>"><%= bastData.filter(d => d.status === 'PENDING').length %></div>
                         <div style="font-size:0.75rem;color:var(--muted);">pending di warehouse</div>
                     </div>
                     <div class="stat-icon amber"><i class="bi bi-clock-history"></i></div>
@@ -303,7 +437,7 @@
     </div>
 
     <!-- Navigasi Tab -->
-    <div class="mb-4">
+    <div class="mb-4 anim-up">
         <ul class="nav tab-bar" id="adminTab" role="tablist">
             <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="rekap-tab" data-bs-toggle="pill" data-bs-target="#rekap-pane" type="button">
@@ -321,6 +455,7 @@
                 </button>
             </li>
             <!-- Tab Master Teknisi telah dihilangkan dan digabung dengan Kelola Akun -->
+            <!-- Tab Data Input Teknisi telah digabung ke dalam Rekap ONT -->
             <li class="nav-item" role="presentation">
                 <button class="nav-link special" id="rekon-tab" data-bs-toggle="pill" data-bs-target="#rekon-pane" type="button">
                     <i class="bi bi-magic me-1"></i> VLOOKUP Rekon
@@ -332,82 +467,140 @@
     <!-- TAB CONTENT WRAPPER -->
     <div class="tab-content" id="adminTabContent">
         
-        <!-- TAB 1: REKAP ONT -->
+        <!-- TAB 1: REKAP ONT + DATA INPUT TEKNISI -->
         <div class="tab-pane fade show active" id="rekap-pane" role="tabpanel">
-            <div class="card-panel p-4 mb-4">
+            <div class="card-panel p-4 mb-4 reveal">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
-                    <h5 class="fw-bold mb-0 text-navy"><i class="bi bi-people-fill me-2"></i> Rekapitulasi ONT per Teknisi</h5>
-                    <a href="/admin/export/excel" class="btn btn-success fw-bold px-4 py-2 rounded-pill shadow-sm">
-                        <i class="bi bi-file-earmark-excel-fill me-2"></i> Download Excel (Semua Data)
-                    </a>
+                    <div>
+                        <h5 class="fw-bold mb-0 text-navy title-gradient"><i class="bi bi-people-fill me-2"></i> Rekapitulasi ONT per Teknisi</h5>
+                        <div class="text-muted" style="font-size:0.8rem;">Rekap BAST lengkap dengan perangkat, kondisi, foto eviden, dan status approval.</div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-light text-dark border" style="font-size:0.75rem;"><i class="bi bi-database me-1"></i><span id="saTotalLabel">—</span></span>
+                        <a href="/admin/export/excel" class="btn btn-success fw-bold px-4 py-2 rounded-pill shadow-sm">
+                            <i class="bi bi-file-earmark-excel-fill me-2"></i> Download Excel (Semua Data)
+                        </a>
+                    </div>
                 </div>
-                
-                <% if (Object.keys(groupedRekap).length === 0) { %>
-                    <div class="alert alert-secondary text-center rounded-4 border-0">Belum ada data rekap ONT.</div>
-                <% } else { %>
-                    <div class="row g-3">
-                    <% Object.keys(groupedRekap).forEach((teknisi, idx) => { %>
-                        <div class="col-12">
-                            <div class="technician-card">
-                                <div class="technician-header" data-bs-toggle="collapse" data-bs-target="#collapseRekap<%= idx %>">
-                                    <div class="d-flex align-items-center gap-3">
-                                        <div class="avatar-initial avatar-navy"><%= teknisi.charAt(0).toUpperCase() %></div>
-                                        <div>
-                                            <div class="fw-bold text-dark" style="font-size:1rem;"><%= teknisi %></div>
-                                            <div class="text-muted small">Total Perangkat: <span class="fw-bold text-danger"><%= groupedRekap[teknisi].length %> ONT</span></div>
-                                        </div>
-                                    </div>
-                                    <i class="bi bi-chevron-down text-muted fs-5"></i>
-                                </div>
-                                <div id="collapseRekap<%= idx %>" class="collapse <%= idx === 0 ? 'show' : '' %>">
-                                    <div class="p-3 bg-white">
-                                        <div class="table-responsive">
-                                            <table class="table table-sm table-hover align-middle mb-0" style="font-size:0.85rem;">
-                                                <thead class="table-light">
-                                                    <tr>
-                                                        <th>Kode BAST</th>
-                                                        <th>Tanggal</th>
-                                                        <th>SN Lama</th>
-                                                        <th>SN Baru</th>
-                                                        <th>Status</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <% groupedRekap[teknisi].forEach(item => { %>
-                                                    <tr>
-                                                        <td class="font-monospace text-danger fw-semibold"><%= item.kode_unik %></td>
-                                                        <td><%= item.tanggal %></td>
-                                                        <td class="font-monospace"><%= item.sn_lama || '-' %></td>
-                                                        <td class="font-monospace text-success fw-bold"><%= item.sn_baru || '-' %></td>
-                                                        <td>
-                                                            <% if(item.status === 'COMPLETED') { %> <span class="badge-completed">Approved</span>
-                                                            <% } else if(item.status === 'REJECTED') { %> <span class="badge-rejected">Ditolak</span>
-                                                            <% } else { %> <span class="badge-pending">Pending WH</span> <% } %>
-                                                        </td>
-                                                    </tr>
-                                                    <% }) %>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
+
+                <!-- Ringkasan Statistik -->
+                <div class="row g-2 mb-4">
+                    <div class="col-6 col-md-3">
+                        <div class="sum-stat d-flex align-items-center gap-3">
+                            <div class="sum-icon sum-blue"><i class="bi bi-person-badge-fill"></i></div>
+                            <div>
+                                <div class="sum-label">Teknisi</div>
+                                <div class="sum-value" id="sumTeknisi">—</div>
                             </div>
                         </div>
-                    <% }) %>
                     </div>
-                <% } %>
+                    <div class="col-6 col-md-3">
+                        <div class="sum-stat d-flex align-items-center gap-3">
+                            <div class="sum-icon sum-green"><i class="bi bi-file-earmark-text-fill"></i></div>
+                            <div>
+                                <div class="sum-label">BAST</div>
+                                <div class="sum-value" id="sumBast">—</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="sum-stat d-flex align-items-center gap-3">
+                            <div class="sum-icon sum-amber"><i class="bi bi-router-fill"></i></div>
+                            <div>
+                                <div class="sum-label">ONT</div>
+                                <div class="sum-value" id="sumOnt">—</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="sum-stat d-flex align-items-center gap-3">
+                            <div class="sum-icon sum-red"><i class="bi bi-images"></i></div>
+                            <div>
+                                <div class="sum-label">Foto Eviden</div>
+                                <div class="sum-value" id="sumFoto">—</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grafik Tren -->
+                <div class="row g-3 mb-4">
+                    <div class="col-lg-8">
+                        <div class="sum-stat p-3 h-100">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold" style="font-size:.9rem;"><i class="bi bi-bar-chart-fill text-danger me-1"></i>Tren Dokumen BAST per Bulan</span>
+                                <span class="badge bg-light text-dark border" id="trendTotal">0</span>
+                            </div>
+                            <div style="position:relative;height:190px;">
+                                <canvas id="chartTrend" role="img" aria-label="Bar chart tren BAST per bulan"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="sum-stat p-3 h-100">
+                            <div class="fw-bold mb-2" style="font-size:.9rem;"><i class="bi bi-pie-chart-fill text-info me-1"></i>Komposisi Status</div>
+                            <div class="d-flex align-items-center gap-3">
+                                <div style="position:relative;width:120px;height:120px;flex-shrink:0;">
+                                    <canvas id="chartStatus" role="img" aria-label="Donut chart komposisi status"></canvas>
+                                </div>
+                                <div id="statusLegend" style="font-size:11px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filter Service Area -->
+                <div class="d-flex flex-wrap gap-2 mb-3" id="saChips"></div>
+
+                <!-- Search -->
+                <div class="mb-3" id="saSearchWrap" style="display:none;">
+                    <div class="input-group">
+                        <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control" id="saSearch" placeholder="Cari kode BAST, SN, atau No. Internet..." oninput="filterSATable()">
+                    </div>
+                </div>
+
+                <!-- Filter Tanggal & Export -->
+                <div class="row g-2 align-items-center mb-3" id="saDateWrap" style="display:none;">
+                    <div class="col-auto">
+                        <input type="date" class="form-control form-control-sm" id="saDari" title="Dari tanggal" onchange="filterSATable()">
+                    </div>
+                    <div class="col-auto">
+                        <input type="date" class="form-control form-control-sm" id="saSampai" title="Sampai tanggal" onchange="filterSATable()">
+                    </div>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="resetDateFilter()"><i class="bi bi-x-lg me-1"></i>Reset Tanggal</button>
+                    </div>
+                    <div class="col-auto ms-auto">
+                        <a id="btnExportFilter" href="/admin/export/excel" class="btn btn-sm btn-success fw-bold rounded-pill px-3">
+                            <i class="bi bi-file-earmark-excel-fill me-1"></i> Download per Filter
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Konten -->
+                <div id="saContent">
+                    <div class="text-center text-muted py-5">
+                        <i class="bi bi-folder2-open" style="font-size:3rem;opacity:.3;"></i>
+                        <div class="mt-2 small">Memuat data rekapitulasi...</div>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- TAB 2: DOKUMEN BAST -->
         <div class="tab-pane fade" id="bast-pane" role="tabpanel">
-            <div class="card-panel p-4 mb-4">
+            <div class="card-panel p-4 mb-4 reveal">
                 <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-3">
                     <div>
                         <h5 class="fw-bold mb-1 text-danger">
                             <i class="bi bi-file-earmark-arrow-down-fill me-2"></i> Download Dokumen BAST
                         </h5>
                         <p class="text-muted small mb-0">Unduh dokumen PDF yang telah disahkan WH.</p>
+                    </div>
+                    <div class="input-group" style="max-width:320px;">
+                        <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control" id="bastSearch" placeholder="Cari kode BAST, STO, teknisi..." oninput="filterBastTable()">
                     </div>
                 </div>
 
@@ -424,9 +617,9 @@
                                 <th class="text-center">Aksi Unduh</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="bastTbody">
                             <% bastData.forEach(d => { %>
-                            <tr>
+                            <tr data-tanggal="<%= d.tanggal %>" data-status="<%= d.status %>">
                                 <td class="fw-bold font-monospace text-danger"><%= d.kode_unik %></td>
                                 <td><%= d.tanggal %></td>
                                 <td><%= d.loksto %></td>
@@ -455,6 +648,10 @@
                             <% }) %>
                         </tbody>
                     </table>
+                    <div class="d-flex justify-content-between align-items-center mt-3" id="bastPaginationWrap" style="display:none;">
+                        <span class="text-muted small" id="bastInfo">-</span>
+                        <div class="d-flex flex-wrap gap-1" id="bastPagination"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -504,6 +701,26 @@
                                     <input type="text" class="form-control" name="nama_lengkap" id="fieldNama" placeholder="Contoh: ANDI ARYA WIJAYA" required>
                                     <div class="form-text text-success fw-semibold" id="namaHint">
                                         Nama ini akan otomatis masuk ke dropdown Teknisi form BAST.
+                                    </div>
+                                </div>
+
+                                <!-- FIELD SERVICE AREA BARU -->
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold small">Service Area <span class="text-danger">*</span></label>
+                                    <select class="form-select" name="service_area" required>
+                                        <option value="" disabled selected>— Pilih Service Area —</option>
+                                        <option value="CINERE">CINERE</option>
+                                        <option value="DEPOK & RAWAGENI">DEPOK &amp; RAWAGENI</option>
+                                        <option value="KALIABANG">KALIABANG</option>
+                                        <option value="KRANJI">KRANJI</option>
+                                        <option value="PEKAYON">PEKAYON</option>
+                                        <option value="PONDOKGEDE">PONDOKGEDE</option>
+                                        <option value="SUKMAJAYA">SUKMAJAYA</option>
+                                        <option value="BEKASI">BEKASI</option>
+                                    </select>
+                                    <div class="form-text text-muted">
+                                        <i class="bi bi-geo-alt me-1"></i>
+                                        Pilih wilayah layanan teknisi/WH (CINERE s.d. BEKASI).
                                     </div>
                                 </div>
 
@@ -579,9 +796,11 @@
                                 </div>
                                 <div class="user-meta">
                                     <div class="username"><%= u.nama_lengkap || u.username %> <span class="sto-badge"><%= u.sto || 'ALL' %></span></div>
-                                    <div class="nik">NIK: <%= u.nik || u.username %></div>
+                                    <div class="nik">NIK: <%= u.nik || u.username %> <% if (u.service_area) { %><span class="sa-badge"><i class="bi bi-geo-alt-fill"></i><%= u.service_area %></span><% } %></div>
                                 </div>
                                 <span class="badge-role-teknisi">Teknisi</span>
+                                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="openEditAkun(<%= u.id %>, '<%= u.nama_lengkap %>', '<%= u.sto %>', '<%= u.service_area %>')"><i class="bi bi-pencil me-1"></i>Edit</button>
+                                <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3" onclick="openResetPw(<%= u.id %>, '<%= u.username %>')"><i class="bi bi-key me-1"></i>Reset PW</button>
                                 <a href="/admin/user/delete/<%= u.id %>" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('Hapus akun <%= u.username %>?')">Hapus</a>
                             </div>
                             <% }) %>
@@ -598,9 +817,11 @@
                                 </div>
                                 <div class="user-meta">
                                     <div class="username"><%= u.nama_lengkap || u.username %> <span class="sto-badge"><%= u.sto || 'ALL' %></span></div>
-                                    <div class="nik">NIK: <%= u.nik || u.username %></div>
+                                    <div class="nik">NIK: <%= u.nik || u.username %> <% if (u.service_area) { %><span class="sa-badge"><i class="bi bi-geo-alt-fill"></i><%= u.service_area %></span><% } %></div>
                                 </div>
                                 <span class="badge-role-wh">Warehouse</span>
+                                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="openEditAkun(<%= u.id %>, '<%= u.nama_lengkap %>', '<%= u.sto %>', '<%= u.service_area %>')"><i class="bi bi-pencil me-1"></i>Edit</button>
+                                <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3" onclick="openResetPw(<%= u.id %>, '<%= u.username %>')"><i class="bi bi-key me-1"></i>Reset PW</button>
                                 <a href="/admin/user/delete/<%= u.id %>" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('Hapus akun WH <%= u.username %>?')">Hapus</a>
                             </div>
                             <% }) %>
@@ -612,7 +833,7 @@
 
         <!-- TAB 5: VLOOKUP REKON -->
         <div class="tab-pane fade" id="rekon-pane" role="tabpanel">
-            <div class="card-panel p-4 mb-4">
+            <div class="card-panel p-4 mb-4 reveal">
                 <h5 class="fw-bold mb-3 text-primary"><i class="bi bi-file-earmark-spreadsheet-fill me-2"></i> Rekonsiliasi Data Aktual vs Database BAST</h5>
                 <p class="text-muted small">Blok (Ctrl+A / Ctrl+C) seluruh data Excel Anda beserta headernya, lalu paste (Ctrl+V) ke dalam kotak di bawah ini.</p>
 
@@ -628,48 +849,8 @@
                 </div>
             </div>
 
-            <!-- Modal Contoh Template (di tab VLOOKUP) -->
-            <div id="modalContoh" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
-                <div style="background:#fff;border-radius:16px;padding:30px;max-width:90%;width:900px;max-height:85vh;overflow-y:auto;position:relative;">
-                    <button onclick="document.getElementById('modalContoh').style.display='none'" style="position:absolute;top:15px;right:15px;background:#EE2E24;color:white;border:none;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;">&times;</button>
-                    <h5 class="fw-bold text-primary mb-1"><i class="bi bi-file-earmark-spreadsheet me-2"></i> Contoh Format Template Excel</h5>
-                    <p class="text-muted small mb-3">Pastikan header kolom Excel kamu <b>sama persis</b> seperti di bawah ini.</p>
-                    <div class="mb-3 p-3 bg-danger-subtle border border-danger rounded-3">
-                        <h6 class="fw-bold text-danger mb-2"><i class="bi bi-exclamation-triangle-fill me-1"></i> Kolom Wajib Ada:</h6>
-                        <div class="d-flex gap-2 flex-wrap">
-                            <span class="badge bg-danger px-3 py-2">SN_PERANGKAT_OLD</span>
-                            <span class="badge bg-danger px-3 py-2">STATUS_WH</span>
-                            <span class="badge bg-danger px-3 py-2">STATUS_REAL</span>
-                        </div>
-                    </div>
-                    <div class="table-responsive border rounded-3">
-                        <table class="table table-bordered table-sm align-middle mb-0" style="font-size:0.78rem;white-space:nowrap;">
-                            <thead style="background:#0e294b;color:white;">
-                                <tr>
-                                    <th>WITEL</th><th>SERVICE_AREA</th><th>ID_STO</th><th>NO_INET</th><th>NIK</th>
-                                    <th class="bg-danger">SN_PERANGKAT_OLD</th><th>TYPE_OLD</th><th>STATUS</th>
-                                    <th class="bg-danger">STATUS_WH</th><th class="bg-danger">STATUS_REAL</th>
-                                    <th>LAST_ACTIVITY_DATESTAMP</th><th>VALID_BAYAR</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>BEKASI</td><td>SUKMAJAYA</td><td>SKJ</td><td>122120211614</td><td>26010129</td>
-                                    <td class="fw-bold text-danger">FHTT9472E4D0</td><td>ONT : HG6243C</td><td>complete</td>
-                                    <td class="text-muted fst-italic">kosong</td><td class="text-muted fst-italic">kosong</td>
-                                    <td>2026-07-20</td><td>FREELANCE</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <div class="mt-3 text-end">
-                        <button onclick="document.getElementById('modalContoh').style.display='none'" class="btn btn-danger rounded-pill px-4 fw-bold">Tutup</button>
-                    </div>
-                </div>
-            </div>
-
             <!-- Hasil Rekon -->
-            <div id="resultArea" class="card-panel p-4 mb-4" style="display:none;">
+            <div id="resultArea" class="card-panel p-4 mb-4 reveal" style="display:none;">
                 <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
                     <h5 class="fw-bold text-success mb-0"><i class="bi bi-check2-all me-2"></i> Hasil Komparasi Berhasil!</h5>
                     <div class="d-flex gap-2">
@@ -750,9 +931,143 @@
     </div> <!-- END TAB CONTENT WRAPPER -->
 </div>
 
+<!-- Modal Contoh Template Excel (di level body) -->
+<div id="modalContoh" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:30px;max-width:90%;width:900px;max-height:85vh;overflow-y:auto;position:relative;">
+        <button onclick="document.getElementById('modalContoh').style.display='none'" style="position:absolute;top:15px;right:15px;background:#EE2E24;color:white;border:none;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;">&times;</button>
+        <h5 class="fw-bold text-primary mb-1"><i class="bi bi-file-earmark-spreadsheet me-2"></i> Contoh Format Template Excel</h5>
+        <p class="text-muted small mb-3">Pastikan header kolom Excel kamu <b>sama persis</b> seperti di bawah ini.</p>
+        <div class="mb-3 p-3 bg-danger-subtle border border-danger rounded-3">
+            <h6 class="fw-bold text-danger mb-2"><i class="bi bi-exclamation-triangle-fill me-1"></i> Kolom Wajib Ada:</h6>
+            <div class="d-flex gap-2 flex-wrap">
+                <span class="badge bg-danger px-3 py-2">SN_PERANGKAT_OLD</span>
+                <span class="badge bg-danger px-3 py-2">STATUS_WH</span>
+                <span class="badge bg-danger px-3 py-2">STATUS_REAL</span>
+            </div>
+        </div>
+        <div class="table-responsive border rounded-3">
+            <table class="table table-bordered table-sm align-middle mb-0" style="font-size:0.78rem;white-space:nowrap;">
+                <thead style="background:#0e294b;color:white;">
+                    <tr>
+                        <th>WITEL</th><th>SERVICE_AREA</th><th>ID_STO</th><th>NO_INET</th><th>NIK</th>
+                        <th class="bg-danger">SN_PERANGKAT_OLD</th><th>TYPE_OLD</th><th>STATUS</th>
+                        <th class="bg-danger">STATUS_WH</th><th class="bg-danger">STATUS_REAL</th>
+                        <th>LAST_ACTIVITY_DATESTAMP</th><th>VALID_BAYAR</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>BEKASI</td><td>SUKMAJAYA</td><td>SKJ</td><td>122120211614</td><td>26010129</td>
+                        <td class="fw-bold text-danger">FHTT9472E4D0</td><td>ONT : HG6243C</td><td>complete</td>
+                        <td class="text-muted fst-italic">kosong</td><td class="text-muted fst-italic">kosong</td>
+                        <td>2026-07-20</td><td>FREELANCE</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="mt-3 text-end">
+            <button onclick="document.getElementById('modalContoh').style.display='none'" class="btn btn-danger rounded-pill px-4 fw-bold">Tutup</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal lihat foto eviden (di level body agar tidak terpotong animasi transform) -->
+<div class="modal fade" id="modalEvidenAdmin" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title fw-bold"><i class="bi bi-images me-1"></i> Foto Eviden</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+            </div>
+            <div class="modal-body">
+                <div id="evidenAdminContainer" class="d-flex flex-wrap gap-4 justify-content-center p-2"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger rounded-pill px-4 fw-semibold" data-bs-dismiss="modal">
+                    <i class="bi bi-arrow-left me-1"></i> Kembali
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Reset Password Akun -->
+<div class="modal fade" id="modalResetPw" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:420px;">
+        <div class="modal-content" style="border-radius:16px;border:none;overflow:hidden;">
+            <div class="modal-header" style="background:linear-gradient(135deg,#0e1f3b,#1e4080);color:#fff;border:none;">
+                <h6 class="modal-title fw-bold"><i class="bi bi-key me-1"></i> Reset Password Akun</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="resetPwAlert" class="alert d-none small mb-3"></div>
+                <div class="p-3 rounded-3 mb-3" style="background:#f8fafc;border:1px solid var(--border);">
+                    <div class="text-muted" style="font-size:.75rem;">Akun</div>
+                    <div class="fw-bold" style="color:var(--navy);font-size:1rem;" id="resetPwUser">-</div>
+                </div>
+                <label class="form-label fw-semibold small">Password Baru <span class="text-danger">*</span></label>
+                <input type="password" class="form-control" id="resetPwNew" placeholder="Password baru (min. 4 karakter)" autocomplete="off">
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn" id="btnResetPw" style="background:var(--red);color:#fff;font-weight:600;" onclick="simpanResetPw()">Reset Password</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edit Akun -->
+<div class="modal fade" id="modalEditAkun" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:440px;">
+        <div class="modal-content" style="border-radius:16px;border:none;overflow:hidden;">
+            <div class="modal-header" style="background:linear-gradient(135deg,#0e1f3b,#1e4080);color:#fff;border:none;">
+                <h6 class="modal-title fw-bold"><i class="bi bi-pencil-square me-1"></i> Edit Akun</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="editAkunAlert" class="alert d-none small mb-3"></div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">Nama Lengkap</label>
+                    <input type="text" class="form-control" id="editNama" placeholder="Nama lengkap">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">Lokasi STO</label>
+                    <input type="text" class="form-control text-uppercase" id="editSto" placeholder="Contoh: SKJ">
+                </div>
+                <div class="mb-1">
+                    <label class="form-label fw-semibold small">Service Area</label>
+                    <select class="form-select" id="editSa">
+                        <option value="">— Pilih Service Area —</option>
+                        <option value="CINERE">CINERE</option>
+                        <option value="DEPOK & RAWAGENI">DEPOK &amp; RAWAGENI</option>
+                        <option value="KALIABANG">KALIABANG</option>
+                        <option value="KRANJI">KRANJI</option>
+                        <option value="PEKAYON">PEKAYON</option>
+                        <option value="PONDOKGEDE">PONDOKGEDE</option>
+                        <option value="SUKMAJAYA">SUKMAJAYA</option>
+                        <option value="BEKASI">BEKASI</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn" id="btnEditAkun" style="background:var(--red);color:#fff;font-weight:600;" onclick="simpanEditAkun()">Simpan Perubahan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Data SN dari server untuk VLOOKUP -->
 <script id="snDataServer" type="application/json">
     <%- JSON.stringify(snMaster) %>
+</script>
+
+<!-- Data untuk grafik tren -->
+<script id="trendServer" type="application/json">
+    <%- JSON.stringify(bastData.map(d => d.tanggal)) %>
+</script>
+<script id="trendBastServer" type="application/json">
+    <%- JSON.stringify(bastData.map(d => ({ status: d.status }))) %>
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -775,6 +1090,209 @@
             hint.className = 'form-text text-success fw-semibold';
         }
     }
+
+    // Reset password akun (admin)
+    let resetPwTargetId = null;
+    function openResetPw(id, username) {
+        resetPwTargetId = id;
+        document.getElementById('resetPwUser').innerText = username + ' (id: ' + id + ')';
+        document.getElementById('resetPwNew').value = '';
+        document.getElementById('resetPwAlert').className = 'alert d-none small mb-3';
+        new bootstrap.Modal(document.getElementById('modalResetPw')).show();
+    }
+    function simpanResetPw() {
+        const np = document.getElementById('resetPwNew').value;
+        const alertEl = document.getElementById('resetPwAlert');
+        const btn = document.getElementById('btnResetPw');
+        if (!np || np.length < 4) {
+            alertEl.className = 'alert alert-danger small mb-3';
+            alertEl.textContent = 'Password minimal 4 karakter.';
+            return;
+        }
+        btn.disabled = true;
+        fetch('/admin/user/reset', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: resetPwTargetId, new_password: np })
+        })
+        .then(r => r.json())
+        .then(d => {
+            if (d.success) {
+                alertEl.className = 'alert alert-success small mb-3';
+                alertEl.textContent = d.message;
+                setTimeout(() => bootstrap.Modal.getInstance(document.getElementById('modalResetPw')).hide(), 1200);
+            } else {
+                alertEl.className = 'alert alert-danger small mb-3';
+                alertEl.textContent = d.message;
+            }
+        })
+        .catch(() => { alertEl.className = 'alert alert-danger small mb-3'; alertEl.textContent = 'Kendala koneksi ke server.'; })
+        .finally(() => { btn.disabled = false; });
+    }
+
+    // Edit akun (nama, STO, service area)
+    let editAkunId = null;
+    function openEditAkun(id, nama, sto, sa) {
+        editAkunId = id;
+        document.getElementById('editNama').value = (nama || '');
+        document.getElementById('editSto').value = (sto || '');
+        document.getElementById('editSa').value = (sa || '');
+        document.getElementById('editAkunAlert').className = 'alert d-none small mb-3';
+        new bootstrap.Modal(document.getElementById('modalEditAkun')).show();
+    }
+    function simpanEditAkun() {
+        const alertEl = document.getElementById('editAkunAlert');
+        const btn = document.getElementById('btnEditAkun');
+        btn.disabled = true;
+        fetch('/admin/user/update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                id: editAkunId,
+                nama_lengkap: document.getElementById('editNama').value,
+                sto: document.getElementById('editSto').value,
+                service_area: document.getElementById('editSa').value
+            })
+        })
+        .then(r => r.json())
+        .then(d => {
+            if (d.success) {
+                alertEl.className = 'alert alert-success small mb-3';
+                alertEl.textContent = d.message;
+                setTimeout(() => { bootstrap.Modal.getInstance(document.getElementById('modalEditAkun')).hide(); window.location.reload(); }, 900);
+            } else {
+                alertEl.className = 'alert alert-danger small mb-3';
+                alertEl.textContent = d.message;
+            }
+        })
+        .catch(() => { alertEl.className = 'alert alert-danger small mb-3'; alertEl.textContent = 'Kendala koneksi ke server.'; })
+        .finally(() => { btn.disabled = false; });
+    }
+
+    // ===== Search + Pagination tabel Dokumen BAST =====
+    const BAST_PAGE_SIZE = 10;
+    let bastRows = [];
+    function tandaiAged() {
+        document.querySelectorAll('#bastTbody tr[data-status="PENDING"]').forEach(function (tr) {
+            const tgl = tr.getAttribute('data-tanggal');
+            if (!tgl) return;
+            const days = Math.floor((Date.now() - new Date(tgl + 'T00:00:00').getTime()) / 86400000);
+            if (isNaN(days) || days <= 7) return;
+            const st = tr.querySelector('td:nth-child(6)');
+            if (st) st.innerHTML += ' <span class="badge bg-danger ms-1" style="font-size:.62rem;">&gt;7 hari</span>';
+        });
+    }
+    function initBastTable() {
+        const tbody = document.getElementById('bastTbody');
+        if (!tbody) return;
+        bastRows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+        tandaiAged();
+        renderBastTable();
+    }
+    function filterBastTable() {
+        const kw = (document.getElementById('bastSearch').value || '').toLowerCase().trim();
+        bastRows.forEach(function (tr) {
+            tr.style.display = (kw && !tr.textContent.toLowerCase().includes(kw)) ? 'none' : '';
+        });
+        renderBastTable();
+    }
+    function renderBastTable() {
+        const kw = (document.getElementById('bastSearch').value || '').toLowerCase().trim();
+        const visible = bastRows.filter(function (tr) {
+            return !kw || tr.textContent.toLowerCase().includes(kw);
+        });
+        const wrap = document.getElementById('bastPaginationWrap');
+        const info = document.getElementById('bastInfo');
+        const pager = document.getElementById('bastPagination');
+        if (!wrap) return;
+        if (visible.length <= BAST_PAGE_SIZE) {
+            wrap.style.display = 'none';
+            bastRows.forEach(function (tr) { tr.style.display = (kw && !tr.textContent.toLowerCase().includes(kw)) ? 'none' : ''; });
+            return;
+        }
+        wrap.style.display = 'flex';
+        info.textContent = visible.length + ' dokumen ditemukan';
+        const pages = Math.ceil(visible.length / BAST_PAGE_SIZE);
+        pager.innerHTML = '';
+        for (let p = 1; p <= pages; p++) {
+            (function (pg) {
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'btn btn-sm rounded-pill ' + (pg === 1 ? 'btn-dark' : 'btn-light border');
+                b.textContent = pg;
+                b.style.margin = '0 2px';
+                b.onclick = function () {
+                    bastRows.forEach(function (tr) { tr.style.display = 'none'; });
+                    visible.slice((pg - 1) * BAST_PAGE_SIZE, pg * BAST_PAGE_SIZE).forEach(function (tr) { tr.style.display = ''; });
+                    Array.prototype.forEach.call(pager.children, function (x) {
+                        x.className = 'btn btn-sm rounded-pill ' + (parseInt(x.textContent, 10) === pg ? 'btn-dark' : 'btn-light border');
+                    });
+                };
+                pager.appendChild(b);
+            })(p);
+        }
+        bastRows.forEach(function (tr) { tr.style.display = 'none'; });
+        visible.slice(0, BAST_PAGE_SIZE).forEach(function (tr) { tr.style.display = ''; });
+    }
+    initBastTable();
+
+    // ===== Grafik tren & komposisi status =====
+    let chartTrendInst = null, chartStatusInst = null;
+    function initCharts() {
+        if (!window.Chart) return;
+        let dates = [];
+        try { dates = JSON.parse(document.getElementById('trendServer').textContent) || []; } catch (e) {}
+        const byMonth = {};
+        dates.forEach(function (d) {
+            const m = String(d || '').slice(0, 7);
+            if (m) byMonth[m] = (byMonth[m] || 0) + 1;
+        });
+        const labels = Object.keys(byMonth).sort();
+        const values = labels.map(function (l) { return byMonth[l]; });
+        document.getElementById('trendTotal').textContent = dates.length + ' dokumen';
+
+        if (chartTrendInst) chartTrendInst.destroy();
+        chartTrendInst = new Chart(document.getElementById('chartTrend'), {
+            type: 'bar',
+            data: {
+                labels: labels.length ? labels : ['—'],
+                datasets: [{ label: 'BAST', data: labels.length ? values : [0], backgroundColor: '#EE2E24', borderRadius: 6, maxBarThickness: 34 }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 10 } } },
+                    y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { color: '#64748b', font: { size: 10 }, stepSize: 1 } }
+                }
+            }
+        });
+
+        const st = { COMPLETED: 0, PENDING: 0, REJECTED: 0 };
+        try {
+            const bast = JSON.parse(document.getElementById('trendBastServer').textContent) || [];
+            bast.forEach(function (b) { if (st[b.status] !== undefined) st[b.status]++; });
+        } catch (e) {}
+        const donutData = [
+            { label: 'Approved', val: st.COMPLETED, color: '#22c55e' },
+            { label: 'Pending',  val: st.PENDING,   color: '#f59e0b' },
+            { label: 'Ditolak',  val: st.REJECTED,  color: '#EE2E24' }
+        ].filter(function (d) { return d.val > 0; });
+
+        if (chartStatusInst) chartStatusInst.destroy();
+        chartStatusInst = new Chart(document.getElementById('chartStatus'), {
+            type: 'doughnut',
+            data: {
+                labels: donutData.map(function (d) { return d.label; }),
+                datasets: [{ data: donutData.map(function (d) { return d.val; }), backgroundColor: donutData.map(function (d) { return d.color; }), borderWidth: 2, borderColor: '#fff' }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, cutout: '62%', plugins: { legend: { display: false } } }
+        });
+        document.getElementById('statusLegend').innerHTML = donutData.map(function (d) {
+            return '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;"><span style="width:10px;height:10px;border-radius:3px;background:' + d.color + ';flex-shrink:0;"></span><span style="color:#64748b">' + d.label + '</span><span style="font-weight:700;margin-left:auto;padding-left:8px;">' + d.val + '</span></div>';
+        }).join('') || '<div class="text-muted small">Belum ada data.</div>';
+    }
+    initCharts();
 
     // Fungsi VLOOKUP JS
     function prosesRekon() {
@@ -884,6 +1402,301 @@
         a.download = `Laporan_Rekon_Data_${new Date().toISOString().slice(0,10)}.xls`;
         document.body.appendChild(a); a.click(); document.body.removeChild(a);
     }
+
+    // ═════════════════════════════════════════════════════════════════
+    // DATA INPUT TEKNISI — filter per Service Area
+    // ═════════════════════════════════════════════════════════════════
+    const SERVICE_AREAS = ['CINERE','DEPOK & RAWAGENI','KALIABANG','KRANJI','PEKAYON','PONDOKGEDE','SUKMAJAYA','BEKASI'];
+    let saCounts = {};
+    let saCache  = {};
+    let saActive = null;
+
+    function muatSAMeta() {
+        fetch('/admin/data-teknisi/meta')
+            .then(r => r.json())
+            .then(data => {
+                saCounts = data.counts || {};
+                document.getElementById('saTotalLabel').textContent = 'Total: ' + (data.total || 0) + ' BAST';
+                renderSAChips();
+                if (!saActive) {
+                    const firstSA = SERVICE_AREAS.find(sa => (saCounts[sa] || 0) > 0) || SERVICE_AREAS[0];
+                    if (firstSA) pilihSA(firstSA);
+                }
+            })
+            .catch(() => { document.getElementById('saTotalLabel').textContent = 'Gagal memuat jumlah.'; });
+    }
+
+    function renderSAChips() {
+        const wrap = document.getElementById('saChips');
+        wrap.innerHTML = '';
+        SERVICE_AREAS.forEach(sa => {
+            const n = saCounts[sa] || 0;
+            const active = (sa === saActive);
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'btn btn-sm fw-semibold rounded-pill px-3 shadow-sm border';
+            btn.style.cssText = active
+                ? 'background:var(--navy);color:#fff;border-color:var(--navy);'
+                : 'background:#fff;color:#1e293b;border-color:#e2e8f0;';
+            btn.innerHTML = '<i class="bi bi-geo-alt-fill me-1"></i>' + sa +
+                ' <span class="badge ' + (active ? 'bg-white text-navy' : 'bg-light text-muted') + ' ms-1">' + n + '</span>';
+            btn.onclick = () => pilihSA(sa);
+            wrap.appendChild(btn);
+        });
+    }
+
+    function pilihSA(sa) {
+        saActive = sa;
+        renderSAChips();
+        document.getElementById('saSearchWrap').style.display = 'block';
+        document.getElementById('saDateWrap').style.display = 'flex';
+        document.getElementById('saSearch').value = '';
+        document.getElementById('saDari').value = '';
+        document.getElementById('saSampai').value = '';
+        document.getElementById('btnExportFilter').href = '/admin/export/excel?sa=' + encodeURIComponent(sa);
+        const content = document.getElementById('saContent');
+        if (saCache[sa]) { renderSATeknisi(saCache[sa]); return; }
+        content.innerHTML = '<div class="text-center py-5 text-muted"><div class="spinner-border spinner-border-sm text-navy" role="status"></div><div class="small mt-2">Memuat data ' + sa + '...</div></div>';
+        fetch('/admin/data-teknisi?sa=' + encodeURIComponent(sa))
+            .then(r => r.json())
+            .then(data => {
+                saCache[sa] = data;
+                renderSATeknisi(data);
+            })
+            .catch(() => { content.innerHTML = '<div class="alert alert-danger mb-0">Gagal memuat data.</div>'; });
+    }
+
+    function resetDateFilter() {
+        document.getElementById('saDari').value = '';
+        document.getElementById('saSampai').value = '';
+        filterSATable();
+    }
+
+    function updateSummary(data) {
+        let ont = 0, foto = 0;
+        (data.teknisi || []).forEach(t => { ont += (t.total_ont || 0); foto += (t.total_foto || 0); });
+        if (window.setCount) {
+            setCount('sumTeknisi', (data.teknisi || []).length);
+            setCount('sumBast', data.total_bast || 0);
+            setCount('sumOnt', ont);
+            setCount('sumFoto', foto);
+        } else {
+            document.getElementById('sumTeknisi').textContent = (data.teknisi || []).length;
+            document.getElementById('sumBast').textContent = data.total_bast || 0;
+            document.getElementById('sumOnt').textContent = ont;
+            document.getElementById('sumFoto').textContent = foto;
+        }
+    }
+
+    function renderSATeknisi(data) {
+        const content = document.getElementById('saContent');
+        if (!data || !data.success) {
+            updateSummary({ teknisi: [], total_bast: 0 });
+            content.innerHTML = '<div class="alert alert-danger mb-0">' + (data && data.message || 'Terjadi kesalahan.') + '</div>';
+            return;
+        }
+        updateSummary(data);
+        if (data.teknisi.length === 0) {
+            content.innerHTML = '<div class="alert alert-secondary text-center mb-0 rounded-4 border-0">Belum ada input BAST dari teknisi di <b>' + escHtml(data.sa) + '</b>.</div>';
+            return;
+        }
+        let html = '<div class="mb-3 small text-muted"><i class="bi bi-check2-circle text-success me-1"></i>' + data.total_bast +
+                   ' BAST dari ' + data.teknisi.length + ' teknisi di <b>' + escHtml(data.sa) + '</b></div>';
+        data.teknisi.forEach((t, idx) => {
+            html += `
+              <div class="technician-card mb-2">
+                <div class="technician-header" onclick="toggleTeknisi(${idx})">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="avatar-initial avatar-navy">${escHtml((t.nama || '?').charAt(0).toUpperCase())}</div>
+                        <div>
+                            <div class="d-flex align-items-center gap-2 flex-wrap">
+                                <span class="fw-bold text-dark" style="font-size:1rem;">${escHtml(t.nama)}</span>
+                                <span class="tech-badge sto"><i class="bi bi-geo-alt-fill me-1"></i>${escHtml(t.sto || '-')}</span>
+                                <span class="tech-badge sa"><i class="bi bi-globe2 me-1"></i>${escHtml(data.sa)}</span>
+                            </div>
+                            <div class="text-muted small font-monospace mt-1">NIK: ${escHtml(t.nik)}</div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge" style="background:var(--navy);color:#fff;">${t.total_bast} BAST</span>
+                        <span class="badge bg-light text-primary border">${t.total_ont} ONT</span>
+                        <span class="badge bg-light text-muted border">${t.total_foto} Foto</span>
+                        <i class="bi bi-chevron-down text-muted fs-6" id="chevTek${idx}"></i>
+                    </div>
+                </div>
+                <div class="collapse" id="tekBody${idx}">
+                    <div class="p-3 bg-white">
+                        ${t.records.length === 0 ? '<div class="text-muted small">Tidak ada BAST.</div>' : t.records.map(renderBAST).join('')}
+                    </div>
+                </div>
+              </div>`;
+        });
+        content.innerHTML = html;
+    }
+
+    function toggleTeknisi(idx) {
+        const el = document.getElementById('tekBody' + idx);
+        const chev = document.getElementById('chevTek' + idx);
+        if (!el) return;
+        if (el.classList.contains('show')) { bootstrap.Collapse.getInstance(el) ? bootstrap.Collapse.getInstance(el).hide() : new bootstrap.Collapse(el).hide(); if (chev) chev.classList.remove('bi-chevron-up'); }
+        else { new bootstrap.Collapse(el, { toggle: false }).show(); if (chev) chev.classList.replace('bi-chevron-down','bi-chevron-up'); }
+    }
+
+    function kondisiBadge(k) {
+        const s = String(k || '').toUpperCase();
+        const cls = s.includes('BAIK') ? 'bg-success-subtle text-success'
+            : (s.includes('RUSAK') || s.includes('TIDAK') || s.includes('GAGAL')) ? 'bg-danger-subtle text-danger'
+            : 'bg-light text-muted border';
+        return '<span class="badge ' + cls + '">' + escHtml(k || '-') + '</span>';
+    }
+
+    function renderBAST(r) {
+        const st = r.status;
+        const stBadge = st === 'COMPLETED' ? '<span class="badge-completed">Approved WH</span>'
+            : st === 'REJECTED' ? '<span class="badge-rejected">Ditolak WH</span>'
+            : '<span class="badge-pending">Pending WH</span>';
+        const rows = r.perangkat.length
+            ? `<div class="table-responsive">
+                 <table class="table table-sm table-hover align-middle mb-0" style="font-size:0.82rem;">
+                   <thead class="table-light">
+                     <tr><th>SN Lama</th><th>SN Baru</th><th>No. Internet</th><th>Kondisi</th></tr>
+                   </thead>
+                   <tbody>
+                     ${r.perangkat.map(p => `<tr>
+                       <td class="font-monospace text-muted">${escHtml(p.snlama || '-')}</td>
+                       <td class="font-monospace text-success fw-bold">${escHtml(p.snbaru || '-')}</td>
+                       <td class="font-monospace">${escHtml(p.noinet || '-')}</td>
+                       <td>${kondisiBadge(p.kondisi)}</td>
+                     </tr>`).join('')}
+                   </tbody>
+                 </table>
+               </div>`
+            : '<div class="text-muted small mb-2">Belum ada perangkat diisi.</div>';
+        const evUrls = r.eviden.map(f => "'/uploads/eviden/" + String(f).split(/[\\/]/).pop() + "'").join(',');
+        return `
+          <div class="border rounded-3 p-3 mb-2" style="background:#fafbff;">
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                <span class="fw-bold font-monospace text-danger" style="font-size:0.85rem;">${escHtml(r.kode_unik)}</span>
+                ${stBadge}
+                <span class="text-muted small"><i class="bi bi-calendar3 me-1"></i>${escHtml(r.tanggal || '-')}</span>
+                <span class="text-muted small"><i class="bi bi-pin-map me-1"></i>${escHtml(r.loksto || '-')}</span>
+                <span class="text-muted small"><i class="bi bi-box-seam me-1"></i>WH: ${escHtml(r.wh_nama)}</span>
+                <a class="ms-auto btn btn-sm btn-outline-primary rounded-pill px-3" style="font-size:0.72rem;" href="/bast/cetak/${escAttr(r.kode_unik)}" target="_blank"><i class="bi bi-printer me-1"></i>Cetak</a>
+            </div>
+            ${rows}
+            <div class="d-flex align-items-center gap-3 mt-2">
+                ${r.eviden_count > 0 ? `<button class="btn btn-link p-0" style="font-size:0.75rem;text-decoration:none;color:#1d4ed8;" onclick="lihatEvidenAdmin([${evUrls}])"><i class="bi bi-images me-1"></i>${r.eviden_count} foto eviden — Lihat</button>` : ''}
+                ${r.alasan_tolak ? `<span class="small text-danger"><i class="bi bi-x-circle me-1"></i>Alasan tolak: ${escHtml(r.alasan_tolak)}</span>` : ''}
+            </div>
+          </div>`;
+    }
+
+    function lihatEvidenAdmin(urls) {
+        const c = document.getElementById('evidenAdminContainer');
+        c.innerHTML = urls.map((u, i) => '<div class="text-center"><img src="' + u + '" class="rounded shadow" style="max-height:320px;max-width:100%;border:1px solid #ddd;" onerror="this.parentElement.innerHTML=\'<div class=\\\'text-muted small\\\'>Foto tidak ditemukan</div>\';"><div class="small text-muted mt-1">Foto ' + (i + 1) + '</div></div>').join('');
+        new bootstrap.Modal(document.getElementById('modalEvidenAdmin')).show();
+    }
+
+    function filterSATable() {
+        if (!saActive || !saCache[saActive]) return;
+        const kw = (document.getElementById('saSearch').value || '').toLowerCase().trim();
+        const dari = document.getElementById('saDari').value;
+        const sampai = document.getElementById('saSampai').value;
+        const data = saCache[saActive];
+        const inTanggal = (tgl) => {
+            const t = String(tgl || '');
+            if (!t) return true;
+            if (dari && t < dari) return false;
+            if (sampai && t > sampai) return false;
+            return true;
+        };
+        if (!kw && !dari && !sampai) { renderSATeknisi(data); return; }
+        const filtered = {
+            success: true,
+            sa: data.sa,
+            total_bast: 0,
+            teknisi: data.teknisi.map(t => {
+                const recs = t.records.filter(r =>
+                    inTanggal(r.tanggal) &&
+                    (!kw ||
+                        String(r.kode_unik || '').toLowerCase().includes(kw) ||
+                        String(r.loksto || '').toLowerCase().includes(kw) ||
+                        (r.perangkat || []).some(p => String(p.snlama || '').toLowerCase().includes(kw) || String(p.snbaru || '').toLowerCase().includes(kw) || String(p.noinet || '').toLowerCase().includes(kw)))
+                );
+                return {
+                    ...t,
+                    records: recs,
+                    total_bast: recs.length,
+                    total_ont: recs.reduce((s, r) => s + (r.perangkat || []).length, 0),
+                    total_foto: recs.reduce((s, r) => s + (r.eviden_count || 0), 0)
+                };
+            }).filter(t => t.total_bast > 0)
+        };
+        filtered.total_bast = filtered.teknisi.reduce((s, t) => s + t.total_bast, 0);
+        renderSATeknisi(filtered);
+    }
+
+    function escHtml(s) {
+        return String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+    function escAttr(s) {
+        return String(s == null ? '' : s).replace(/'/g,"\\'").replace(/"/g,'&quot;');
+    }
+
+    // Muat jumlah per SA & auto-pilih SA pertama saat halaman siap
+    muatSAMeta();
+</script>
+
+<script>
+    (function () {
+        function countUp(el, target) {
+            var dur = 900, start = null;
+            function step(now) {
+                if (!start) start = now;
+                var p = Math.min((now - start) / dur, 1);
+                el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
+                if (p < 1) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        }
+        window.setCount = function (id, target) {
+            var el = document.getElementById(id);
+            if (el) countUp(el, target);
+        };
+        function initAnim() {
+            document.querySelectorAll('.anim-up').forEach(function (el, i) {
+                el.style.animationDelay = (i * 80) + 'ms';
+            });
+            document.querySelectorAll('[data-count]').forEach(function (el) {
+                countUp(el, parseInt(el.getAttribute('data-count'), 10) || 0);
+            });
+            if ('IntersectionObserver' in window) {
+                var io = new IntersectionObserver(function (entries) {
+                    entries.forEach(function (e) {
+                        if (e.isIntersecting) { e.target.classList.add('reveal-visible'); io.unobserve(e.target); }
+                    });
+                }, { threshold: 0.08 });
+                document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+            } else {
+                document.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('reveal-visible'); });
+            }
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initAnim);
+        else initAnim();
+    })();
+</script>
+<script>
+    (function () {
+        function applyDark(dark) {
+            document.body.classList.toggle('dark', dark);
+            var btn = document.getElementById('darkToggle');
+            if (btn) btn.innerHTML = dark ? '<i class="bi bi-sun-fill"></i>' : '<i class="bi bi-moon-stars-fill"></i>';
+            try { localStorage.setItem('bast_dark', dark ? '1' : '0'); } catch (e) {}
+        }
+        try { applyDark(localStorage.getItem('bast_dark') === '1'); } catch (e) {}
+        window.toggleDark = function () { applyDark(!document.body.classList.contains('dark')); };
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(function () {});
+    })();
 </script>
 
 </body>

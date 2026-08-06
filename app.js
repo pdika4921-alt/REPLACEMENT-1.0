@@ -29,20 +29,49 @@ db.serialize(() => {
 
     db.run(`ALTER TABLE users ADD COLUMN nama_lengkap TEXT`, () => {});
     db.run(`ALTER TABLE users ADD COLUMN nik TEXT`, () => {});
-    db.run(`ALTER TABLE users ADD COLUMN sto TEXT`, () => {}); 
-    db.run(`ALTER TABLE bast_data ADD COLUMN alasan_tolak TEXT`, () => {});
+    db.run(`ALTER TABLE users ADD COLUMN sto TEXT`, () => {});
+    db.run(`ALTER TABLE users ADD COLUMN service_area TEXT`, () => {});
 
+    // Migrasi kembali kredensial admin ke login lama ('admin')
+    db.run(`UPDATE users SET username = 'admin', password = 'admin123' WHERE username = 'admin_replacement'`, () => {});
     db.run(`INSERT OR IGNORE INTO users (username, password, role, nama_lengkap, nik, sto)
-            VALUES ('admin', 'admin123', 'admin', 'Administrator', '00000000', 'ALL')`);
+            VALUES ('admin', 'admin123', 'admin', 'Administrator', '00000000', 'ALL')`, () => {});
+    // Hapus akun baru yang mungkin masih tersisa (pembersihan defensif)
+    db.run(`DELETE FROM users WHERE username = 'admin_replacement' AND role = 'admin'`, () => {});
     db.run(`INSERT OR IGNORE INTO users (username, password, role, nama_lengkap, nik, sto)
-            VALUES ('teknisi', '123', 'teknisi', 'Teknisi Demo', '99999999', 'SUKMAJAYA')`);
+            VALUES ('teknisi', '123', 'teknisi', 'Teknisi Demo', '99999999', 'SUKMAJAYA')`, () => {});
     
     db.run(`CREATE TABLE IF NOT EXISTS bast_data (
         id INTEGER PRIMARY KEY AUTOINCREMENT, kode_unik TEXT UNIQUE, status TEXT,
         tanggal TEXT, loksto TEXT, teknisi_nama TEXT, teknisi_nik TEXT, wh_nama TEXT,
         perangkat_json TEXT, eviden_json TEXT, ttd_teknisi TEXT, ttd_wh TEXT,
+        alasan_tolak TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
+
+    // Migrasi defensif untuk database lama yang belum punya kolom alasan_tolak
+    db.run(`ALTER TABLE bast_data ADD COLUMN alasan_tolak TEXT`, () => {});
+
+    // Tabel audit log
+    db.run(`CREATE TABLE IF NOT EXISTS audit_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        waktu TEXT DEFAULT (datetime('now','localtime')),
+        username TEXT,
+        role TEXT,
+        aksi TEXT,
+        detail TEXT
+    )`);
+
+    // ===== Migrasi keamanan: hash semua password yang masih plaintext =====
+    db.all("SELECT id, password FROM users", (errMig, rows) => {
+        if (errMig || !rows) return;
+        rows.forEach(r => {
+            if (r.password && !String(r.password).startsWith('scrypt$')) {
+                db.run("UPDATE users SET password = ? WHERE id = ?", [hashPassword(r.password), r.id]);
+            }
+        });
+        console.log('[SECURITY] Migrasi password selesai.');
+    });
 });
 
 app.set('view engine', 'ejs');
@@ -68,14 +97,79 @@ const upload = multer({
     }) 
 });
 
+// ===== SESSION IDLE TIMEOUT (30 menit) =====
+const IDLE_TIMEOUT = 30 * 60 * 1000;
+function touchSession(req) {
+    const now = Date.now();
+    if (req.session && req.session.lastActive && (now - req.session.lastActive > IDLE_TIMEOUT)) {
+        req.session.destroy();
+        return false;
+    }
+    if (req.session) req.session.lastActive = now;
+    return true;
+}
+
+// ===== AUDIT LOG =====
+function logAudit(req, aksi, detail) {
+    const username = (req && req.session && req.session.username) || 'anonymous';
+    const role     = (req && req.session && req.session.role) || '-';
+    db.run("INSERT INTO audit_log (username, role, aksi, detail) VALUES (?, ?, ?, ?)",
+        [username, role, aksi, detail || ''], () => {});
+}
+
 const checkRole = (role) => (req, res, next) => {
+    if (!touchSession(req)) return res.redirect('/login');
     if (req.session.loggedIn && req.session.role === role) next();
     else res.redirect('/login');
 };
 const isAuth = (req, res, next) => {
+    if (!touchSession(req)) return res.redirect('/login');
     if (req.session.loggedIn) next();
     else res.redirect('/login');
 };
+
+// ===== KEAMANAN PASSWORD (scrypt — tanpa dependency tambahan) =====
+const SCRYPT = { N: 16384, r: 8, p: 1, keylen: 64 };
+
+function hashPassword(pw) {
+    const salt = crypto.randomBytes(16).toString('hex');
+    const hash = crypto.scryptSync(String(pw), salt, SCRYPT.keylen, { N: SCRYPT.N, r: SCRYPT.r, p: SCRYPT.p });
+    return 'scrypt$' + salt + '$' + hash.toString('hex');
+}
+
+function verifyPassword(pw, stored) {
+    if (!stored) return false;
+    if (String(stored).startsWith('scrypt$')) {
+        const parts = String(stored).split('$');
+        if (parts.length !== 3) return false;
+        const salt = parts[1];
+        const expected = Buffer.from(parts[2], 'hex');
+        const hash = crypto.scryptSync(String(pw), salt, SCRYPT.keylen, { N: SCRYPT.N, r: SCRYPT.r, p: SCRYPT.p });
+        const actual = Buffer.from(hash.toString('hex'), 'hex');
+        return expected.length === actual.length && crypto.timingSafeEqual(expected, actual);
+    }
+    // Legacy plaintext (dari DB lama) — verifikasi lalu segera di-hash di migrasi
+    return stored === String(pw);
+}
+
+// ===== RATE LIMITER LOGIN (cegah brute-force) =====
+const loginAttempts = {};
+const RATE = { max: 5, lockMs: 5 * 60 * 1000 };
+function isLocked(username, ip) {
+    const a = loginAttempts[username + '|' + ip];
+    if (!a) return false;
+    if (a.lockedUntil && a.lockedUntil > Date.now()) return true;
+    if (a.lockedUntil && a.lockedUntil <= Date.now()) { delete loginAttempts[username + '|' + ip]; return false; }
+    return false;
+}
+function registerFail(username, ip) {
+    const key = username + '|' + ip;
+    const a = loginAttempts[key] || { count: 0, lockedUntil: 0 };
+    a.count++;
+    if (a.count >= RATE.max) { a.lockedUntil = Date.now() + RATE.lockMs; a.count = 0; }
+    loginAttempts[key] = a;
+}
+function clearAttempts(username, ip) { delete loginAttempts[username + '|' + ip]; }
 
 // ===== DEBUG ROUTE — hapus di production =====
 app.get('/debug/sto', (req, res) => {
@@ -102,24 +196,60 @@ app.get('/login', (req, res) => res.render('login', { error: null }));
 
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
-    db.get("SELECT * FROM users WHERE username = ? AND password = ?", [username, password], (err, user) => {
-        if (user) {
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '?';
+    if (isLocked(username, ip)) {
+        logAudit(req, 'LOGIN_BLOKIR', username);
+        return res.render('login', { error: 'Terlalu banyak percobaan. Akun diblokir sementara (5 menit).' });
+    }
+    db.get("SELECT * FROM users WHERE username = ?", [username], (err, user) => {
+        if (user && verifyPassword(password, user.password)) {
+            clearAttempts(username, ip);
             req.session.loggedIn     = true;
             req.session.role         = user.role;
             req.session.username     = user.username;
             req.session.nama_lengkap = user.nama_lengkap || user.username;
             req.session.nik          = user.nik || '';
+            req.session.sto          = user.sto || '';
+            req.session.service_area = user.service_area || '';
+            logAudit(req, 'LOGIN', username);
 
             if (user.role === 'admin')        res.redirect('/admin/dashboard');
             else if (user.role === 'teknisi') res.redirect('/teknisi/dashboard');
             else                              res.redirect('/wh/dashboard');
         } else {
+            registerFail(username, ip);
+            logAudit(req, 'LOGIN_GAGAL', username);
             res.render('login', { error: 'Username atau Password salah!' });
         }
     });
 });
 
-app.get('/logout', (req, res) => { req.session.destroy(); res.redirect('/login'); });
+app.get('/logout', (req, res) => {
+    logAudit(req, 'LOGOUT', '');
+    req.session.destroy();
+    res.redirect('/login');
+});
+
+// ================= UBAH PASSWORD (teknisi / WH / admin) =================
+app.post('/change-password', isAuth, (req, res) => {
+    const { old_password, new_password } = req.body;
+    const username = req.session.username;
+
+    if (!new_password || !String(new_password).trim()) {
+        return res.json({ success: false, message: 'Password baru wajib diisi.' });
+    }
+
+    db.get("SELECT * FROM users WHERE username = ?", [username], (err, user) => {
+        if (err || !user) return res.json({ success: false, message: 'Akun tidak ditemukan.' });
+        if (!verifyPassword(old_password || '', user.password)) {
+            return res.json({ success: false, message: 'Password lama salah.' });
+        }
+        db.run("UPDATE users SET password = ? WHERE username = ?", [hashPassword(String(new_password)), username], (e) => {
+            if (e) return res.json({ success: false, message: 'Gagal mengubah password.' });
+            res.json({ success: true, message: 'Password berhasil diubah.' });
+        });
+    });
+});
 
 // ================= ROUTE ADMIN =================
 app.get('/admin/dashboard', checkRole('admin'), (req, res) => {
@@ -196,28 +326,78 @@ app.get('/admin/dashboard', checkRole('admin'), (req, res) => {
 });
 
 app.post('/admin/user/add', checkRole('admin'), (req, res) => {
-    const { username, password, role, nama_lengkap, nik, sto } = req.body;
+    const { username, password, role, nama_lengkap, nik, sto, service_area } = req.body;
     const safeRole = (role === 'wh') ? 'wh' : 'teknisi';
+    const hashedPw = hashPassword(password || '');
     db.run(
-        "INSERT INTO users (username, password, role, nama_lengkap, nik, sto) VALUES (?, ?, ?, ?, ?, ?)",
-        [username, password, safeRole, nama_lengkap || '', nik || '', sto || ''],
+        "INSERT INTO users (username, password, role, nama_lengkap, nik, sto, service_area) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        [username, hashedPw, safeRole, nama_lengkap || '', nik || '', sto || '', service_area || ''],
         (err) => {
             if (err) return res.send("<script>alert('Username atau NIK sudah terdaftar!'); window.location='/admin/dashboard';</script>");
+            logAudit(req, 'ADD_USER', username + ' (' + safeRole + ')');
             res.redirect('/admin/dashboard');
         }
     );
 });
 
+// Update akun teknisi/WH (nama, STO, service area)
+app.post('/admin/user/update', checkRole('admin'), (req, res) => {
+    const { id, nama_lengkap, sto, service_area } = req.body;
+    if (!id) return res.json({ success: false, message: 'ID akun wajib diisi.' });
+    db.run("UPDATE users SET nama_lengkap = ?, sto = ?, service_area = ? WHERE id = ? AND role IN ('teknisi','wh')",
+        [nama_lengkap || '', sto || '', service_area || '', id], (e) => {
+            if (e) return res.json({ success: false, message: e.message });
+            logAudit(req, 'UPDATE_USER', 'id=' + id);
+            res.json({ success: true, message: 'Akun berhasil diperbarui.' });
+        });
+});
+
+// Reset password akun teknisi/WH oleh admin
+app.post('/admin/user/reset', checkRole('admin'), (req, res) => {
+    const { id, new_password } = req.body;
+    if (!id || !new_password || String(new_password).length < 4) {
+        return res.json({ success: false, message: 'Password minimal 4 karakter.' });
+    }
+    db.run("UPDATE users SET password = ? WHERE id = ? AND role IN ('teknisi','wh')",
+        [hashPassword(String(new_password)), id], (e) => {
+            if (e) return res.json({ success: false, message: e.message });
+            logAudit(req, 'RESET_PW', 'id=' + id);
+            res.json({ success: true, message: 'Password berhasil direset.' });
+        });
+});
+
+// Backup database
+app.get('/admin/backup', checkRole('admin'), (req, res) => {
+    const file = path.join(dbDir, 'database.sqlite');
+    if (!fs.existsSync(file)) return res.status(404).send('Database tidak ditemukan');
+    logAudit(req, 'BACKUP', '');
+    res.download(file, 'backup_database_' + new Date().toISOString().slice(0, 10) + '.sqlite');
+});
+
 app.get('/admin/user/delete/:id', checkRole('admin'), (req, res) => {
-    db.run("DELETE FROM users WHERE id = ? AND role IN ('teknisi','wh')", [req.params.id], () => {
-        res.redirect('/admin/dashboard');
+    db.get("SELECT username, role FROM users WHERE id = ?", [req.params.id], (e, u) => {
+        db.run("DELETE FROM users WHERE id = ? AND role IN ('teknisi','wh')", [req.params.id], () => {
+            logAudit(req, 'DELETE_USER', (u ? (u.username + ' (' + u.role + ')') : 'id=' + req.params.id));
+            res.redirect('/admin/dashboard');
+        });
+    });
+});
+
+// Log aktivitas (admin)
+app.get('/admin/audit', checkRole('admin'), (req, res) => {
+    db.all("SELECT * FROM audit_log ORDER BY id DESC LIMIT 200", (err, logs) => {
+        res.render('admin/audit', { logs: logs || [], username: req.session.username });
     });
 });
 
 // ================= ROUTE TEKNISI =================
 app.get('/teknisi/dashboard', checkRole('teknisi'), (req, res) => {
     db.all("SELECT * FROM bast_data ORDER BY id DESC", (err, rows) => {
-        res.render('teknisi/dashboard', { data: rows });
+        res.render('teknisi/dashboard', {
+            data        : rows,
+            username    : req.session.username,
+            nama_lengkap: req.session.nama_lengkap || req.session.username
+        });
     });
 });
 
@@ -245,6 +425,26 @@ app.get('/teknisi/input', checkRole('teknisi'), (req, res) => {
                 stoList         : stoRows || []
             });
         });
+    });
+});
+
+// Batalkan BAST yang masih PENDING (hanya milik teknisi tsb)
+app.post('/teknisi/cancel/:kode', checkRole('teknisi'), (req, res) => {
+    db.get("SELECT * FROM bast_data WHERE kode_unik = ?", [req.params.kode], (err, row) => {
+        if (!row) return res.redirect('/teknisi/dashboard');
+        const nik = (req.session.nik || '').trim().toUpperCase();
+        const nama = (req.session.nama_lengkap || '').trim().toUpperCase();
+        const rowNik = String(row.teknisi_nik || '').trim().toUpperCase();
+        const rowNama = String(row.teknisi_nama || '').trim().toUpperCase();
+        const owner = (!nik && !nama) || (rowNik === nik) || (rowNama === nama);
+        if (row.status === 'PENDING' && owner) {
+            db.run("DELETE FROM bast_data WHERE kode_unik = ?", [req.params.kode], () => {
+                logAudit(req, 'CANCEL_BAST', req.params.kode);
+                res.redirect('/teknisi/dashboard');
+            });
+        } else {
+            res.redirect('/teknisi/dashboard');
+        }
     });
 });
 
@@ -276,6 +476,7 @@ app.post('/teknisi/submit', upload.array('eviden', 10), (req, res) => {
         // Simpan TTD teknisi
         // ✅ FIX 2 — di route /teknisi/submit
 const ttdPath = path.join(uploadBase, 'ttd', `ttd_teknisi_${kodeUnik}.png`);
+const ttdRelPath = path.join('uploads', 'ttd', `ttd_teknisi_${kodeUnik}.png`);
         if (data.ttdPemberiBase64) {
             fs.writeFileSync(
                 ttdPath,
@@ -317,7 +518,30 @@ const ttdPath = path.join(uploadBase, 'ttd', `ttd_teknisi_${kodeUnik}.png`);
 
         console.log('=== perangkatArray final ===', JSON.stringify(perangkatArray));
 
-        let evidenArray = req.files ? req.files.map(file => file.path) : [];
+        let evidenArray = req.files ? req.files.map(file => path.join('uploads', 'eviden', path.basename(file.path))) : [];
+
+        // ===== VALIDASI SERVER-SIDE =====
+        if (!data.tanggal || !data.loksto) {
+            return res.status(400).json({ success: false, message: 'Tanggal dan lokasi STO wajib diisi.' });
+        }
+        if (perangkatArray.length === 0) {
+            return res.status(400).json({ success: false, message: 'Minimal 1 perangkat wajib diisi.' });
+        }
+        if (perangkatArray.length > 10) {
+            return res.status(400).json({ success: false, message: 'Maksimal 10 perangkat per BAST.' });
+        }
+        if (evidenArray.length > 10) {
+            return res.status(400).json({ success: false, message: 'Maksimal 10 foto eviden.' });
+        }
+        // Cek SN duplikat
+        const snSet = new Set();
+        for (const p of perangkatArray) {
+            const s = String(p.snlama || '').trim().toUpperCase();
+            if (s && snSet.has(s)) {
+                return res.status(400).json({ success: false, message: 'Ada SN Lama yang duplikat.' });
+            }
+            if (s) snSet.add(s);
+        }
 
         // Parse teknisi dari select
         let nik = "", nama = "";
@@ -339,13 +563,14 @@ const ttdPath = path.join(uploadBase, 'ttd', `ttd_teknisi_${kodeUnik}.png`);
             nik,
             JSON.stringify(perangkatArray),
             JSON.stringify(evidenArray),
-            ttdPath
+            ttdRelPath
         ], function(err) {
             if (err) {
                 console.error('DB insert error:', err.message);
                 return res.status(500).json({ success: false, message: err.message });
             }
             console.log('BAST tersimpan:', kodeUnik, '| perangkat:', perangkatArray.length, 'item');
+            logAudit(req, 'SUBMIT_BAST', kodeUnik + ' (' + perangkatArray.length + ' perangkat)');
             res.json({ success: true, kodeUnik: kodeUnik });
         });
 
@@ -355,9 +580,97 @@ const ttdPath = path.join(uploadBase, 'ttd', `ttd_teknisi_${kodeUnik}.png`);
     }
 });
 
+// ================= ROUTE EDIT BAST TEKNISI =================
+app.get('/teknisi/edit/:kode', checkRole('teknisi'), (req, res) => {
+    db.get("SELECT * FROM bast_data WHERE kode_unik = ?", [req.params.kode], (err, row) => {
+        if (!row || row.status !== 'PENDING') return res.redirect('/teknisi/dashboard');
+        const nik = (req.session.nik || '').trim().toUpperCase();
+        const nama = (req.session.nama_lengkap || '').trim().toUpperCase();
+        const rowNik = String(row.teknisi_nik || '').trim().toUpperCase();
+        const rowNama = String(row.teknisi_nama || '').trim().toUpperCase();
+        const owner = (!nik && !nama) || (rowNik === nik) || (rowNama === nama);
+        if (!owner) return res.redirect('/teknisi/dashboard');
+        let perangkat = [];
+        let eviden = [];
+        try { perangkat = JSON.parse(row.perangkat_json || '[]'); } catch (e) {}
+        try { eviden = JSON.parse(row.eviden_json || '[]'); } catch (e) {}
+        row.perangkat = perangkat;
+        row.eviden = eviden;
+        res.render('teknisi/edit_bast', {
+            data        : row,
+            username    : req.session.username,
+            nama_lengkap: req.session.nama_lengkap || req.session.username
+        });
+    });
+});
+
+app.post('/teknisi/update/:kode', checkRole('teknisi'), upload.array('eviden', 10), (req, res) => {
+    const kode = req.params.kode;
+    const data = req.body;
+    db.get("SELECT * FROM bast_data WHERE kode_unik = ?", [kode], (err, row) => {
+        if (!row || row.status !== 'PENDING') return res.status(400).json({ success: false, message: 'BAST tidak dapat diedit.' });
+        const nik = (req.session.nik || '').trim().toUpperCase();
+        const nama = (req.session.nama_lengkap || '').trim().toUpperCase();
+        const rowNik = String(row.teknisi_nik || '').trim().toUpperCase();
+        const rowNama = String(row.teknisi_nama || '').trim().toUpperCase();
+        const owner = (!nik && !nama) || (rowNik === nik) || (rowNama === nama);
+        if (!owner) return res.status(403).json({ success: false, message: 'Bukan pemilik BAST.' });
+
+        const toArray = (v) => (Array.isArray(v) ? v : (v ? [v] : []));
+        const snlamaArr  = toArray(data['snlama[]']  || data['snlama']);
+        const snbaruArr  = toArray(data['snbaru[]']  || data['snbaru']);
+        const noinetArr  = toArray(data['noinet[]']  || data['noinet']);
+        const kondisiArr = toArray(data['kondisi[]'] || data['kondisi']);
+
+        let perangkatArray = [];
+        for (let i = 0; i < snlamaArr.length; i++) {
+            if (!snlamaArr[i] && !snbaruArr[i] && !noinetArr[i]) continue;
+            perangkatArray.push({ snlama: snlamaArr[i] || '', snbaru: snbaruArr[i] || '', noinet: noinetArr[i] || '', kondisi: kondisiArr[i] || 'Baik' });
+        }
+        if (perangkatArray.length === 0) return res.status(400).json({ success: false, message: 'Minimal 1 perangkat wajib diisi.' });
+        if (perangkatArray.length > 10) return res.status(400).json({ success: false, message: 'Maksimal 10 perangkat per BAST.' });
+
+        let newEviden;
+        if (req.files && req.files.length > 0) {
+            newEviden = req.files.map(f => path.join('uploads', 'eviden', path.basename(f.path)));
+            if (newEviden.length > 10) return res.status(400).json({ success: false, message: 'Maksimal 10 foto eviden.' });
+        } else {
+            try { newEviden = JSON.parse(row.eviden_json || '[]'); } catch (e) { newEviden = []; }
+        }
+        if (!data.ttdPemberiBase64) return res.status(400).json({ success: false, message: 'Wajib tanda tangan ulang.' });
+
+        const ttdPath = path.join(uploadBase, 'ttd', `ttd_teknisi_${kode}.png`);
+        const ttdRelPath = path.join('uploads', 'ttd', `ttd_teknisi_${kode}.png`);
+        try { fs.writeFileSync(ttdPath, data.ttdPemberiBase64.replace(/^data:image\/png;base64,/, ""), 'base64'); } catch (e) {}
+
+        let tnik = '', tnama = '';
+        if (data.teknisi_select) {
+            const s = data.teknisi_select.split(' | ');
+            tnik = s[0] || '';
+            tnama = s[1] || '';
+        }
+
+        db.run(
+            "UPDATE bast_data SET tanggal = ?, loksto = ?, teknisi_nama = ?, teknisi_nik = ?, perangkat_json = ?, eviden_json = ?, ttd_teknisi = ? WHERE kode_unik = ?",
+            [data.tanggal, data.loksto, tnama, tnik, JSON.stringify(perangkatArray), JSON.stringify(newEviden), ttdRelPath, kode],
+            (e) => {
+                if (e) return res.status(500).json({ success: false, message: e.message });
+                logAudit(req, 'UPDATE_BAST', kode);
+                res.json({ success: true, message: 'BAST berhasil diperbarui.' });
+            }
+        );
+    });
+});
+
 // ================= ROUTE WAREHOUSE =================
 app.get('/wh/dashboard', checkRole('wh'), (req, res) => {
-    db.all("SELECT * FROM bast_data ORDER BY id DESC", (err, rows) => {
+    const whSto = String(req.session.sto || '').trim().toUpperCase();
+    const restricted = (whSto && whSto !== 'ALL') ? true : false;
+    const q = restricted
+        ? "SELECT * FROM bast_data WHERE UPPER(COALESCE(loksto,'')) = ? ORDER BY id DESC"
+        : "SELECT * FROM bast_data ORDER BY id DESC";
+    const params = restricted ? [whSto] : [];
+    db.all(q, params, (err, rows) => {
         if (err) return res.status(500).send(err.message);
         
         rows.forEach(row => {
@@ -365,11 +678,16 @@ app.get('/wh/dashboard', checkRole('wh'), (req, res) => {
             catch(e) { row.jumlah_perangkat = 0; }
         });
 
+        const pending = rows.filter(r => r.status === 'PENDING')
+            .sort((a, b) => String(a.tanggal || '').localeCompare(String(b.tanggal || '')));
+
         res.render('wh/dashboard', {
-            pendingData   : rows.filter(r => r.status === 'PENDING'),
+            pendingData   : pending,
             completedData : rows.filter(r => r.status === 'COMPLETED'),
             rejectedData  : rows.filter(r => r.status === 'REJECTED'),
-            username      : req.session.username
+            username      : req.session.username,
+            nama_lengkap  : req.session.nama_lengkap || req.session.username,
+            whSto         : whSto || 'ALL'
         });
     });
 });
@@ -381,6 +699,12 @@ app.get('/wh/dashboard', checkRole('wh'), (req, res) => {
 app.get('/wh/sign/:kode', checkRole('wh'), (req, res) => {
     db.get("SELECT * FROM bast_data WHERE kode_unik = ?", [req.params.kode], (err, row) => {
         if (!row || row.status !== 'PENDING') return res.redirect('/wh/dashboard');
+
+        // Batasi akses sesuai STO milik WH
+        const whSto = String(req.session.sto || '').trim().toUpperCase();
+        if (whSto && whSto !== 'ALL' && String(row.loksto || '').trim().toUpperCase() !== whSto) {
+            return res.redirect('/wh/dashboard');
+        }
 
         // Parse perangkat — dengan logging untuk debug
         let perangkat = [];
@@ -417,6 +741,7 @@ app.post('/wh/submit', checkRole('wh'), (req, res) => {
 
     // ✅ FIX 3 — di route /wh/submit
 const ttdPath = path.join(uploadBase, 'ttd', `ttd_wh_${kode_unik}.png`);
+const ttdRelPath = path.join('uploads', 'ttd', `ttd_wh_${kode_unik}.png`);
     if (ttdPenerimaBase64) {
         fs.writeFileSync(
             ttdPath,
@@ -426,9 +751,10 @@ const ttdPath = path.join(uploadBase, 'ttd', `ttd_wh_${kode_unik}.png`);
     }
     db.run(
         `UPDATE bast_data SET wh_nama = ?, ttd_wh = ?, status = 'COMPLETED' WHERE kode_unik = ?`,
-        [wh_nama, ttdPath, kode_unik],
+        [wh_nama, ttdRelPath, kode_unik],
         function(err) {
             if (err) console.error('WH submit error:', err.message);
+            logAudit(req, 'APPROVE', kode_unik);
             res.redirect('/bast/cetak/' + kode_unik);
         }
     );
@@ -436,15 +762,24 @@ const ttdPath = path.join(uploadBase, 'ttd', `ttd_wh_${kode_unik}.png`);
 
 app.post('/wh/reject/:kodeUnik', checkRole('wh'), (req, res) => {
     const { kodeUnik } = req.params;
-    const { alasan }   = req.body; 
-    db.run(
-        "UPDATE bast_data SET status = 'REJECTED', alasan_tolak = ? WHERE kode_unik = ?", 
-        [alasan, kodeUnik], 
-        function(err) {
-            if (err) console.error('Gagal reject BAST:', err.message);
-            res.redirect('/wh/dashboard');
+    const { alasan }   = req.body;
+    // Batasi akses sesuai STO milik WH
+    const whSto = String(req.session.sto || '').trim().toUpperCase();
+    db.get("SELECT * FROM bast_data WHERE kode_unik = ?", [kodeUnik], (err, row) => {
+        if (!row) return res.redirect('/wh/dashboard');
+        if (whSto && whSto !== 'ALL' && String(row.loksto || '').trim().toUpperCase() !== whSto) {
+            return res.redirect('/wh/dashboard');
         }
-    );
+        db.run(
+            "UPDATE bast_data SET status = 'REJECTED', alasan_tolak = ? WHERE kode_unik = ?",
+            [alasan, kodeUnik],
+            function(err) {
+                if (err) console.error('Gagal reject BAST:', err.message);
+                logAudit(req, 'TOLAK', kodeUnik + ' | ' + (alasan || ''));
+                res.redirect('/wh/dashboard');
+            }
+        );
+    });
 });
 
 // ================= ROUTE CETAK PDF =================
@@ -462,11 +797,17 @@ const xlsx = require('xlsx');
 
 // ================= ROUTE EXPORT EXCEL =================
 app.get('/admin/export/excel', isAuth, (req, res) => {
+    const qSA     = (req.query.sa || '').trim().toUpperCase();
+    const qDari   = (req.query.dari || '').trim();
+    const qSampai = (req.query.sampai || '').trim();
     db.all("SELECT * FROM bast_data ORDER BY id DESC", (err, rows) => {
         if (err) return res.status(500).send("Database error");
         
         let exportData = [];
         rows.forEach(row => {
+            if (qSA && String(row.loksto || '').trim().toUpperCase() !== qSA) return;
+            if (qDari && String(row.tanggal || '') < qDari) return;
+            if (qSampai && String(row.tanggal || '') > qSampai) return;
             let perangkat = [];
             try { perangkat = JSON.parse(row.perangkat_json || '[]'); } catch(e){}
             
@@ -511,6 +852,106 @@ app.get('/admin/export/excel', isAuth, (req, res) => {
         res.setHeader('Content-Disposition', 'attachment; filename="Laporan_BAST_Telkom.xlsx"');
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         res.send(buffer);
+    });
+});
+
+// =====================================================================
+// DATA INPUT TEKNISI — filter per Service Area
+// =====================================================================
+const SERVICE_AREAS = ['CINERE', 'DEPOK & RAWAGENI', 'KALIABANG', 'KRANJI', 'PEKAYON', 'PONDOKGEDE', 'SUKMAJAYA', 'BEKASI'];
+
+// Meta: jumlah BAST per Service Area (untuk badge pada chip filter)
+app.get('/admin/data-teknisi/meta', checkRole('admin'), (req, res) => {
+    db.all("SELECT nik, service_area FROM users WHERE role = 'teknisi'", (err, users) => {
+        if (err) return res.json({ counts: {}, total: 0 });
+        const nikBySA = {};
+        const nikSet  = new Set();
+        SERVICE_AREAS.forEach(sa => nikBySA[sa] = new Set());
+        users.forEach(u => {
+            const sa  = (u.service_area || '').trim().toUpperCase();
+            const nik = (u.nik || '').trim().toUpperCase();
+            if (SERVICE_AREAS.includes(sa) && nik) {
+                nikBySA[sa].add(nik);
+                nikSet.add(nik);
+            }
+        });
+        const nikArr = [...nikSet];
+        if (nikArr.length === 0) return res.json({ counts: {}, total: 0 });
+        const placeholders = nikArr.map(() => '?').join(',');
+        db.all(`SELECT UPPER(TRIM(teknisi_nik)) AS nik, COUNT(*) AS cnt FROM bast_data 
+                WHERE teknisi_nik IS NOT NULL AND UPPER(TRIM(teknisi_nik)) IN (${placeholders})
+                GROUP BY nik`, nikArr.map(n => n), (err2, rows) => {
+            const cntMap = {};
+            rows.forEach(r => cntMap[r.nik] = r.cnt);
+            const counts = {};
+            SERVICE_AREAS.forEach(sa => {
+                let c = 0;
+                nikBySA[sa].forEach(nik => c += (cntMap[nik] || 0));
+                counts[sa] = c;
+            });
+            res.json({ counts, total: rows.reduce((s, r) => s + r.cnt, 0) });
+        });
+    });
+});
+
+// Detail input BAST teknisi untuk satu Service Area
+app.get('/admin/data-teknisi', checkRole('admin'), (req, res) => {
+    const sa = (req.query.sa || '').trim().toUpperCase();
+    if (!SERVICE_AREAS.includes(sa)) return res.json({ success: false, message: 'Service Area tidak dikenal.' });
+
+    db.all("SELECT * FROM users WHERE role = 'teknisi' AND UPPER(TRIM(service_area)) = ?", [sa], (err, teknisi) => {
+        if (err) return res.status(500).json({ success: false, message: err.message });
+        const niks = teknisi.map(t => (t.nik || '').trim().toUpperCase()).filter(Boolean);
+        if (niks.length === 0) return res.json({ success: true, sa, teknisi: [], total_bast: 0 });
+
+        const placeholders = niks.map(() => '?').join(',');
+        db.all(`SELECT * FROM bast_data WHERE teknisi_nik IS NOT NULL AND UPPER(TRIM(teknisi_nik)) IN (${placeholders})
+                ORDER BY tanggal DESC, id DESC`, niks.map(n => n), (err2, rows) => {
+            if (err2) return res.status(500).json({ success: false, message: err2.message });
+
+            const groups = {};
+            rows.forEach(r => {
+                const nik = (r.teknisi_nik || '').trim().toUpperCase();
+                if (!groups[nik]) groups[nik] = [];
+                groups[nik].push(r);
+            });
+
+            const teknisiList = teknisi.map(t => {
+                const nik = (t.nik || '').trim().toUpperCase();
+                const recs = groups[nik] || [];
+                let totalOnt = 0, totalFoto = 0;
+                recs.forEach(r => {
+                    try { totalOnt  += JSON.parse(r.perangkat_json || '[]').length; } catch(e) {}
+                    try { totalFoto += JSON.parse(r.eviden_json    || '[]').length; } catch(e) {}
+                });
+                return {
+                    nik,
+                    nama: t.nama_lengkap || t.username,
+                    sto: t.sto || '',
+                    total_bast: recs.length,
+                    total_ont: totalOnt,
+                    total_foto: totalFoto,
+                    records: recs.map(r => {
+                        let perangkat = [], eviden = [];
+                        try { perangkat = JSON.parse(r.perangkat_json || '[]'); } catch(e) {}
+                        try { eviden    = JSON.parse(r.eviden_json    || '[]'); } catch(e) {}
+                        return {
+                            kode_unik: r.kode_unik,
+                            status: r.status,
+                            tanggal: r.tanggal,
+                            loksto: r.loksto,
+                            wh_nama: r.wh_nama || '-',
+                            alasan_tolak: r.alasan_tolak || '',
+                            perangkat: perangkat,
+                            eviden_count: eviden.length,
+                            eviden: eviden
+                        };
+                    })
+                };
+            });
+
+            res.json({ success: true, sa, teknisi: teknisiList, total_bast: rows.length });
+        });
     });
 });
 
@@ -650,6 +1091,37 @@ app.post('/admin/report/download', checkRole('admin'), (req, res) => {
     } catch(e) {
         res.status(500).send('Gagal generate Excel: ' + e.message);
     }
+});
+
+// ===== LOG ERROR KE FILE =====
+function logError(err) {
+    try {
+        const logDir = path.join(dbDir, 'logs');
+        if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true });
+        fs.appendFileSync(path.join(logDir, 'error.log'),
+            new Date().toISOString() + ' | ' + (err && err.stack ? err.stack : String(err)) + '\n');
+    } catch (e) {}
+}
+
+// ===== HALAMAN 404 =====
+app.use((req, res) => {
+    res.status(404).render('error', {
+        code    : 404,
+        message : 'Halaman tidak ditemukan.',
+        username: (req.session && req.session.username) || ''
+    });
+});
+
+// ===== ERROR HANDLER =====
+app.use((err, req, res, next) => {
+    logError(err);
+    if (res.headersSent) return next(err);
+    console.error('ERROR:', err);
+    res.status(500).render('error', {
+        code    : 500,
+        message : 'Terjadi kesalahan server. Silakan coba lagi.',
+        username: (req.session && req.session.username) || ''
+    });
 });
 
 app.listen(3000, () => console.log('Server berjalan di http://localhost:3000'));

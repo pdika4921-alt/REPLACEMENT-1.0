@@ -7,6 +7,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#EE2E24">
     <style>
     :root {
         --navy:   #0e1f3b;
@@ -112,9 +114,61 @@
     .stat-dot.amber { background: #fffbeb; color: #d97706; }
     .stat-dot.green { background: #f0fdf4; color: #16a34a; }
     .stat-dot.red   { background: #fff0f0; color: var(--red); }
+
+    /* ===== POLISH & ANIMATION ===== */
+    body { overflow-x: hidden; }
+
+    .bg-deco { position: fixed; border-radius: 50%; filter: blur(60px); opacity: .16; pointer-events: none; z-index: 0; }
+    .bg-deco.d1 { width: 380px; height: 380px; top: -90px; right: -70px; background: var(--red); animation: floatBlob 12s ease-in-out infinite; }
+    .bg-deco.d2 { width: 300px; height: 300px; bottom: -80px; left: -70px; background: var(--navy); animation: floatBlob 14s ease-in-out 2.2s infinite; }
+
+    .navbar, .container { position: relative; z-index: 1; }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes floatBlob { 0%, 100% { transform: translate(0,0) scale(1); } 50% { transform: translate(26px,-22px) scale(1.07); } }
+
+    .anim-up { opacity: 0; animation: fadeUp .6s cubic-bezier(.22,1,.36,1) both; }
+
+    .wh-strip { position: relative; overflow: hidden; }
+    .wh-strip::after {
+        content: ''; position: absolute; top: 0; bottom: 0; width: 90px;
+        background: linear-gradient(105deg, transparent, rgba(255,255,255,.28), transparent);
+        transform: skewX(-20deg); animation: shine 3.6s ease-in-out infinite;
+    }
+    @keyframes shine { 0% { left: -120px; } 60%, 100% { left: 120%; } }
+
+    .table tbody tr { transition: background .2s, transform .15s; }
+    .table tbody tr:hover { transform: translateX(3px); }
+
+    .btn, .stat-mini, .card-container { transition: transform .2s, box-shadow .2s; }
+    .stat-mini:hover { transform: translateY(-3px); box-shadow: 0 10px 24px rgba(14,31,59,.1); }
+
+    @media (prefers-reduced-motion: reduce) {
+        .anim-up, .bg-deco, .wh-strip::after { animation: none !important; transition: none !important; }
+        .anim-up { opacity: 1; }
+        .bg-deco { display: none; }
+    }
+
+    /* ===== DARK MODE ===== */
+    body.dark {
+        --surface:#0f172a; --card:#1e293b; --navy2:#1e4080; --border:#334155; --text:#e2e8f0; --muted:#94a3b8;
+        background: var(--surface); color: var(--text);
+    }
+    body.dark .card-container, body.dark .stat-mini, body.dark .tab-bar { background:#1e293b; border-color:#334155; }
+    body.dark .table th { background:#0f172a; }
+    body.dark .table tbody tr:hover { background:#16283f; }
+    body.dark .text-dark { color:#e2e8f0 !important; }
+    body.dark .text-muted { color:#94a3b8 !important; }
+    body.dark .form-control, body.dark .form-select { background:#0f172a; border-color:#334155; color:#e2e8f0; }
+    body.dark .bg-light { background:#16283f !important; }
+    body.dark .alert-secondary { background:#16283f; color:#cbd5e1; border-color:#334155; }
+    body.dark .empty-state { color:#94a3b8; }
     </style>
 </head>
 <body>
+
+<div class="bg-deco d1"></div>
+<div class="bg-deco d2"></div>
 
 <nav class="navbar navbar-expand-lg navbar-dark navbar-custom py-3 mb-4">
     <div class="container">
@@ -133,7 +187,13 @@
                     <div class="text-white opacity-60" style="font-size:0.68rem;">Warehouse</div>
                 </div>
             </div>
-            <a href="/logout" class="btn btn-sm btn-outline-light rounded-pill px-3 fw-semibold">Logout</a>
+            <div class="d-flex align-items-center gap-2">
+                <button type="button" id="darkToggle" class="btn btn-sm btn-outline-light rounded-pill px-3 fw-semibold" onclick="toggleDark()" title="Mode Gelap/Terang"><i class="bi bi-moon-stars-fill"></i></button>
+                <button class="btn btn-sm btn-outline-light rounded-pill px-3 fw-semibold" onclick="openGantiPw()">
+                    <i class="bi bi-key me-1"></i> Ubah Password
+                </button>
+                <a href="/logout" class="btn btn-sm btn-outline-light rounded-pill px-3 fw-semibold">Logout</a>
+            </div>
         </div>
     </div>
 </nav>
@@ -141,22 +201,22 @@
 <div class="container mb-5">
 
     <!-- WH Identity Strip (Penerima) -->
-    <div class="wh-strip">
+    <div class="wh-strip anim-up">
         <div class="wh-avatar"><%= username.charAt(0).toUpperCase() %></div>
         <div>
             <div class="wh-name"><%= username %></div>
-            <div class="wh-sub">Petugas Penerima · Warehouse Sukmajaya</div>
+            <div class="wh-sub">Petugas Penerima · Warehouse <b><%= whSto %></b></div>
         </div>
         <span class="wh-badge">AKTIF</span>
     </div>
 
     <!-- Stat mini -->
-    <div class="row g-3 mb-4">
+    <div class="row g-3 mb-4 anim-up">
         <div class="col-md-4">
             <div class="stat-mini">
                 <div class="stat-dot amber"><i class="bi bi-hourglass-split"></i></div>
                 <div>
-                    <div class="fw-700" style="font-size:1.4rem;font-weight:800;"><%= (pendingData||[]).length %></div>
+                    <div class="fw-700" style="font-size:1.4rem;font-weight:800;" data-count="<%= (pendingData||[]).length %>"><%= (pendingData||[]).length %></div>
                     <div class="text-muted" style="font-size:0.78rem;">Menunggu TTD</div>
                 </div>
             </div>
@@ -165,7 +225,7 @@
             <div class="stat-mini">
                 <div class="stat-dot green"><i class="bi bi-check-circle-fill"></i></div>
                 <div>
-                    <div class="fw-700" style="font-size:1.4rem;font-weight:800;"><%= (completedData||[]).length %></div>
+                    <div class="fw-700" style="font-size:1.4rem;font-weight:800;" data-count="<%= (completedData||[]).length %>"><%= (completedData||[]).length %></div>
                     <div class="text-muted" style="font-size:0.78rem;">Sudah Disetujui</div>
                 </div>
             </div>
@@ -174,7 +234,7 @@
             <div class="stat-mini">
                 <div class="stat-dot red"><i class="bi bi-x-circle-fill"></i></div>
                 <div>
-                    <div class="fw-700" style="font-size:1.4rem;font-weight:800;"><%= (rejectedData||[]).length %></div>
+                    <div class="fw-700" style="font-size:1.4rem;font-weight:800;" data-count="<%= (rejectedData||[]).length %>"><%= (rejectedData||[]).length %></div>
                     <div class="text-muted" style="font-size:0.78rem;">Ditolak</div>
                 </div>
             </div>
@@ -182,7 +242,7 @@
     </div>
 
     <!-- Tab Navigation -->
-    <div class="mb-4">
+    <div class="mb-4 anim-up">
         <ul class="nav tab-bar" id="whTab" role="tablist">
             <li class="nav-item">
                 <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-pending" type="button">
@@ -205,7 +265,7 @@
         </ul>
     </div>
 
-    <div class="tab-content">
+    <div class="tab-content anim-up">
         <!-- TAB PENDING -->
         <div class="tab-pane fade show active" id="tab-pending">
             <div class="card-container">
@@ -218,6 +278,10 @@
                         <div class="text-muted" style="font-size:0.82rem;">Klik "Tanda Tangani" untuk menyetujui, atau "Tolak" untuk mengembalikan BAST.</div>
                     </div>
                 </div>
+                <div class="input-group mb-3" style="max-width:380px;">
+                    <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" id="pendingSearch" placeholder="Cari kode BAST, STO, atau teknisi..." oninput="filterPendingTable()">
+                </div>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead>
@@ -227,13 +291,14 @@
                                 <th>Lokasi STO</th>
                                 <th>Nama Teknisi</th>
                                 <th class="text-center">Jml ONT</th>
+                                <th class="text-center">Menunggu</th>
                                 <th class="text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             <% if (!pendingData || pendingData.length === 0) { %>
                                 <tr>
-                                    <td colspan="6">
+                                    <td colspan="7">
                                         <div class="empty-state text-muted">
                                             <i class="bi bi-emoji-smile text-success"></i>
                                             Tidak ada BAST yang menunggu persetujuan
@@ -250,8 +315,16 @@
                                 <td class="text-center">
                                     <span class="badge bg-light text-dark border" style="font-size:0.75rem;"><%= row.jumlah_perangkat || '-' %> ONT</span>
                                 </td>
+                                <td class="text-center"><span class="umur-badge" data-tanggal="<%= row.tanggal %>">-</span></td>
                                 <td class="text-center">
                                     <div class="d-flex gap-2 justify-content-center">
+                                        <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3 fw-semibold"
+                                            style="font-size:0.78rem;" onclick="previewBAST(this)"
+                                            data-kode="<%= row.kode_unik %>" data-tanggal="<%= row.tanggal %>"
+                                            data-loksto="<%= row.loksto %>" data-teknisi="<%= row.teknisi_nama %>"
+                                            data-perangkat="<%= row.perangkat_json || '[]' %>" data-eviden="<%= row.eviden_json || '[]' %>">
+                                            <i class="bi bi-eye me-1"></i> Detail
+                                        </button>
                                         <a href="/wh/sign/<%= row.kode_unik %>"
                                            class="btn btn-sm fw-semibold rounded-pill px-3"
                                            style="background:var(--navy);color:#fff;font-size:0.78rem;">
@@ -283,8 +356,12 @@
                         <div class="text-muted" style="font-size:0.82rem;">Daftar dokumen yang disahkan dan eviden fotonya.</div>
                     </div>
                 </div>
+                <div class="input-group mb-3" style="max-width:360px;">
+                    <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" id="selesaiSearch" placeholder="Cari kode BAST atau teknisi...">
+                </div>
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle">
+                    <table class="table table-hover align-middle" id="tabelSelesai">
                         <thead>
                             <tr>
                                 <th>Kode BAST</th>
@@ -343,8 +420,12 @@
                         <div class="text-muted" style="font-size:0.82rem;">Daftar BAST yang dikembalikan ke teknisi.</div>
                     </div>
                 </div>
+                <div class="input-group mb-3" style="max-width:360px;">
+                    <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" id="ditolakSearch" placeholder="Cari kode BAST atau teknisi...">
+                </div>
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle">
+                    <table class="table table-hover align-middle" id="tabelDitolak">
                         <thead>
                             <tr>
                                 <th>Kode BAST</th>
@@ -413,6 +494,12 @@
                     <textarea class="form-control rounded-3" id="alasanTolak" rows="3"
                         placeholder="Contoh: Data SN tidak sesuai, foto eviden kurang jelas, dll."
                         style="border:1.5px solid var(--border);font-size:0.85rem;resize:none;"></textarea>
+                    <div class="d-flex flex-wrap gap-1 mt-2">
+                        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill" style="font-size:0.72rem;" onclick="setAlasan('Data SN tidak sesuai dengan dokumen')">SN tidak sesuai</button>
+                        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill" style="font-size:0.72rem;" onclick="setAlasan('Foto eviden kurang jelas / tidak terbaca')">Foto kurang jelas</button>
+                        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill" style="font-size:0.72rem;" onclick="setAlasan('Perangkat tidak ditemukan / berbeda')">Perangkat beda</button>
+                        <button type="button" class="btn btn-sm btn-outline-danger rounded-pill" style="font-size:0.72rem;" onclick="setAlasan('Data tidak lengkap')">Data tidak lengkap</button>
+                    </div>
                 </div>
                 <div class="small text-muted p-2 rounded-3" style="background:#fffbeb;border:1px solid #fde68a;">
                     <i class="bi bi-info-circle me-1 text-warning"></i> Tindakan ini tidak dapat dibatalkan.
@@ -442,6 +529,23 @@
     </div>
 </div>
 
+<!-- Modal Preview Detail BAST -->
+<div class="modal fade" id="modalPreview" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="border-radius:18px;border:none;overflow:hidden;">
+            <div class="modal-header" style="background:linear-gradient(135deg,var(--navy),#1e4080);color:#fff;">
+                <h6 class="modal-title fw-bold"><i class="bi bi-file-earmark-text me-1"></i> Detail BAST</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="previewMeta" class="row g-2 mb-3"></div>
+                <div id="previewDevices"></div>
+                <div id="previewEviden" class="d-flex flex-wrap gap-2 mt-3"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
@@ -458,8 +562,9 @@
     function eksekusiTolak() {
         const alasan = document.getElementById('alasanTolak').value.trim();
         if (!alasan) {
-            alert('Harap isi alasan penolakan terlebih dahulu.');
+            document.getElementById('alasanTolak').style.borderColor = 'var(--red)';
             document.getElementById('alasanTolak').focus();
+            setTimeout(() => { document.getElementById('alasanTolak').style.borderColor = 'var(--border)'; }, 1500);
             return;
         }
         const form = document.createElement('form');
@@ -474,6 +579,65 @@
         form.submit();
     }
 
+    // Set alasan cepat (preset)
+    function setAlasan(txt) {
+        document.getElementById('alasanTolak').value = txt;
+        document.getElementById('alasanTolak').focus();
+    }
+
+    // Filter tabel pending
+    function filterPendingTable() {
+        const kw = (document.getElementById('pendingSearch').value || '').toLowerCase().trim();
+        document.querySelectorAll('#tab-pending tbody tr').forEach(tr => {
+            tr.style.display = (!kw || tr.textContent.toLowerCase().includes(kw)) ? '' : 'none';
+        });
+    }
+
+    // Preview detail BAST
+    function previewBAST(btn) {
+        const kode    = btn.getAttribute('data-kode');
+        const tanggal = btn.getAttribute('data-tanggal') || '-';
+        const loksto  = btn.getAttribute('data-loksto') || '-';
+        const teknisi = btn.getAttribute('data-teknisi') || '-';
+        let perangkat = [], eviden = [];
+        try { perangkat = JSON.parse(btn.getAttribute('data-perangkat') || '[]'); } catch (e) {}
+        try { eviden    = JSON.parse(btn.getAttribute('data-eviden') || '[]'); } catch (e) {}
+
+        document.getElementById('previewMeta').innerHTML =
+            '<div class="col-6"><div class="text-muted" style="font-size:.72rem;">Kode BAST</div><div class="fw-bold font-monospace text-danger">' + kode + '</div></div>' +
+            '<div class="col-6"><div class="text-muted" style="font-size:.72rem;">Tanggal</div><div class="fw-semibold">' + tanggal + '</div></div>' +
+            '<div class="col-6"><div class="text-muted" style="font-size:.72rem;">Lokasi STO</div><div class="fw-semibold">' + loksto + '</div></div>' +
+            '<div class="col-6"><div class="text-muted" style="font-size:.72rem;">Teknisi</div><div class="fw-semibold">' + teknisi + '</div></div>';
+
+        let devHtml = '<div class="fw-bold mb-2" style="font-size:.85rem;"><i class="bi bi-router-fill me-1 text-danger"></i>Perangkat (' + perangkat.length + ')</div>';
+        if (perangkat.length === 0) {
+            devHtml += '<div class="text-muted small">Belum ada perangkat diisi.</div>';
+        } else {
+            devHtml += '<div class="table-responsive"><table class="table table-sm table-bordered align-middle mb-0" style="font-size:.8rem;">' +
+                '<thead style="background:var(--navy);color:#fff;"><tr><th>No</th><th>SN Lama</th><th>SN Baru</th><th>No. Internet</th><th>Kondisi</th></tr></thead><tbody>';
+            perangkat.forEach((p, i) => {
+                const kond = String(p.kondisi || '').toUpperCase().includes('BAIK') ? 'Baik' : String(p.kondisi || '-');
+                devHtml += '<tr><td>' + (i + 1) + '</td><td class="font-monospace">' + (p.snlama || '-') + '</td><td class="font-monospace text-success fw-bold">' + (p.snbaru || '-') + '</td><td class="font-monospace">' + (p.noinet || '-') + '</td><td>' + kond + '</td></tr>';
+            });
+            devHtml += '</tbody></table></div>';
+        }
+        document.getElementById('previewDevices').innerHTML = devHtml;
+
+        let evHtml = '';
+        if (eviden.length === 0) {
+            evHtml = '<div class="text-muted small"><i class="bi bi-image me-1"></i>Tidak ada foto eviden.</div>';
+        } else {
+            evHtml = eviden.map((f, i) => {
+                const clean = '/uploads/eviden/' + String(f).split(/[\\/]/).pop();
+                return '<div style="position:relative;"><span class="badge bg-danger" style="position:absolute;top:4px;left:4px;font-size:.62rem;">Foto ' + (i + 1) + '</span>' +
+                    '<img src="' + clean + '" style="width:120px;height:90px;object-fit:cover;border-radius:10px;border:1px solid #dde3ec;cursor:pointer;" onclick="window.open(\'' + clean + '\',\'_blank\')" onerror="this.style.opacity=\'0.2\';"></div>';
+            }).join('');
+        }
+        document.getElementById('previewEviden').innerHTML = '<div class="fw-bold w-100 mb-1" style="font-size:.85rem;"><i class="bi bi-images me-1 text-danger"></i>Foto Eviden (' + eviden.length + ')</div>' + evHtml;
+
+        new bootstrap.Modal(document.getElementById('modalPreview')).show();
+    }
+
     // Fungsi Lihat Eviden
     function lihatEviden(btn) {
         const container = document.getElementById('evidenContainer');
@@ -484,11 +648,11 @@
                 container.innerHTML = '<div class="text-white w-100 p-5 text-center">Tidak ada foto eviden yang diunggah.</div>';
             } else {
                 arr.forEach((path, i) => {
-                    const cleanPath = path.replace(/\\/g, '/');
+                    const cleanPath = '/uploads/eviden/' + String(path).split(/[\\/]/).pop();
                     container.innerHTML += `
                         <div class="flex-shrink-0" style="position:relative;">
                             <span class="badge bg-danger position-absolute top-0 start-0 m-2" style="font-size:0.7rem;">Foto ${i+1}</span>
-                            <img src="/${cleanPath}" class="rounded" style="height:350px; max-width:90vw; object-fit:contain; border:2px solid #1e293b; cursor:pointer;" onclick="window.open(this.src, '_blank')" title="Klik untuk membuka ukuran penuh">
+                            <img src="${cleanPath}" class="rounded" style="height:350px; max-width:90vw; object-fit:contain; border:2px solid #1e293b; cursor:pointer;" onclick="window.open(this.src, '_blank')" title="Klik untuk membuka ukuran penuh">
                         </div>
                     `;
                 });
@@ -498,6 +662,178 @@
             alert('Gagal memuat foto eviden');
         }
     }
+</script>
+
+<!-- MODAL UBAH PASSWORD -->
+<div class="modal fade" id="modalGantiPw" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="max-width:420px;">
+        <div class="modal-content" style="border-radius:16px;border:none;">
+            <div class="modal-header" style="background:linear-gradient(135deg,#0e1f3b,#1e4080);color:#fff;">
+                <h6 class="modal-title fw-bold"><i class="bi bi-shield-lock me-1"></i> Ubah Password</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="pwAlert" class="alert d-none small mb-3"></div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">Password Lama</label>
+                    <input type="password" class="form-control" id="pwOld" placeholder="Password saat ini">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">Password Baru</label>
+                    <input type="password" class="form-control" id="pwNew" placeholder="Password baru (min. 4 karakter)">
+                </div>
+                <div class="mb-1">
+                    <label class="form-label fw-semibold small">Konfirmasi Password Baru</label>
+                    <input type="password" class="form-control" id="pwConfirm" placeholder="Ulangi password baru">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn" id="btnSimpanPw" style="background:#0e1f3b;color:#fff;font-weight:600;" onclick="simpanPassword()">Simpan Password</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openGantiPw() {
+        document.getElementById('pwAlert').classList.add('d-none');
+        ['pwOld','pwNew','pwConfirm'].forEach(i => document.getElementById(i).value = '');
+        new bootstrap.Modal(document.getElementById('modalGantiPw')).show();
+    }
+    function simpanPassword() {
+        const oldp = document.getElementById('pwOld').value;
+        const np   = document.getElementById('pwNew').value;
+        const cp   = document.getElementById('pwConfirm').value;
+        const alertEl = document.getElementById('pwAlert');
+        const msg = (t, ok) => { alertEl.className = 'alert small mb-3 ' + (ok ? 'alert-success' : 'alert-danger'); alertEl.textContent = t; };
+        if (!oldp) return msg('Masukkan password lama.', false);
+        if (!np || np.length < 4) return msg('Password baru minimal 4 karakter.', false);
+        if (np !== cp) return msg('Konfirmasi password tidak sama.', false);
+        const btn = document.getElementById('btnSimpanPw'); btn.disabled = true;
+        fetch('/change-password', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ old_password: oldp, new_password: np })
+        })
+        .then(r => r.json())
+        .then(d => {
+            if (d.success) {
+                msg(d.message || 'Password berhasil diubah.', true);
+                setTimeout(() => bootstrap.Modal.getInstance(document.getElementById('modalGantiPw')).hide(), 1200);
+            } else {
+                msg(d.message || 'Gagal mengubah password.', false);
+            }
+        })
+        .catch(() => msg('Kendala koneksi ke server.', false))
+        .finally(() => { btn.disabled = false; });
+    }
+</script>
+<script>
+    (function () {
+        function stagger() {
+            document.querySelectorAll('.anim-up').forEach(function (el, i) {
+                el.style.animationDelay = (i * 80) + 'ms';
+            });
+        }
+        function countUp(el, target) {
+            if (!el) return;
+            var dur = 900, start = null;
+            function step(now) {
+                if (!start) start = now;
+                var p = Math.min((now - start) / dur, 1);
+                el.textContent = Math.round(target * (1 - Math.pow(1 - p, 3)));
+                if (p < 1) requestAnimationFrame(step);
+            }
+            requestAnimationFrame(step);
+        }
+
+        // Umur antrian (hari menunggu)
+        function hitungUmur() {
+            document.querySelectorAll('.umur-badge').forEach(function (el) {
+                var tgl = el.getAttribute('data-tanggal');
+                if (!tgl) return;
+                var days = Math.floor((Date.now() - new Date(tgl + 'T00:00:00').getTime()) / 86400000);
+                if (isNaN(days) || days < 0) days = 0;
+                var txt = days === 0 ? 'Hari ini' : days + ' hari';
+                var cls = days === 0 ? 'background:#dcfce7;color:#166534;'
+                    : days <= 3 ? 'background:#fef9c3;color:#854d0e;'
+                    : 'background:#fee2e2;color:#991b1b;';
+                el.style.cssText = 'padding:3px 10px;border-radius:999px;font-size:.7rem;font-weight:700;' + cls;
+                el.textContent = txt;
+            });
+        }
+
+        // Pagination generik
+        function initPaginasi(containerId, pageSize) {
+            var container = document.getElementById(containerId);
+            if (!container) return;
+            var tbody = container.querySelector('tbody');
+            if (!tbody) return;
+            var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+            if (rows.length <= pageSize) return;
+            var wrap = document.createElement('div');
+            wrap.className = 'd-flex justify-content-between align-items-center mt-3 flex-wrap gap-2';
+            wrap.innerHTML = '<span class="text-muted small" id="info-' + containerId + '"></span><div class="d-flex flex-wrap gap-1" id="pg-' + containerId + '"></div>';
+            container.parentNode.insertBefore(wrap, container.nextSibling);
+            var cur = 1;
+            function show() {
+                var pages = Math.ceil(rows.length / pageSize);
+                rows.forEach(function (r, i) { r.style.display = (i >= (cur - 1) * pageSize && i < cur * pageSize) ? '' : 'none'; });
+                document.getElementById('info-' + containerId).textContent = rows.length + ' baris';
+                var pg = document.getElementById('pg-' + containerId);
+                pg.innerHTML = '';
+                for (var p = 1; p <= pages; p++) {
+                    (function (pp) {
+                        var b = document.createElement('button');
+                        b.type = 'button';
+                        b.className = 'btn btn-sm rounded-pill ' + (pp === cur ? 'btn-dark' : 'btn-light border');
+                        b.textContent = pp;
+                        b.style.margin = '0 2px';
+                        b.onclick = function () { cur = pp; show(); };
+                        pg.appendChild(b);
+                    })(p);
+                }
+            }
+            show();
+        }
+        function initCari(containerId, inputId) {
+            var input = document.getElementById(inputId);
+            var tbody = document.getElementById(containerId) ? document.getElementById(containerId).querySelector('tbody') : null;
+            if (!input || !tbody) return;
+            input.addEventListener('input', function () {
+                var kw = input.value.toLowerCase().trim();
+                tbody.querySelectorAll('tr').forEach(function (tr) {
+                    tr.style.display = (!kw || tr.textContent.toLowerCase().includes(kw)) ? '' : 'none';
+                });
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            stagger();
+            document.querySelectorAll('[data-count]').forEach(function (el) {
+                countUp(el, parseInt(el.getAttribute('data-count'), 10) || 0);
+            });
+            hitungUmur();
+            initPaginasi('tabelSelesai', 10);
+            initPaginasi('tabelDitolak', 10);
+            initCari('tabelSelesai', 'selesaiSearch');
+            initCari('tabelDitolak', 'ditolakSearch');
+        });
+    })();
+</script>
+<script>
+    (function () {
+        function applyDark(dark) {
+            document.body.classList.toggle('dark', dark);
+            var btn = document.getElementById('darkToggle');
+            if (btn) btn.innerHTML = dark ? '<i class="bi bi-sun-fill"></i>' : '<i class="bi bi-moon-stars-fill"></i>';
+            try { localStorage.setItem('bast_dark', dark ? '1' : '0'); } catch (e) {}
+        }
+        try { applyDark(localStorage.getItem('bast_dark') === '1'); } catch (e) {}
+        window.toggleDark = function () { applyDark(!document.body.classList.contains('dark')); };
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(function () {});
+    })();
 </script>
 </body>
 </html>

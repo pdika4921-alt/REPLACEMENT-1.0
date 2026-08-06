@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit BAST <%= data.kode_unik %> | Telkom Akses</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root { --navy:#0e1f3b; --navy2:#162d52; --red:#EE2E24; --red2:#c42019; --gold:#f59e0b; --surface:#f0f4f8; --border:#dde3ec; --text:#1e293b; --muted:#64748b; }
+        * { box-sizing: border-box; }
+        body { font-family:'Poppins',sans-serif; background:var(--surface); color:var(--text); overflow-x:hidden; min-height:100vh; }
+        .bg-deco { position:fixed; border-radius:50%; filter:blur(60px); opacity:.16; pointer-events:none; z-index:0; }
+        .bg-deco.d1 { width:380px; height:380px; top:-90px; right:-70px; background:var(--red); animation:floatBlob 12s ease-in-out infinite; }
+        .bg-deco.d2 { width:300px; height:300px; bottom:-80px; left:-70px; background:var(--navy); animation:floatBlob 14s ease-in-out 2.2s infinite; }
+        .header-modern { position:relative; overflow:hidden; background:linear-gradient(150deg,var(--navy) 0%,#12264a 50%,var(--navy2) 100%); border-bottom:3px solid var(--red); padding:1.5rem 0 3rem; color:#fff; }
+        .header-modern::before, .header-modern::after { content:''; position:absolute; border-radius:50%; background:rgba(255,255,255,.07); pointer-events:none; }
+        .header-modern::before { width:240px; height:240px; top:-110px; right:-40px; animation:floatCircle 10s ease-in-out infinite; }
+        .header-modern::after { width:150px; height:150px; bottom:-60px; left:-30px; animation:floatCircle 12s ease-in-out 1.6s infinite; }
+        .header-modern .container { position:relative; z-index:1; }
+        @keyframes floatCircle { 0%,100% { transform:translate(0,0); } 50% { transform:translate(20px,16px); } }
+        @keyframes floatBlob { 0%,100% { transform:translate(0,0) scale(1); } 50% { transform:translate(26px,-22px) scale(1.07); } }
+        @keyframes fadeUp { from { opacity:0; transform:translateY(22px); } to { opacity:1; transform:translateY(0); } }
+        .anim-up { opacity:0; animation:fadeUp .6s cubic-bezier(.22,1,.36,1) both; }
+        .form-container { position:relative; z-index:1; background:#fff; border-radius:22px; border:1px solid var(--border); box-shadow:0 24px 60px rgba(14,31,59,.12); margin-top:-34px; padding:2.4rem 2.2rem; margin-bottom:3rem; }
+        .section-badge { display:inline-flex; align-items:center; gap:10px; background:#fff1f1; color:var(--red); border:1px solid #ffd7d7; padding:8px 18px 8px 8px; border-radius:999px; font-weight:700; font-size:.9rem; margin-bottom:1.4rem; }
+        .section-badge .num { width:27px; height:27px; border-radius:50%; background:var(--red); color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:.82rem; font-weight:800; flex-shrink:0; }
+        .form-control, .form-select { border-radius:10px; border:1.5px solid var(--border); font-size:.9rem; transition:border-color .2s, box-shadow .2s; }
+        .form-control:focus, .form-select:focus { border-color:var(--red); box-shadow:0 0 0 4px rgba(238,46,36,.1); }
+        .form-label { font-weight:600; font-size:.82rem; color:#475569; }
+        .table-perangkat th { background:var(--navy); color:rgba(255,255,255,.88); font-size:.72rem; text-transform:uppercase; letter-spacing:.5px; border:none !important; font-weight:600; }
+        .table-perangkat td { vertical-align:middle; }
+        .upload-eviden { border:2px dashed var(--border); border-radius:14px; background:#f8fafc; padding:1.2rem 1.4rem; transition:border-color .25s, background .25s, box-shadow .25s; }
+        .upload-eviden:hover, .upload-eviden.active { border-color:var(--red); background:#fff5f5; box-shadow:0 0 0 4px rgba(238,46,36,.06); }
+        .ttd-box { position:relative; border:2px dashed #c7d2fe; border-radius:16px; background:#fafbff; overflow:hidden; cursor:crosshair; transition:border-color .25s, box-shadow .25s, background .25s; }
+        .ttd-box:hover, .ttd-box.active { border-color:var(--red); background:#fff; box-shadow:0 0 0 4px rgba(238,46,36,.08); }
+        #canvasPemberi { display:block; width:100%; height:200px; touch-action:none; cursor:crosshair; }
+        .ttd-placeholder { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#c7d2fe; font-size:.85rem; pointer-events:none; }
+        .ttd-placeholder i { font-size:2.4rem; margin-bottom:8px; }
+        .btn-submit { background:linear-gradient(135deg,var(--red) 0%,var(--red2) 100%); color:#fff; border:none; border-radius:14px; font-weight:700; font-size:1rem; padding:15px; width:100%; box-shadow:0 10px 26px rgba(238,46,36,.32); cursor:pointer; transition:transform .2s, box-shadow .2s, filter .2s; animation:pulseCta 2.6s ease-in-out infinite; }
+        .btn-submit:hover { transform:translateY(-2px); box-shadow:0 16px 34px rgba(238,46,36,.42); }
+        .btn-submit:disabled { opacity:.85; cursor:progress; filter:saturate(.7); animation:none; }
+        @keyframes pulseCta { 0%,100% { box-shadow:0 10px 26px rgba(238,46,36,.32); } 50% { box-shadow:0 10px 36px rgba(238,46,36,.55); } }
+        .eviden-preview { display:inline-block; position:relative; margin:0 6px 6px 0; }
+        .eviden-preview img { width:110px; height:82px; object-fit:cover; border-radius:10px; border:1px solid var(--border); }
+        @media (prefers-reduced-motion: reduce) { .anim-up, .bg-deco, .header-modern::before, .header-modern::after, .btn-submit { animation:none !important; transition:none !important; } .anim-up { opacity:1; } .bg-deco { display:none; } }
+    </style>
+</head>
+<body>
+
+<div class="bg-deco d1"></div>
+<div class="bg-deco d2"></div>
+
+<div class="header-modern">
+    <div class="container">
+        <div class="d-flex align-items-center justify-content-between mb-3 anim-up">
+            <a href="/teknisi/dashboard" class="btn btn-sm btn-outline-light rounded-pill px-3 fw-semibold"><i class="bi bi-arrow-left me-1"></i> Dasbor</a>
+            <span class="badge bg-light text-dark border font-monospace px-3 py-2"><%= data.kode_unik %></span>
+        </div>
+        <div class="text-center">
+            <h3 class="fw-bold anim-up"><i class="bi bi-pencil-square me-2"></i>Edit BAST Pending</h3>
+            <p class="opacity-75 anim-up" style="font-size:.9rem;">Perbaiki data perangkat, foto, dan tanda tangan.</p>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="form-container">
+        <form id="formEdit" enctype="multipart/form-data">
+
+            <div class="section-badge anim-up"><span class="num">1</span> <i class="bi bi-geo-alt-fill"></i> Informasi Lokasi &amp; Waktu</div>
+            <div class="row mb-4">
+                <div class="col-md-6 mb-3 anim-up">
+                    <label class="form-label">Tanggal Pelaksanaan</label>
+                    <input type="date" class="form-control" name="tanggal" value="<%= data.tanggal %>" required>
+                </div>
+                <div class="col-md-6 mb-3 anim-up">
+                    <label class="form-label">Lokasi / STO</label>
+                    <input type="text" class="form-control text-uppercase" name="loksto" value="<%= data.loksto %>" required>
+                </div>
+            </div>
+
+            <div class="section-badge anim-up"><span class="num">2</span> <i class="bi bi-person-vcard-fill"></i> Identitas Teknisi</div>
+            <div class="mb-4 anim-up">
+                <label class="form-label">Nama Teknisi</label>
+                <input type="text" class="form-control bg-light" name="teknisi_select" value="<%= data.teknisi_nik %> | <%= data.teknisi_nama %>" readonly>
+            </div>
+
+            <div class="section-badge anim-up"><span class="num">3</span> <i class="bi bi-router-fill"></i> Data Perangkat ONT</div>
+            <div class="table-responsive mb-3 anim-up">
+                <table class="table table-bordered table-perangkat align-middle" id="tabelPerangkat">
+                    <thead>
+                        <tr><th class="text-center" style="width:44px;">No</th><th>Merk &amp; SN Lama</th><th>Merk &amp; SN Baru</th><th>No Internet</th><th>Kondisi</th><th class="text-center">Aksi</th></tr>
+                    </thead>
+                    <tbody id="bodyPerangkat">
+                        <% if (data.perangkat && data.perangkat.length > 0) { %>
+                            <% data.perangkat.forEach((p, idx) => { %>
+                            <tr>
+                                <td class="text-center baris-nomor fw-bold text-muted"><%= idx + 1 %></td>
+                                <td><input type="text" class="form-control form-control-sm" name="snlama" value="<%= p.snlama || '' %>" required></td>
+                                <td><input type="text" class="form-control form-control-sm" name="snbaru" value="<%= p.snbaru || '' %>" required></td>
+                                <td><input type="text" class="form-control form-control-sm" name="noinet" value="<%= p.noinet || '' %>" required></td>
+                                <td>
+                                    <select class="form-select form-select-sm" name="kondisi" required>
+                                        <option value="Baik" <%= (p.kondisi||'') === 'Baik' ? 'selected' : '' %>>Baik</option>
+                                        <option value="Rusak" <%= (p.kondisi||'') === 'Rusak' ? 'selected' : '' %>>Rusak</option>
+                                        <option value="Hilang" <%= (p.kondisi||'') === 'Hilang' ? 'selected' : '' %>>Hilang</option>
+                                    </select>
+                                </td>
+                                <td class="text-center">
+                                    <% if (idx > 0) { %>
+                                        <button type="button" class="btn btn-sm btn-outline-danger rounded-circle" onclick="hapusBaris(this)" title="Hapus baris"><i class="bi bi-trash"></i></button>
+                                    <% } else { %>
+                                        <span class="text-muted">—</span>
+                                    <% } %>
+                                </td>
+                            </tr>
+                            <% }) %>
+                        <% } else { %>
+                            <tr>
+                                <td class="text-center baris-nomor fw-bold text-muted">1</td>
+                                <td><input type="text" class="form-control form-control-sm" name="snlama" required></td>
+                                <td><input type="text" class="form-control form-control-sm" name="snbaru" required></td>
+                                <td><input type="text" class="form-control form-control-sm" name="noinet" required></td>
+                                <td><select class="form-select form-select-sm" name="kondisi"><option>Baik</option><option>Rusak</option><option>Hilang</option></select></td>
+                                <td class="text-center text-muted">—</td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+            <div class="mb-4 anim-up">
+                <button type="button" class="btn btn-sm btn-dark rounded-pill px-3 fw-semibold" onclick="tambahBaris()"><i class="bi bi-plus-circle me-1"></i> Tambah Baris</button>
+            </div>
+
+            <div class="section-badge anim-up"><span class="num">4</span> <i class="bi bi-camera-fill"></i> Upload Eviden (ganti jika perlu)</div>
+            <div class="upload-eviden mb-4 anim-up" id="uploadEvidenBox">
+                <label class="form-label fw-bold" for="inputFoto"><i class="bi bi-image me-1 text-danger"></i> Pilih Foto baru (maksimal 10)</label>
+                <input type="file" class="form-control" name="eviden" id="inputFoto" accept="image/*" multiple onchange="cekJumlahFoto()">
+                <small class="text-muted small d-block mt-2">Foto lama akan diganti jika Anda memilih foto baru.</small>
+                <div class="mt-2" id="evidenLama">
+                    <% (data.eviden || []).forEach((f, i) => { %>
+                        <span class="eviden-preview"><img src="/uploads/eviden/<%= String(f).split(/[\\/]/).pop() %>" alt="Foto <%= i+1 %>"><span class="badge bg-dark position-absolute" style="top:3px;left:3px;font-size:.6rem;">Foto <%= i+1 %></span></span>
+                    <% }) %>
+                </div>
+            </div>
+
+            <div class="section-badge anim-up"><span class="num">5</span> <i class="bi bi-pen-fill"></i> Tanda Tangan Ulang</div>
+            <div class="mb-5 text-center anim-up">
+                <div class="ttd-box" id="ttdBox">
+                    <canvas id="canvasPemberi"></canvas>
+                    <div class="ttd-placeholder" id="ttdPlaceholder"><i class="bi bi-pen"></i> Tanda tangan di sini</div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger mt-2 rounded-pill px-4 fw-semibold" onclick="clearCanvas()"><i class="bi bi-eraser-fill me-1"></i> Hapus Coretan</button>
+            </div>
+
+            <button type="button" class="btn-submit anim-up" onclick="submitEdit()" id="btnSubmit"><i class="bi bi-cloud-check-fill me-2"></i> SIMPAN PERUBAHAN</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    let jmlBaris = document.querySelectorAll('#bodyPerangkat tr').length;
+    function tambahBaris() {
+        if (jmlBaris >= 10) return Swal.fire('Batas', 'Maksimal 10 perangkat.', 'warning');
+        jmlBaris++;
+        const tbody = document.getElementById('bodyPerangkat');
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="text-center baris-nomor fw-bold text-muted">${jmlBaris}</td>
+            <td><input type="text" class="form-control form-control-sm" name="snlama" required></td>
+            <td><input type="text" class="form-control form-control-sm" name="snbaru" required></td>
+            <td><input type="text" class="form-control form-control-sm" name="noinet" required></td>
+            <td><select class="form-select form-select-sm" name="kondisi"><option>Baik</option><option>Rusak</option><option>Hilang</option></select></td>
+            <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger rounded-circle" onclick="hapusBaris(this)"><i class="bi bi-trash"></i></button></td>`;
+        tbody.appendChild(tr);
+        updateNomor();
+    }
+    function hapusBaris(btn) {
+        const rows = document.querySelectorAll('#bodyPerangkat tr');
+        if (rows.length <= 1) return Swal.fire('Batas', 'Minimal 1 perangkat.', 'warning');
+        btn.closest('tr').remove();
+        jmlBaris--;
+        updateNomor();
+    }
+    function updateNomor() { document.querySelectorAll('.baris-nomor').forEach((td, i) => td.innerText = i + 1); }
+
+    function cekJumlahFoto() {
+        const input = document.getElementById('inputFoto');
+        const box = document.getElementById('uploadEvidenBox');
+        if (input.files.length > 10) { Swal.fire('Terlalu Banyak', 'Maksimal 10 foto.', 'error'); input.value = ''; box.classList.remove('active'); }
+        else if (input.files.length > 0) box.classList.add('active');
+        else box.classList.remove('active');
+    }
+
+    // Canvas TTD
+    const canvas = document.getElementById('canvasPemberi');
+    const ctx = canvas.getContext('2d');
+    const ttdBox = document.getElementById('ttdBox');
+    const ttdPlaceholder = document.getElementById('ttdPlaceholder');
+    let drawing = false, hasSigned = false;
+    ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.strokeStyle = '#0e1f3b';
+    function resizeCanvas() {
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width; canvas.height = rect.height || 200;
+        ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.strokeStyle = '#0e1f3b';
+    }
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const sx = canvas.width / rect.width, sy = canvas.height / rect.height;
+        if (e.touches) return { x: (e.touches[0].clientX - rect.left) * sx, y: (e.touches[0].clientY - rect.top) * sy };
+        return { x: (e.clientX - rect.left) * sx, y: (e.clientY - rect.top) * sy };
+    }
+    const startDraw = (e) => { e.preventDefault(); drawing = true; if (!hasSigned) { hasSigned = true; ttdPlaceholder.style.display = 'none'; ttdBox.classList.add('active'); } const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
+    const draw = (e) => { if (!drawing) return; e.preventDefault(); const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
+    const stopDraw = () => { drawing = false; ctx.beginPath(); };
+    canvas.addEventListener('mousedown', startDraw);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDraw);
+    canvas.addEventListener('mouseleave', stopDraw);
+    canvas.addEventListener('touchstart', startDraw, { passive: false });
+    canvas.addEventListener('touchmove', draw, { passive: false });
+    canvas.addEventListener('touchend', stopDraw);
+    function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); hasSigned = false; ttdPlaceholder.style.display = ''; ttdBox.classList.remove('active'); }
+
+    // Kompresi foto
+    function compressImage(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                const img = new Image();
+                img.onload = () => {
+                    const MAX = 1200;
+                    let w = img.width, h = img.height;
+                    if (w > MAX || h > MAX) { const r = Math.min(MAX / w, MAX / h); w = Math.round(w * r); h = Math.round(h * r); }
+                    const c = document.createElement('canvas');
+                    c.width = w; c.height = h;
+                    c.getContext('2d').drawImage(img, 0, 0, w, h);
+                    c.toBlob((blob) => { resolve(blob ? new File([blob], file.name, { type: 'image/jpeg' }) : file); }, 'image/jpeg', 0.82);
+                };
+                img.onerror = () => resolve(file);
+                img.src = ev.target.result;
+            };
+            reader.onerror = () => resolve(file);
+            reader.readAsDataURL(file);
+        });
+    }
+
+    async function submitEdit() {
+        const form = document.getElementById('formEdit');
+        if (!form.checkValidity()) return form.reportValidity();
+        if (!hasSigned) return Swal.fire('Perhatian', 'Wajib tanda tangan ulang.', 'warning');
+
+        const btn = document.getElementById('btnSubmit');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Menyimpan...';
+
+        const formData = new FormData();
+        const el = (n) => form.elements[n] ? form.elements[n].value : '';
+        formData.append('tanggal', el('tanggal'));
+        formData.append('loksto', el('loksto'));
+        formData.append('teknisi_select', el('teknisi_select'));
+        document.querySelectorAll('#bodyPerangkat tr').forEach(tr => {
+            const g = (sel) => { const x = tr.querySelector(sel); return x ? x.value : ''; };
+            formData.append('snlama', g('[name=snlama]'));
+            formData.append('snbaru', g('[name=snbaru]'));
+            formData.append('noinet', g('[name=noinet]'));
+            formData.append('kondisi', g('[name=kondisi]'));
+        });
+        const files = document.getElementById('inputFoto').files;
+        if (files.length) {
+            for (let i = 0; i < files.length; i++) formData.append('eviden', await compressImage(files[i]));
+        }
+        formData.append('ttdPemberiBase64', canvas.toDataURL());
+
+        try {
+            const res = await fetch('/teknisi/update/<%= data.kode_unik %>', { method: 'POST', body: formData });
+            const result = await res.json();
+            if (result.success) {
+                Swal.fire({ icon: 'success', title: 'Berhasil!', text: result.message, confirmButtonColor: '#EE2E24' }).then(() => window.location.href = '/teknisi/dashboard');
+            } else {
+                Swal.fire('Gagal', result.message, 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-cloud-check-fill me-2"></i> SIMPAN PERUBAHAN';
+            }
+        } catch (e) {
+            Swal.fire('Error Sistem', 'Gagal terhubung ke server.', 'error');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="bi bi-cloud-check-fill me-2"></i> SIMPAN PERUBAHAN';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.anim-up').forEach(function (el, i) { el.style.animationDelay = (i * 60) + 'ms'; });
+    });
+</script>
+</body>
+</html>

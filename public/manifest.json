@@ -1,0 +1,15 @@
+{
+  "name": "BAST - Telkom Akses Branch Bekasi",
+  "short_name": "BAST",
+  "description": "Sistem Monitoring BAST Replacement Telkom Akses",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0e1f3b",
+  "theme_color": "#EE2E24",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

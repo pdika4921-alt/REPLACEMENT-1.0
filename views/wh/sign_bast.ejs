@@ -144,11 +144,60 @@
         font-size: 0.85rem; padding: 9px 22px; transition: all .2s;
     }
     .btn-clear:hover { border-color: var(--red); color: var(--red); background: #fff0f0; }
+
+    /* ===== POLISH & ANIMATION ===== */
+    body { overflow-x: hidden; }
+
+    .bg-deco { position: fixed; border-radius: 50%; filter: blur(60px); opacity: .16; pointer-events: none; z-index: 0; }
+    .bg-deco.d1 { width: 360px; height: 360px; top: -80px; right: -70px; background: var(--red); animation: floatBlob 12s ease-in-out infinite; }
+    .bg-deco.d2 { width: 300px; height: 300px; bottom: -80px; left: -70px; background: var(--navy); animation: floatBlob 14s ease-in-out 2.2s infinite; }
+
+    .navbar, .container { position: relative; z-index: 1; }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes floatBlob { 0%, 100% { transform: translate(0,0) scale(1); } 50% { transform: translate(26px,-22px) scale(1.07); } }
+
+    .anim-up { opacity: 0; animation: fadeUp .6s cubic-bezier(.22,1,.36,1) both; }
+
+    .card-section { transition: transform .2s, box-shadow .2s; }
+    .card-section:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(14,31,59,.09); }
+
+    .ttd-wrapper { transition: border-color .2s, box-shadow .3s, background .3s; }
+    .ttd-wrapper.active { box-shadow: 0 0 0 4px rgba(238,46,36,.12), inset 0 0 30px rgba(238,46,36,.05); }
+
+    .btn-submit-ttd { animation: pulseCta 2.4s ease-in-out infinite; }
+    @keyframes pulseCta { 0%, 100% { box-shadow: 0 6px 20px rgba(238,46,36,.3); } 50% { box-shadow: 0 6px 32px rgba(238,46,36,.55); } }
+
+    .eviden-item img { transition: transform .2s, box-shadow .2s, border-color .2s; }
+    .eviden-item:hover img { transform: translateY(-4px) scale(1.05); box-shadow: 0 10px 22px rgba(14,31,59,.15); }
+
+    @media (prefers-reduced-motion: reduce) {
+        .anim-up, .bg-deco, .btn-submit-ttd { animation: none !important; transition: none !important; }
+        .anim-up { opacity: 1; }
+        .bg-deco { display: none; }
+    }
+
+    /* TOAST */
+    .toast-wrap { position: fixed; top: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+    .toast-box {
+        background: #1e293b; color: #fff; border-radius: 12px; padding: 12px 18px;
+        font-size: .82rem; font-weight: 500; box-shadow: 0 12px 28px rgba(14,31,59,.25);
+        display: flex; align-items: center; gap: 10px; min-width: 240px;
+        animation: toastIn .35s cubic-bezier(.22,1,.36,1) both;
+    }
+    .toast-box.err { background: var(--red); }
+    .toast-box.ok  { background: #16a34a; }
+    @keyframes toastIn { from { opacity: 0; transform: translateX(40px); } to { opacity: 1; transform: translateX(0); } }
 </style>
 </head>
 <body>
 
-<nav class="navbar navbar-dark navbar-custom py-3 mb-4">
+<div class="toast-wrap" id="toastWrap"></div>
+
+<div class="bg-deco d1"></div>
+<div class="bg-deco d2"></div>
+
+<nav class="navbar navbar-dark navbar-custom py-3 mb-4 anim-up">
     <div class="container" style="max-width:800px;">
         <a class="navbar-brand d-flex align-items-center gap-2 text-decoration-none" href="/wh/dashboard">
             <i class="bi bi-arrow-left"></i>
@@ -161,7 +210,7 @@
 <div class="container mb-5" style="max-width: 800px;">
 
     <!-- 1. INFO DOKUMEN -->
-    <div class="card-section">
+    <div class="card-section anim-up">
         <div class="section-head">
             <div class="section-icon red"><i class="bi bi-file-earmark-check-fill"></i></div>
             <div>
@@ -190,7 +239,7 @@
     </div>
 
     <!-- 2. DAFTAR ONT -->
-    <div class="card-section">
+    <div class="card-section anim-up">
         <div class="section-head">
             <div class="section-icon blue"><i class="bi bi-cpu-fill"></i></div>
             <div>
@@ -246,7 +295,7 @@
     </div>
 
     <!-- 3. FOTO EVIDEN -->
-    <div class="card-section">
+    <div class="card-section anim-up">
         <div class="section-head">
             <div class="section-icon navy"><i class="bi bi-images"></i></div>
             <div>
@@ -259,7 +308,7 @@
                 <% data.eviden.forEach((path, idx) => { %>
                 <div class="eviden-item">
                     <span class="eviden-number">Foto <%= idx + 1 %></span>
-                    <img src="/<%= path.replace(/\\/g, '/') %>"
+                    <img src="/uploads/eviden/<%= String(path).split(/[\\/]/).pop() %>"
                          alt="Eviden <%= idx + 1 %>"
                          onclick="bukaFoto(this.src)"
                          title="Klik untuk perbesar">
@@ -276,7 +325,7 @@
     </div>
 
     <!-- 4. IDENTITAS PENERIMA WH -->
-    <div class="card-section">
+    <div class="card-section anim-up">
         <div class="section-head">
             <div class="section-icon green"><i class="bi bi-person-badge-fill"></i></div>
             <div>
@@ -301,7 +350,7 @@
     </div>
 
     <!-- 5. AREA TANDA TANGAN -->
-    <div class="card-section">
+    <div class="card-section anim-up">
         <div class="section-head">
             <div class="section-icon red"><i class="bi bi-pen-fill"></i></div>
             <div>
@@ -326,7 +375,7 @@
     </div>
 
     <!-- 6. TOMBOL SUBMIT -->
-    <div class="d-grid mt-2">
+    <div class="d-grid mt-2 anim-up">
         <button type="button" onclick="submitTTD()" class="btn-submit-ttd">
             <i class="bi bi-check-circle-fill me-2"></i> Setujui &amp; Simpan Tanda Tangan
         </button>
@@ -421,7 +470,7 @@
 
     function submitTTD() {
         if (!hasSigned) {
-            alert('Harap tanda tangani terlebih dahulu.');
+            showToast('Harap tanda tangani terlebih dahulu.', 'err');
             return;
         }
         const dataURL = canvas.toDataURL('image/png');
@@ -429,10 +478,28 @@
         document.getElementById('formSubmit').submit();
     }
 
+    function showToast(msg, type) {
+        const wrap = document.getElementById('toastWrap');
+        const t = document.createElement('div');
+        t.className = 'toast-box ' + (type || '');
+        t.innerHTML = (type === 'err' ? '<i class="bi bi-exclamation-triangle-fill"></i>' : '<i class="bi bi-check-circle-fill"></i>') + '<span>' + msg + '</span>';
+        wrap.appendChild(t);
+        setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .3s'; }, 2600);
+        setTimeout(() => t.remove(), 3000);
+    }
+
     function bukaFoto(src) {
         document.getElementById('fotoModal').src = src;
         new bootstrap.Modal(document.getElementById('modalFoto')).show();
     }
+</script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.anim-up').forEach(function (el, i) {
+            el.style.animationDelay = (i * 70) + 'ms';
+        });
+    });
 </script>
 
 </body>
