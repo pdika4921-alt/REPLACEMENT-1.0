@@ -786,14 +786,35 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="px-4 pt-3">
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                                <input type="text" class="form-control" id="akunSearch" placeholder="Cari NIK, nama, username, STO, atau service area..." oninput="filterAkun()" autocomplete="off">
+                            </div>
+                            <div class="form-text text-muted small" style="font-size:.72rem;">
+                                <i class="bi bi-info-circle me-1"></i>
+                                Ketik NIK / nama / STO / service area untuk memfilter daftar akun secara instan.
+                            </div>
+                        </div>
                         <div class="p-4" style="overflow-y:auto;max-height:680px;">
                             <!-- TEKNISI LIST -->
-                            <div class="section-label"><i class="bi bi-tools me-1"></i> Akun Teknisi (Tampil di Dropdown)</div>
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                <div class="section-label mb-0"><i class="bi bi-tools me-1"></i> Akun Teknisi (Tampil di Dropdown)</div>
+                                <div class="d-flex gap-2 mb-2">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="togglePilihGroup('teknisi')">
+                                        <i class="bi bi-check2-square me-1"></i> Pilih Semua
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-danger rounded-pill px-3" id="hapusTeknisiBtn" onclick="hapusMasal('teknisi')" disabled>
+                                        <i class="bi bi-trash-fill me-1"></i> Hapus Terpilih (<span id="countTeknisi">0</span>)
+                                    </button>
+                                </div>
+                            </div>
                             <% if (teknisiList.length === 0) { %>
                                 <div class="text-center text-muted py-3 small">Belum ada akun teknisi</div>
                             <% } %>
                             <% teknisiList.forEach(u => { %>
                             <div class="user-item">
+                                <input type="checkbox" class="form-check-input bulk-chk teknisi-chk" data-id="<%= u.id %>" style="flex-shrink:0;width:18px;height:18px;" onchange="updateBulkBtn('teknisi')">
                                 <div class="avatar-initial avatar-navy">
                                     <%= (u.nama_lengkap || u.username).charAt(0).toUpperCase() %>
                                 </div>
@@ -809,12 +830,23 @@
                             <% }) %>
 
                             <!-- WH LIST -->
-                            <div class="section-label mt-4"><i class="bi bi-box-seam me-1"></i> Akun Warehouse</div>
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-4">
+                                <div class="section-label mb-0"><i class="bi bi-box-seam me-1"></i> Akun Warehouse</div>
+                                <div class="d-flex gap-2 mb-2">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="togglePilihGroup('wh')">
+                                        <i class="bi bi-check2-square me-1"></i> Pilih Semua
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-danger rounded-pill px-3" id="hapusWhBtn" onclick="hapusMasal('wh')" disabled>
+                                        <i class="bi bi-trash-fill me-1"></i> Hapus Terpilih (<span id="countWh">0</span>)
+                                    </button>
+                                </div>
+                            </div>
                             <% if ((whList || []).length === 0) { %>
                                 <div class="text-center text-muted py-3 small">Belum ada akun warehouse</div>
                             <% } %>
                             <% (whList || []).forEach(u => { %>
                             <div class="user-item">
+                                <input type="checkbox" class="form-check-input bulk-chk wh-chk" data-id="<%= u.id %>" style="flex-shrink:0;width:18px;height:18px;" onchange="updateBulkBtn('wh')">
                                 <div class="avatar-initial avatar-red">
                                     <%= (u.nama_lengkap || u.username).charAt(0).toUpperCase() %>
                                 </div>
@@ -1768,6 +1800,65 @@
     }
     function escAttr(s) {
         return String(s == null ? '' : s).replace(/'/g,"\\'").replace(/"/g,'&quot;');
+    }
+
+    // ===== Pencarian akun (Kelola Akun) =====
+    function filterAkun() {
+        const kw = (document.getElementById('akunSearch').value || '').toLowerCase().trim();
+        const pane = document.getElementById('users-pane');
+        if (!pane) return;
+        const labels = pane.querySelectorAll('.section-label');
+        labels.forEach(function (lbl) {
+            let allHidden = true;
+            let node = lbl.nextElementSibling;
+            while (node && node.classList && !node.classList.contains('section-label')) {
+                if (node.classList.contains('user-item')) {
+                    const show = !kw || node.textContent.toLowerCase().includes(kw);
+                    node.style.display = show ? '' : 'none';
+                    if (show) allHidden = false;
+                }
+                node = node.nextElementSibling;
+            }
+            lbl.style.display = allHidden ? 'none' : '';
+        });
+    }
+
+    // ===== Hapus masal akun (per grup) =====
+    function getChkSel(group) {
+        const cls = group === 'wh' ? '.wh-chk' : '.teknisi-chk';
+        return Array.prototype.slice.call(document.querySelectorAll('#users-pane ' + cls + ':checked'));
+    }
+    function updateBulkBtn(group) {
+        const sel = getChkSel(group);
+        const countEl = document.getElementById(group === 'wh' ? 'countWh' : 'countTeknisi');
+        const btn = document.getElementById(group === 'wh' ? 'hapusWhBtn' : 'hapusTeknisiBtn');
+        if (countEl) countEl.textContent = sel.length;
+        if (btn) btn.disabled = sel.length === 0;
+    }
+    function togglePilihGroup(group) {
+        const cls = group === 'wh' ? '.wh-chk' : '.teknisi-chk';
+        const cbs = document.querySelectorAll('#users-pane ' + cls);
+        const allChecked = Array.prototype.every.call(cbs, cb => cb.checked);
+        cbs.forEach(cb => { cb.checked = !allChecked; });
+        updateBulkBtn(group);
+    }
+    function hapusMasal(group) {
+        const sel = getChkSel(group);
+        if (sel.length === 0) return;
+        const label = group === 'wh' ? 'Warehouse' : 'Teknisi';
+        if (!confirm('Yakin hapus ' + sel.length + ' akun ' + label + ' terpilih?')) return;
+        const ids = sel.map(cb => cb.getAttribute('data-id'));
+        fetch('/admin/user/bulk-delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids: ids })
+        })
+        .then(r => r.json())
+        .then(d => {
+            alert(d.message || 'Selesai.');
+            if (d.success) window.location.reload();
+        })
+        .catch(() => alert('Kendala koneksi ke server.'));
     }
 
     muatSAMeta();

@@ -432,6 +432,24 @@ app.get('/admin/user/delete/:id', checkRole('admin'), (req, res) => {
     });
 });
 
+// Hapus massal akun teknisi/WH
+app.post('/admin/user/bulk-delete', checkRole('admin'), (req, res) => {
+    const ids = req.body.ids;
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+        return res.json({ success: false, message: 'Tidak ada akun yang dipilih.' });
+    }
+    const numIds = ids.map(id => parseInt(id, 10)).filter(id => Number.isInteger(id) && id > 0);
+    if (numIds.length === 0) {
+        return res.json({ success: false, message: 'ID akun tidak valid.' });
+    }
+    const placeholders = numIds.map(() => '?').join(',');
+    db.run(`DELETE FROM users WHERE id IN (${placeholders}) AND role IN ('teknisi','wh')`, numIds, function (e) {
+        if (e) return res.json({ success: false, message: e.message });
+        logAudit(req, 'BULK_DELETE_USER', 'id=' + numIds.join(','));
+        res.json({ success: true, message: `${this.changes} akun berhasil dihapus.`, deleted: this.changes });
+    });
+});
+
 // Log aktivitas (admin)
 app.get('/admin/audit', checkRole('admin'), (req, res) => {
     db.all("SELECT * FROM audit_log ORDER BY id DESC LIMIT 200", (err, logs) => {
