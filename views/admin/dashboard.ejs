@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - TELKOM AKSES</title>
+    <title>Admin Dashboard - TELKOM  AKSES</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
@@ -454,6 +454,8 @@
                     <i class="bi bi-shield-lock-fill me-1"></i> Kelola Akun
                 </button>
             </li>
+            <!-- Tab Master Teknisi telah dihilangkan dan digabung dengan Kelola Akun -->
+            <!-- Tab Data Input Teknisi telah digabung ke dalam Rekap ONT -->
             <li class="nav-item" role="presentation">
                 <button class="nav-link special" id="rekon-tab" data-bs-toggle="pill" data-bs-target="#rekon-pane" type="button">
                     <i class="bi bi-magic me-1"></i> VLOOKUP Rekon
@@ -661,17 +663,12 @@
                 <div class="col-lg-5">
                     <div class="form-card h-100">
                         <div class="card-header-custom">
-                            <div class="d-flex align-items-center justify-content-between">
-                                <div class="d-flex align-items-center gap-2">
-                                    <i class="bi bi-person-plus-fill fs-5"></i>
-                                    <div>
-                                        <div class="fw-700" style="font-weight:700;">Buat Akun Baru</div>
-                                        <div class="opacity-70" style="font-size:0.75rem;">Teknisi otomatis terdaftar ke form input</div>
-                                    </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-person-plus-fill fs-5"></i>
+                                <div>
+                                    <div class="fw-700" style="font-weight:700;">Buat Akun Baru</div>
+                                    <div class="opacity-70" style="font-size:0.75rem;">Teknisi otomatis terdaftar ke form input</div>
                                 </div>
-                                <button type="button" class="btn btn-sm btn-warning fw-bold rounded-pill px-3" onclick="bukaImportAkun()">
-                                    <i class="bi bi-file-earmark-spreadsheet-fill me-1"></i> Buat Banyak (Import)
-                                </button>
                             </div>
                         </div>
                         <div class="p-4">
@@ -728,19 +725,19 @@
                                 </div>
 
                                 <!-- FIELD LOKASI STO BARU -->
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold small">Lokasi STO <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control text-uppercase" name="sto" 
-                                           placeholder="Contoh: SKJ / CMG / DPK / BJD" 
-                                           required autocomplete="off"
-                                           style="font-family: monospace; font-weight: 600; letter-spacing: 1px;">
-                                    <div class="form-text text-muted">
-                                        <i class="bi bi-info-circle me-1"></i>
-                                        Ketik kode STO: <b>SKJ</b> (Sukmajaya), <b>CMG</b> (Cimanggis), <b>DPK</b> (Depok), 
-                                        <b>CBN</b> (Cibinong), <b>CSL</b> (Cileungsi), <b>BGR</b> (Bogor), 
-                                        <b>BJD</b> (Bojong Depok), <b>BKS</b> (Bekasi), <b>ALL</b> (Semua STO)
-                                    </div>
-                                </div>
+                               <div class="mb-3">
+    <label class="form-label fw-semibold small">Lokasi STO <span class="text-danger">*</span></label>
+    <input type="text" class="form-control text-uppercase" name="sto" 
+           placeholder="Contoh: SKJ / CMG / DPK / BJD" 
+           required autocomplete="off"
+           style="font-family: monospace; font-weight: 600; letter-spacing: 1px;">
+    <div class="form-text text-muted">
+        <i class="bi bi-info-circle me-1"></i>
+        Ketik kode STO: <b>SKJ</b> (Sukmajaya), <b>CMG</b> (Cimanggis), <b>DPK</b> (Depok), 
+        <b>CBN</b> (Cibinong), <b>CSL</b> (Cileungsi), <b>BGR</b> (Bogor), 
+        <b>BJD</b> (Bojong Depok), <b>BKS</b> (Bekasi), <b>ALL</b> (Semua STO)
+    </div>
+</div>
 
                                 <div class="mb-3">
                                     <label class="form-label fw-semibold small">
@@ -786,35 +783,14 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="px-4 pt-3">
-                            <div class="input-group">
-                                <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
-                                <input type="text" class="form-control" id="akunSearch" placeholder="Cari NIK, nama, username, STO, atau service area..." oninput="filterAkun()" autocomplete="off">
-                            </div>
-                            <div class="form-text text-muted small" style="font-size:.72rem;">
-                                <i class="bi bi-info-circle me-1"></i>
-                                Ketik NIK / nama / STO / service area untuk memfilter daftar akun secara instan.
-                            </div>
-                        </div>
                         <div class="p-4" style="overflow-y:auto;max-height:680px;">
                             <!-- TEKNISI LIST -->
-                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                                <div class="section-label mb-0"><i class="bi bi-tools me-1"></i> Akun Teknisi (Tampil di Dropdown)</div>
-                                <div class="d-flex gap-2 mb-2">
-                                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="togglePilihGroup('teknisi')">
-                                        <i class="bi bi-check2-square me-1"></i> Pilih Semua
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-danger rounded-pill px-3" id="hapusTeknisiBtn" onclick="hapusMasal('teknisi')" disabled>
-                                        <i class="bi bi-trash-fill me-1"></i> Hapus Terpilih (<span id="countTeknisi">0</span>)
-                                    </button>
-                                </div>
-                            </div>
+                            <div class="section-label"><i class="bi bi-tools me-1"></i> Akun Teknisi (Tampil di Dropdown)</div>
                             <% if (teknisiList.length === 0) { %>
                                 <div class="text-center text-muted py-3 small">Belum ada akun teknisi</div>
                             <% } %>
                             <% teknisiList.forEach(u => { %>
                             <div class="user-item">
-                                <input type="checkbox" class="form-check-input bulk-chk teknisi-chk" data-id="<%= u.id %>" style="flex-shrink:0;width:18px;height:18px;" onchange="updateBulkBtn('teknisi')">
                                 <div class="avatar-initial avatar-navy">
                                     <%= (u.nama_lengkap || u.username).charAt(0).toUpperCase() %>
                                 </div>
@@ -823,30 +799,19 @@
                                     <div class="nik">NIK: <%= u.nik || u.username %> <% if (u.service_area) { %><span class="sa-badge"><i class="bi bi-geo-alt-fill"></i><%= u.service_area %></span><% } %></div>
                                 </div>
                                 <span class="badge-role-teknisi">Teknisi</span>
-                                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="openEditAkun('<%= u.id %>', '<%= u.nama_lengkap %>', '<%= u.sto %>', '<%= u.service_area %>')"><i class="bi bi-pencil me-1"></i>Edit</button>
-                                <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3" onclick="openResetPw('<%= u.id %>', '<%= u.username %>')"><i class="bi bi-key me-1"></i>Reset PW</button>
+                                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="openEditAkun(<%= u.id %>, '<%= u.nama_lengkap %>', '<%= u.sto %>', '<%= u.service_area %>')"><i class="bi bi-pencil me-1"></i>Edit</button>
+                                <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3" onclick="openResetPw(<%= u.id %>, '<%= u.username %>')"><i class="bi bi-key me-1"></i>Reset PW</button>
                                 <a href="/admin/user/delete/<%= u.id %>" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('Hapus akun <%= u.username %>?')">Hapus</a>
                             </div>
                             <% }) %>
 
                             <!-- WH LIST -->
-                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mt-4">
-                                <div class="section-label mb-0"><i class="bi bi-box-seam me-1"></i> Akun Warehouse</div>
-                                <div class="d-flex gap-2 mb-2">
-                                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="togglePilihGroup('wh')">
-                                        <i class="bi bi-check2-square me-1"></i> Pilih Semua
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-danger rounded-pill px-3" id="hapusWhBtn" onclick="hapusMasal('wh')" disabled>
-                                        <i class="bi bi-trash-fill me-1"></i> Hapus Terpilih (<span id="countWh">0</span>)
-                                    </button>
-                                </div>
-                            </div>
+                            <div class="section-label mt-4"><i class="bi bi-box-seam me-1"></i> Akun Warehouse</div>
                             <% if ((whList || []).length === 0) { %>
                                 <div class="text-center text-muted py-3 small">Belum ada akun warehouse</div>
                             <% } %>
                             <% (whList || []).forEach(u => { %>
                             <div class="user-item">
-                                <input type="checkbox" class="form-check-input bulk-chk wh-chk" data-id="<%= u.id %>" style="flex-shrink:0;width:18px;height:18px;" onchange="updateBulkBtn('wh')">
                                 <div class="avatar-initial avatar-red">
                                     <%= (u.nama_lengkap || u.username).charAt(0).toUpperCase() %>
                                 </div>
@@ -855,8 +820,8 @@
                                     <div class="nik">NIK: <%= u.nik || u.username %> <% if (u.service_area) { %><span class="sa-badge"><i class="bi bi-geo-alt-fill"></i><%= u.service_area %></span><% } %></div>
                                 </div>
                                 <span class="badge-role-wh">Warehouse</span>
-                                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="openEditAkun('<%= u.id %>', '<%= u.nama_lengkap %>', '<%= u.sto %>', '<%= u.service_area %>')"><i class="bi bi-pencil me-1"></i>Edit</button>
-                                <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3" onclick="openResetPw('<%= u.id %>', '<%= u.username %>')"><i class="bi bi-key me-1"></i>Reset PW</button>
+                                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="openEditAkun(<%= u.id %>, '<%= u.nama_lengkap %>', '<%= u.sto %>', '<%= u.service_area %>')"><i class="bi bi-pencil me-1"></i>Edit</button>
+                                <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3" onclick="openResetPw(<%= u.id %>, '<%= u.username %>')"><i class="bi bi-key me-1"></i>Reset PW</button>
                                 <a href="/admin/user/delete/<%= u.id %>" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('Hapus akun WH <%= u.username %>?')">Hapus</a>
                             </div>
                             <% }) %>
@@ -1092,55 +1057,6 @@
     </div>
 </div>
 
-<!-- Modal Bulk Import Akun -->
-<div class="modal fade" id="modalImportAkun" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content" style="border-radius:16px;border:none;overflow:hidden;">
-            <div class="modal-header" style="background:linear-gradient(135deg,#0e1f3b,#1e4080);color:#fff;border:none;">
-                <h6 class="modal-title fw-bold"><i class="bi bi-file-earmark-spreadsheet-fill me-1"></i> Import Akun Multi (Copy-Paste)</h6>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div id="importAkunAlert" class="alert d-none small mb-3"></div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-semibold small">Pilih Role <span class="text-danger">*</span></label>
-                    <div class="role-toggle">
-                        <input type="radio" name="importRole" id="importRoleTeknisi" value="teknisi" checked>
-                        <label for="importRoleTeknisi">
-                            <i class="bi bi-tools"></i>
-                            Teknisi
-                        </label>
-                        <input type="radio" name="importRole" id="importRoleWH" value="wh">
-                        <label for="importRoleWH">
-                            <i class="bi bi-box-seam"></i>
-                            Warehouse
-                        </label>
-                    </div>
-                </div>
-
-                <div class="mb-1">
-                    <label class="form-label fw-semibold small">Paste Data dari Excel <span class="text-danger">*</span></label>
-                    <textarea id="importAkunText" class="form-control font-monospace" rows="8"
-                        placeholder="Contoh 1 baris (tab):&#10;NIK&#9;NAMA LENGKAP&#9;SERVICE AREA&#9;STO&#10;26050119&#9;ANDI ARYA WIJAYA&#9;SUKMAJAYA&#9;SKJ&#10;26050120&#9;BUDI SANTOSO&#9;BEKASI&#9;BKS"></textarea>
-                    <div class="form-text text-muted">
-                        <i class="bi bi-info-circle me-1"></i>
-                        Format: <b>NIK [Tab/Spasi] NAMA [Tab/Spasi] SERVICE AREA [Tab/Spasi] STO</b> per baris.
-                        Username otomatis = NIK, Password default = <b>123456</b>.
-                        Service Area: CINERE / DEPOK &amp; RAWAGENI / KALIABANG / KRANJI / PEKAYON / PONDOKGEDE / SUKMAJAYA / BEKASI.
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer border-0">
-                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
-                <button type="button" class="btn" id="btnImportAkun" style="background:var(--red);color:#fff;font-weight:600;" onclick="prosesImportAkun()">
-                    <i class="bi bi-play-circle-fill me-1"></i> Proses Import
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <!-- Data SN dari server untuk VLOOKUP -->
 <script id="snDataServer" type="application/json">
     <%- JSON.stringify(snMaster) %>
@@ -1173,81 +1089,6 @@
             hint.textContent = 'Nama ini akan otomatis masuk ke dropdown Teknisi form BAST.';
             hint.className = 'form-text text-success fw-semibold';
         }
-    }
-
-    // ===== Bulk Import Akun (multi / copy-paste) =====
-    function bukaImportAkun() {
-        document.getElementById('importAkunText').value = '';
-        document.getElementById('importAkunAlert').className = 'alert d-none small mb-3';
-        new bootstrap.Modal(document.getElementById('modalImportAkun')).show();
-    }
-    function prosesImportAkun() {
-        const raw = document.getElementById('importAkunText').value;
-        const alertEl = document.getElementById('importAkunAlert');
-        const btn = document.getElementById('btnImportAkun');
-        const role = document.querySelector('input[name="importRole"]:checked').value;
-        if (!raw || !raw.trim()) {
-            alertEl.className = 'alert alert-danger small mb-3';
-            alertEl.textContent = 'Kotak paste masih kosong!';
-            return;
-        }
-        // Tangani pemisah tab / koma / multi-spasi
-        const rows = raw.split(/\n|\r/).map(r => r.trim()).filter(r => r.length > 0);
-        const users = [];
-        const errors = [];
-        rows.forEach(function (line, i) {
-            let cols = line.split(/\t|,| {2,}/);
-            cols = cols.map(c => c.trim()).filter(Boolean);
-            if (cols.length >= 2) {
-                const nik = String(cols[0]).toUpperCase();
-                users.push({
-                    nik: nik,
-                    nama_lengkap: cols[1],
-                    service_area: (cols[2] || '').toUpperCase(),
-                    sto: (cols[3] || '').toUpperCase(),
-                    password: '123456',
-                    role: role
-                });
-            } else {
-                errors.push('Baris ' + (i + 1) + ': format tidak lengkap.');
-            }
-        });
-        if (users.length === 0) {
-            alertEl.className = 'alert alert-danger small mb-3';
-            alertEl.textContent = 'Tidak ada data valid untuk diimport. minimum perlu NIK dan Nama.';
-            return;
-        }
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Memproses...';
-        fetch('/admin/user/bulk-add', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ users: users })
-        })
-        .then(r => r.json())
-        .then(d => {
-            alertEl.className = d.success ? 'alert alert-success small mb-3' : 'alert alert-danger small mb-3';
-            let msg = d.message || '';
-            if (d.errors && d.errors.length) {
-                msg += '<br><ul class="mb-0 mt-1" style="font-size:.75rem;padding-left:1rem;">' +
-                    d.errors.map(e => '<li>' + escHtml(e) + '</li>').join('') + '</ul>';
-            }
-            alertEl.innerHTML = msg;
-            if (d.success && (d.message || '').includes('berhasil ditambahkan') ) {
-                setTimeout(function () {
-                    bootstrap.Modal.getInstance(document.getElementById('modalImportAkun')).hide();
-                    window.location.reload();
-                }, 1800);
-            }
-        })
-        .catch(() => {
-            alertEl.className = 'alert alert-danger small mb-3';
-            alertEl.textContent = 'Kendala koneksi ke server.';
-        })
-        .finally(() => {
-            btn.disabled = false;
-            btn.innerHTML = '<i class="bi bi-play-circle-fill me-1"></i> Proses Import';
-        });
     }
 
     // Reset password akun (admin)
@@ -1716,19 +1557,19 @@
             : '<span class="badge-pending">Pending WH</span>';
         const rows = r.perangkat.length
             ? `<div class="table-responsive">
-                <table class="table table-sm table-hover align-middle mb-0" style="font-size:0.82rem;">
-                  <thead class="table-light">
-                    <tr><th>SN Lama</th><th>SN Baru</th><th>No. Internet</th><th>Kondisi</th></tr>
-                  </thead>
-                  <tbody>
-                    ${r.perangkat.map(p => `<tr>
-                      <td class="font-monospace text-muted">${escHtml(p.snlama || '-')}</td>
-                      <td class="font-monospace text-success fw-bold">${escHtml(p.snbaru || '-')}</td>
-                      <td class="font-monospace">${escHtml(p.noinet || '-')}</td>
-                      <td>${kondisiBadge(p.kondisi)}</td>
+                 <table class="table table-sm table-hover align-middle mb-0" style="font-size:0.82rem;">
+                   <thead class="table-light">
+                     <tr><th>SN Lama</th><th>SN Baru</th><th>No. Internet</th><th>Kondisi</th></tr>
+                   </thead>
+                   <tbody>
+                     ${r.perangkat.map(p => `<tr>
+                       <td class="font-monospace text-muted">${escHtml(p.snlama || '-')}</td>
+                       <td class="font-monospace text-success fw-bold">${escHtml(p.snbaru || '-')}</td>
+                       <td class="font-monospace">${escHtml(p.noinet || '-')}</td>
+                       <td>${kondisiBadge(p.kondisi)}</td>
                      </tr>`).join('')}
-                  </thead>
-                </table>
+                   </tbody>
+                 </table>
                </div>`
             : '<div class="text-muted small mb-2">Belum ada perangkat diisi.</div>';
         const evUrls = r.eviden.map(f => "'/uploads/eviden/" + String(f).split(/[\\/]/).pop() + "'").join(',');
@@ -1802,65 +1643,7 @@
         return String(s == null ? '' : s).replace(/'/g,"\\'").replace(/"/g,'&quot;');
     }
 
-    // ===== Pencarian akun (Kelola Akun) =====
-    function filterAkun() {
-        const kw = (document.getElementById('akunSearch').value || '').toLowerCase().trim();
-        const pane = document.getElementById('users-pane');
-        if (!pane) return;
-        const labels = pane.querySelectorAll('.section-label');
-        labels.forEach(function (lbl) {
-            let allHidden = true;
-            let node = lbl.nextElementSibling;
-            while (node && node.classList && !node.classList.contains('section-label')) {
-                if (node.classList.contains('user-item')) {
-                    const show = !kw || node.textContent.toLowerCase().includes(kw);
-                    node.style.display = show ? '' : 'none';
-                    if (show) allHidden = false;
-                }
-                node = node.nextElementSibling;
-            }
-            lbl.style.display = allHidden ? 'none' : '';
-        });
-    }
-
-    // ===== Hapus masal akun (per grup) =====
-    function getChkSel(group) {
-        const cls = group === 'wh' ? '.wh-chk' : '.teknisi-chk';
-        return Array.prototype.slice.call(document.querySelectorAll('#users-pane ' + cls + ':checked'));
-    }
-    function updateBulkBtn(group) {
-        const sel = getChkSel(group);
-        const countEl = document.getElementById(group === 'wh' ? 'countWh' : 'countTeknisi');
-        const btn = document.getElementById(group === 'wh' ? 'hapusWhBtn' : 'hapusTeknisiBtn');
-        if (countEl) countEl.textContent = sel.length;
-        if (btn) btn.disabled = sel.length === 0;
-    }
-    function togglePilihGroup(group) {
-        const cls = group === 'wh' ? '.wh-chk' : '.teknisi-chk';
-        const cbs = document.querySelectorAll('#users-pane ' + cls);
-        const allChecked = Array.prototype.every.call(cbs, cb => cb.checked);
-        cbs.forEach(cb => { cb.checked = !allChecked; });
-        updateBulkBtn(group);
-    }
-    function hapusMasal(group) {
-        const sel = getChkSel(group);
-        if (sel.length === 0) return;
-        const label = group === 'wh' ? 'Warehouse' : 'Teknisi';
-        if (!confirm('Yakin hapus ' + sel.length + ' akun ' + label + ' terpilih?')) return;
-        const ids = sel.map(cb => cb.getAttribute('data-id'));
-        fetch('/admin/user/bulk-delete', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ids: ids })
-        })
-        .then(r => r.json())
-        .then(d => {
-            alert(d.message || 'Selesai.');
-            if (d.success) window.location.reload();
-        })
-        .catch(() => alert('Kendala koneksi ke server.'));
-    }
-
+    // Muat jumlah per SA & auto-pilih SA pertama saat halaman siap
     muatSAMeta();
 </script>
 
