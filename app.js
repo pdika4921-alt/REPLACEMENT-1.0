@@ -8,6 +8,9 @@ const session = require('express-session');
 
 const app = express();
 
+// ===== KEAMANAN PASSWORD (scrypt — tanpa dependency tambahan) =====
+const SCRYPT = { N: 16384, r: 8, p: 1, keylen: 64 };
+
 // === PERSISTENT VOLUME (Railway) ===
 const dbDir = process.env.RAILWAY_VOLUME_MOUNT_PATH || './data';
 if (!fs.existsSync(dbDir)) {
@@ -32,12 +35,11 @@ db.serialize(() => {
     db.run(`ALTER TABLE users ADD COLUMN sto TEXT`, () => {});
     db.run(`ALTER TABLE users ADD COLUMN service_area TEXT`, () => {});
 
-    // Migrasi kembali kredensial admin ke login lama ('admin')
-    db.run(`UPDATE users SET username = 'admin', password = 'admin123' WHERE username = 'admin_replacement'`, () => {});
+    // Set kredensial admin: username 'admin_replacement', password 'branchbekasi2026'
+    db.run(`UPDATE users SET username = 'admin_replacement' WHERE username = 'admin' AND role = 'admin'`, () => {});
+    db.run(`UPDATE users SET password = ? WHERE username = 'admin_replacement'`, [hashPassword('branchbekasi2026')], () => {});
     db.run(`INSERT OR IGNORE INTO users (username, password, role, nama_lengkap, nik, sto)
-            VALUES ('admin', 'admin123', 'admin', 'Administrator', '00000000', 'ALL')`, () => {});
-    // Hapus akun baru yang mungkin masih tersisa (pembersihan defensif)
-    db.run(`DELETE FROM users WHERE username = 'admin_replacement' AND role = 'admin'`, () => {});
+            VALUES ('admin_replacement', ?, 'admin', 'Administrator', '00000000', 'ALL')`, [hashPassword('branchbekasi2026')], () => {});
     db.run(`INSERT OR IGNORE INTO users (username, password, role, nama_lengkap, nik, sto)
             VALUES ('teknisi', '123', 'teknisi', 'Teknisi Demo', '99999999', 'SUKMAJAYA')`, () => {});
     
@@ -128,9 +130,7 @@ const isAuth = (req, res, next) => {
     else res.redirect('/login');
 };
 
-// ===== KEAMANAN PASSWORD (scrypt — tanpa dependency tambahan) =====
-const SCRYPT = { N: 16384, r: 8, p: 1, keylen: 64 };
-
+// ===== KEAMANAN PASSWORD (scrypt) =====
 function hashPassword(pw) {
     const salt = crypto.randomBytes(16).toString('hex');
     const hash = crypto.scryptSync(String(pw), salt, SCRYPT.keylen, { N: SCRYPT.N, r: SCRYPT.r, p: SCRYPT.p });
@@ -322,6 +322,55 @@ app.get('/admin/dashboard', checkRole('admin'), (req, res) => {
                 });
             });
         });
+    });
+});
+
+// Bulk Add Users
+app.post('/admin/user/bulk-add', checkRole('admin'), async (req, res) => {
+    const { users } = req.body; // Array of objects
+    if (!users || !Array.isArray(users) || users.length === 0) {
+        return res.json({ success: false, message: 'Data tidak valid atau kosong.' });
+    }
+
+    let successCount = 0;
+    let failCount = 0;
+    let errors = [];
+
+    const processUsers = users.map(u => {
+        return new Promise((resolve) => {
+            const role = String(u.role || 'teknisi').toLowerCase().trim();
+            const safeRole = (role === 'wh' || role === 'warehouse') ? 'wh' : 'teknisi';
+            const hashedPw = hashPassword(String(u.password || '123456'));
+            const username = String(u.nik || '').trim();
+
+            if (!username) {
+                failCount++;
+                errors.push("NIK kosong");
+                return resolve();
+            }
+
+            db.run(
+                "INSERT INTO users (username, password, role, nama_lengkap, nik, sto, service_area) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                [username, hashedPw, safeRole, u.nama_lengkap || '', username, u.sto || '', u.service_area || ''],
+                (err) => {
+                    if (err) {
+                        failCount++;
+                        errors.push(`${username}: ${err.message}`);
+                    } else {
+                        successCount++;
+                    }
+                    resolve();
+                }
+            );
+        });
+    });
+
+    await Promise.all(processUsers);
+    logAudit(req, 'BULK_ADD_USER', `Success: ${successCount}, Fail: ${failCount}`);
+    res.json({ 
+        success: true, 
+        message: `${successCount} akun berhasil ditambahkan. ${failCount} gagal.`,
+        errors: errors.slice(0, 10) // Tampilkan 10 error pertama saja
     });
 });
 
