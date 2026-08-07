@@ -226,6 +226,18 @@
     .badge-role-teknisi { background:#eff6ff; color:#1d4ed8; padding:3px 10px; border-radius:8px; font-size:0.72rem; font-weight:700; }
     .badge-role-wh      { background:#fdf4ff; color:#7c3aed; padding:3px 10px; border-radius:8px; font-size:0.72rem; font-weight:700; }
 
+    /* Filter role akun */
+    #akunRoleFilter .btn { border:1px solid var(--border); color:var(--muted); background:#fff; font-weight:600; }
+    #akunRoleFilter .btn:hover { border-color:var(--navy); color:var(--navy); }
+    #akunRoleFilter .btn.active {
+        background: var(--navy); color:#fff; border-color:var(--navy);
+        box-shadow: 0 2px 8px rgba(14,31,59,0.2);
+    }
+    body.dark #akunRoleFilter .btn { background:#16283f; border-color:#334155; color:#cbd5e1; }
+    body.dark #akunRoleFilter .btn.active { background:#1e4080; color:#fff; }
+    .akun-table th { background: var(--navy); color: rgba(255,255,255,0.85); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.5px; border:none; }
+    .akun-table td { border-color:#f1f5f9; vertical-align:middle; }
+
     /* ---- SECTION DIVIDER ---- */
     .section-label {
         font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
@@ -847,7 +859,12 @@
                         </div>
                         <div class="p-4">
                             <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
-                                <div class="input-group input-group-sm flex-grow-1" style="min-width:220px;">
+                                <div class="btn-group" role="group" id="akunRoleFilter">
+                                    <button type="button" class="btn btn-sm rounded-pill me-1 px-3 akunFilt active" data-role="semua" onclick="setAkunFilter('semua')"><i class="bi bi-people-fill me-1"></i>Semua</button>
+                                    <button type="button" class="btn btn-sm rounded-pill me-1 px-3 akunFilt" data-role="teknisi" onclick="setAkunFilter('teknisi')"><i class="bi bi-tools me-1"></i>Teknisi</button>
+                                    <button type="button" class="btn btn-sm rounded-pill px-3 akunFilt" data-role="wh" onclick="setAkunFilter('wh')"><i class="bi bi-box-seam me-1"></i>Warehouse</button>
+                                </div>
+                                <div class="input-group input-group-sm flex-grow-1" style="min-width:200px;">
                                     <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
                                     <input type="text" class="form-control" id="akunSearch" placeholder="Cari nama, NIK, username, STO, area..." oninput="filterAkunList()">
                                 </div>
@@ -856,53 +873,55 @@
                                     <i class="bi bi-trash3-fill me-1"></i> Hapus Terpilih (<span id="akunTerpilihCount">0</span>)
                                 </button>
                             </div>
-                        <div style="overflow-y:auto;max-height:680px;">
-                            <!-- TEKNISI LIST -->
-                            <div class="section-label"><i class="bi bi-tools me-1"></i> Akun Teknisi (Tampil di Dropdown)</div>
-                            <% if (teknisiList.length === 0) { %>
-                                <div class="text-center text-muted py-3 small">Belum ada akun teknisi</div>
-                            <% } %>
-                            <% teknisiList.forEach(u => { %>
-                            <div class="user-item" data-akun-id="<%= u.id %>" data-akun-role="teknisi">
-                                <input type="checkbox" class="akunCheck form-check-input mt-0 me-1" value="<%= u.id %>"
-                                       onchange="updateAkunTerpilih()" style="width:18px;height:18px;">
-                                <div class="avatar-initial avatar-navy">
-                                    <%= (u.nama_lengkap || u.username).charAt(0).toUpperCase() %>
-                                </div>
-                                <div class="user-meta">
-                                    <div class="username"><%= u.nama_lengkap || u.username %> <span class="sto-badge"><%= u.sto || 'ALL' %></span></div>
-                                    <div class="nik">NIK: <%= u.nik || u.username %> <% if (u.service_area) { %><span class="sa-badge"><i class="bi bi-geo-alt-fill"></i><%= u.service_area %></span><% } %></div>
-                                </div>
-                                <span class="badge-role-teknisi">Teknisi</span>
-                                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="openEditAkun(<%= u.id %>, '<%= u.nama_lengkap %>', '<%= u.sto %>', '<%= u.service_area %>')"><i class="bi bi-pencil me-1"></i>Edit</button>
-                                <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3" onclick="openResetPw(<%= u.id %>, '<%= u.username %>')"><i class="bi bi-key me-1"></i>Reset PW</button>
-                                <a href="/admin/user/delete/<%= u.id %>" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('Hapus akun <%= u.username %>?')">Hapus</a>
-                            </div>
-                            <% }) %>
 
-                            <!-- WH LIST -->
-                            <div class="section-label mt-4"><i class="bi bi-box-seam me-1"></i> Akun Warehouse</div>
-                            <% if ((whList || []).length === 0) { %>
-                                <div class="text-center text-muted py-3 small">Belum ada akun warehouse</div>
-                            <% } %>
-                            <% (whList || []).forEach(u => { %>
-                            <div class="user-item" data-akun-id="<%= u.id %>" data-akun-role="wh">
-                                <input type="checkbox" class="akunCheck form-check-input mt-0 me-1" value="<%= u.id %>"
-                                       onchange="updateAkunTerpilih()" style="width:18px;height:18px;">
-                                <div class="avatar-initial avatar-red">
-                                    <%= (u.nama_lengkap || u.username).charAt(0).toUpperCase() %>
-                                </div>
-                                <div class="user-meta">
-                                    <div class="username"><%= u.nama_lengkap || u.username %> <span class="sto-badge"><%= u.sto || 'ALL' %></span></div>
-                                    <div class="nik">NIK: <%= u.nik || u.username %> <% if (u.service_area) { %><span class="sa-badge"><i class="bi bi-geo-alt-fill"></i><%= u.service_area %></span><% } %></div>
-                                </div>
-                                <span class="badge-role-wh">Warehouse</span>
-                                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="openEditAkun(<%= u.id %>, '<%= u.nama_lengkap %>', '<%= u.sto %>', '<%= u.service_area %>')"><i class="bi bi-pencil me-1"></i>Edit</button>
-                                <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3" onclick="openResetPw(<%= u.id %>, '<%= u.username %>')"><i class="bi bi-key me-1"></i>Reset PW</button>
-                                <a href="/admin/user/delete/<%= u.id %>" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('Hapus akun WH <%= u.username %>?')">Hapus</a>
+                            <div style="overflow-y:auto;max-height:620px;">
+                                <table class="table table-hover align-middle table-sm mb-0 akun-table" style="font-size:0.82rem;">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:34px;" class="text-center"><input type="checkbox" id="akunCheckAll" onclick="toggleAllAkun(this)"></th>
+                                            <th>Nama</th>
+                                            <th>NIK</th>
+                                            <th>STO</th>
+                                            <th>Area</th>
+                                            <th>Role</th>
+                                            <th class="text-center">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <% teknisiList.forEach(u => { %>
+                                        <tr data-akun-id="<%= u.id %>" data-akun-role="teknisi">
+                                            <td class="text-center"><input type="checkbox" class="akunCheck form-check-input mt-0" value="<%= u.id %>" onchange="updateAkunTerpilih()"></td>
+                                            <td class="fw-semibold"><i class="bi bi-person-fill text-primary me-1"></i><%= u.nama_lengkap || u.username %></td>
+                                            <td class="font-monospace text-muted"><%= u.nik || u.username %></td>
+                                            <td><span class="badge bg-light text-dark border"><%= u.sto || 'ALL' %></span></td>
+                                            <td><% if (u.service_area) { %><span class="text-muted small"><%= u.service_area %></span><% } else { %><span class="text-muted">-</span><% } %></td>
+                                            <td><span class="badge-role-teknisi">Teknisi</span></td>
+                                            <td class="text-nowrap">
+                                                <button type="button" class="btn btn-sm btn-outline-primary border-0" title="Edit" onclick="openEditAkun(<%= u.id %>, '<%= u.nama_lengkap %>', '<%= u.sto %>', '<%= u.service_area %>')"><i class="bi bi-pencil"></i></button>
+                                                <button type="button" class="btn btn-sm btn-outline-warning border-0" title="Reset PW" onclick="openResetPw(<%= u.id %>, '<%= u.username %>')"><i class="bi bi-key"></i></button>
+                                                <a href="/admin/user/delete/<%= u.id %>" class="btn btn-sm btn-outline-danger border-0" title="Hapus" onclick="return confirm('Hapus akun <%= u.username %>?')"><i class="bi bi-trash3"></i></a>
+                                            </td>
+                                        </tr>
+                                        <% }) %>
+                                        <% (whList || []).forEach(u => { %>
+                                        <tr data-akun-id="<%= u.id %>" data-akun-role="wh">
+                                            <td class="text-center"><input type="checkbox" class="akunCheck form-check-input mt-0" value="<%= u.id %>" onchange="updateAkunTerpilih()"></td>
+                                            <td class="fw-semibold"><i class="bi bi-people-fill text-danger me-1"></i><%= u.nama_lengkap || u.username %></td>
+                                            <td class="font-monospace text-muted"><%= u.nik || u.username %></td>
+                                            <td><span class="badge bg-light text-secondary"><%= u.sto || 'ALL' %></span></td>
+                                            <td><% if (u.service_area) { %><span class="text-muted small"><%= u.service_area %></span><% } else { %><span class="text-muted">-</span><% } %></td>
+                                            <td><span class="badge-role-wh">Warehouse</span></td>
+                                            <td class="text-nowrap">
+                                                <button type="button" class="btn btn-sm btn-outline-primary border-0" title="Edit" onclick="openEditAkun(<%= u.id %>, '<%= u.nama_lengkap %>', '<%= u.sto %>', '<%= u.service_area %>')"><i class="bi bi-pencil"></i></button>
+                                                <button type="button" class="btn btn-sm btn-outline-warning border-0" title="Reset PW" onclick="openResetPw(<%= u.id %>, '<%= u.username %>')"><i class="bi bi-key"></i></button>
+                                                <a href="/admin/user/delete/<%= u.id %>" class="btn btn-sm btn-outline-danger border-0" title="Hapus" onclick="return confirm('Hapus akun WH <%= u.username %>?')"><i class="bi bi-trash3"></i></a>
+                                            </td>
+                                        </tr>
+                                        <% }) %>
+                                    </tbody>
+                                </table>
+                                <div class="text-center text-muted small mt-3" id="akunKosong" style="display:none;">Tidak ada akun yang cocok.</div>
                             </div>
-                            <% }) %>
-                            <div class="text-center text-muted small mt-2" id="akunKosong" style="display:none;">Tidak ada akun yang cocok.</div>
                         </div>
                     </div>
                 </div>
@@ -1106,26 +1125,36 @@
     }
 
     // ===== Search + filter daftar akun =====
+    let akunFilterRole = 'semua';
+    function setAkunFilter(role) {
+        akunFilterRole = role;
+        document.querySelectorAll('#akunRoleFilter .akunFilt').forEach(function (b) {
+            b.classList.toggle('active', b.getAttribute('data-role') === role);
+        });
+        filterAkunList();
+    }
     function filterAkunList() {
         const kw = (document.getElementById('akunSearch').value || '').toLowerCase().trim();
-        const items = document.querySelectorAll('.user-item');
+        const rows = document.querySelectorAll('#users-pane .akun-table tbody tr');
         let visibleCount = 0;
-        items.forEach(item => {
-            const match = !kw || item.textContent.toLowerCase().includes(kw);
-            item.style.display = match ? '' : 'none';
-            if (match) visibleCount++;
-        });
-        const sections = document.querySelectorAll('.section-label');
-        sections.forEach(sec => {
-            let anyVisible = false;
-            let next = sec.nextElementSibling;
-            while (next && !next.classList.contains('section-label')) {
-                if (next.classList.contains('user-item') && next.style.display !== 'none') anyVisible = true;
-                next = next.nextElementSibling;
-            }
-            sec.style.display = anyVisible ? '' : 'none';
+        rows.forEach(tr => {
+            const role = tr.getAttribute('data-akun-role');
+            const roleOk = akunFilterRole === 'semua' || role === akunFilterRole;
+            const textOk = !kw || tr.textContent.toLowerCase().includes(kw);
+            const show = roleOk && textOk;
+            tr.style.display = show ? '' : 'none';
+            if (show) visibleCount++;
         });
         document.getElementById('akunKosong').style.display = visibleCount === 0 ? '' : 'none';
+    }
+    function toggleAllAkun(el) {
+        const rows = document.querySelectorAll('#users-pane .akun-table tbody tr');
+        rows.forEach(tr => {
+            if (tr.style.display === 'none') return;
+            const cb = tr.querySelector('.akunCheck');
+            if (cb) cb.checked = el.checked;
+        });
+        updateAkunTerpilih();
     }
 
     // ===== Pilih massal & hapus massal akun =====
