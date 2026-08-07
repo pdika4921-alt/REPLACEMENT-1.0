@@ -450,6 +450,37 @@ app.post('/admin/user/bulk-delete', checkRole('admin'), (req, res) => {
     });
 });
 
+// Hapus dokumen BAST oleh admin (termasuk file eviden & ttd terkait)
+app.post('/admin/bast/delete/:kode', checkRole('admin'), (req, res) => {
+    const kode = String(req.params.kode || '').trim();
+    if (!kode) return res.json({ success: false, message: 'Kode BAST tidak valid.' });
+
+    db.get("SELECT * FROM bast_data WHERE kode_unik = ?", [kode], (err0, row) => {
+        if (err0) return res.json({ success: false, message: err0.message });
+        if (!row) return res.json({ success: false, message: 'Dokumen tidak ditemukan.' });
+
+        const cleanup = () => {
+            const files = [];
+            try { JSON.parse(row.eviden_json || '[]').forEach(f => files.push(f)); } catch (e) {}
+            if (row.ttd_teknisi) files.push(row.ttd_teknisi);
+            if (row.ttd_wh) files.push(row.ttd_wh);
+            files.forEach(f => {
+                try {
+                    const p = path.join(uploadBase, String(f).replace(/^uploads[\\/]/, ''));
+                    if (fs.existsSync(p)) fs.unlinkSync(p);
+                } catch (e) {}
+            });
+        };
+
+        db.run("DELETE FROM bast_data WHERE kode_unik = ?", [kode], (e) => {
+            if (e) return res.json({ success: false, message: e.message });
+            cleanup();
+            logAudit(req, 'DELETE_BAST', kode);
+            res.json({ success: true, message: 'Dokumen ' + kode + ' berhasil dihapus.' });
+        });
+    });
+});
+
 // Log aktivitas (admin)
 app.get('/admin/audit', checkRole('admin'), (req, res) => {
     db.all("SELECT * FROM audit_log ORDER BY id DESC LIMIT 200", (err, logs) => {

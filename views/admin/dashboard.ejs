@@ -456,11 +456,6 @@
             </li>
             <!-- Tab Master Teknisi telah dihilangkan dan digabung dengan Kelola Akun -->
             <!-- Tab Data Input Teknisi telah digabung ke dalam Rekap ONT -->
-            <li class="nav-item" role="presentation">
-                <button class="nav-link special" id="rekon-tab" data-bs-toggle="pill" data-bs-target="#rekon-pane" type="button">
-                    <i class="bi bi-magic me-1"></i> VLOOKUP Rekon
-                </button>
-            </li>
         </ul>
     </div>
 
@@ -556,7 +551,7 @@
                 <div class="mb-3" id="saSearchWrap" style="display:none;">
                     <div class="input-group">
                         <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
-                        <input type="text" class="form-control" id="saSearch" placeholder="Cari kode BAST, SN, atau No. Internet..." oninput="filterSATable()">
+                        <input type="text" class="form-control" id="saSearch" placeholder="Cari teknisi, NIK, kode BAST, SN, atau No. Internet..." oninput="filterSATable()">
                     </div>
                 </div>
 
@@ -615,6 +610,7 @@
                                 <th>Warehouse</th>
                                 <th>Status</th>
                                 <th class="text-center">Aksi Unduh</th>
+                                <th class="text-center">Hapus</th>
                             </tr>
                         </thead>
                         <tbody id="bastTbody">
@@ -644,6 +640,13 @@
                                         <span class="text-muted small">Belum Disetujui WH</span>
                                     <% } %>
                                 </td>
+                                <td class="text-center">
+                                    <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3"
+                                        onclick="hapusBast('<%= d.kode_unik %>')"
+                                        title="Hapus dokumen BAST">
+                                        <i class="bi bi-trash3-fill me-1"></i> Hapus
+                                    </button>
+                                </td>
                             </tr>
                             <% }) %>
                         </tbody>
@@ -663,12 +666,18 @@
                 <div class="col-lg-5">
                     <div class="form-card h-100">
                         <div class="card-header-custom">
-                            <div class="d-flex align-items-center gap-2">
-                                <i class="bi bi-person-plus-fill fs-5"></i>
-                                <div>
-                                    <div class="fw-700" style="font-weight:700;">Buat Akun Baru</div>
-                                    <div class="opacity-70" style="font-size:0.75rem;">Teknisi otomatis terdaftar ke form input</div>
+                            <div class="d-flex align-items-center justify-content-between gap-2">
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="bi bi-person-plus-fill fs-5"></i>
+                                    <div>
+                                        <div class="fw-700" style="font-weight:700;">Buat Akun Baru</div>
+                                        <div class="opacity-70" style="font-size:0.75rem;">Teknisi otomatis terdaftar ke form input</div>
+                                    </div>
                                 </div>
+                                <button type="button" class="btn btn-sm btn-warning fw-bold rounded-pill px-3"
+                                        style="background:var(--gold);border:none;" onclick="toggleBulkPanel()">
+                                    <i class="bi bi-person-plus-fill me-1"></i> Tambah Massal
+                                </button>
                             </div>
                         </div>
                         <div class="p-4">
@@ -686,6 +695,10 @@
                                         Warehouse
                                     </label>
                                 </div>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-2 mb-3">
+                                <div class="section-label mb-0" style="flex:1;margin:0;"><i class="bi bi-pencil-square me-1"></i> Buat Akun Tunggal</div>
                             </div>
 
                             <form action="/admin/user/add" method="POST" id="formAkun">
@@ -757,6 +770,55 @@
                                     <i class="bi bi-person-check-fill me-2"></i> Buat Akun & Tambahkan
                                 </button>
                             </form>
+
+                            <!-- INLINE BULK ADD PANEL -->
+                            <div id="bulkPanel" style="display:none;" class="mt-4 border rounded-3 p-3 bg-light">
+                                <div class="d-flex align-items-center justify-content-between mb-3">
+                                    <span class="fw-bold" style="font-size:0.9rem;color:var(--navy);"><i class="bi bi-person-plus-fill me-1"></i> Tambah Akun Secara Massal</span>
+                                    <button type="button" class="btn btn-sm btn-light border rounded-pill px-3" onclick="toggleBulkPanel()"><i class="bi bi-x-lg me-1"></i>Tutup</button>
+                                </div>
+                                <div id="bulkAddAlert" class="alert d-none small mb-3"></div>
+
+                                <div class="row g-3 mb-3">
+                                    <div class="col-md-3">
+                                        <label class="form-label fw-semibold small mb-1">1. Pilih Jenis Akun <span class="text-danger">*</span></label>
+                                        <select class="form-select form-select-sm" id="bulkRole" onchange="setBulkRole()">
+                                            <option value="teknisi">Teknisi</option>
+                                            <option value="wh">Warehouse (WH)</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-9">
+                                        <label class="form-label fw-semibold small mb-1">2. Paste dari Excel</label>
+                                        <div class="input-group">
+                                            <textarea id="bulkPasteArea" class="form-control font-monospace" rows="2"
+                                                      placeholder="NIK[tab]Nama[tab]Service Area[tab]STO&#10;Contoh: 26050119[tab]ANDI ARYA[tab]CINERE[tab]CKG" style="font-size:0.8rem;"></textarea>
+                                            <button type="button" class="btn btn-sm btn-navy rounded-pill px-3 ms-2" onclick="prosesBulkPaste()">
+                                                <i class="bi bi-magic me-1"></i> Proses
+                                            </button>
+                                        </div>
+                                        <div class="form-text text-muted mt-1" style="font-size:0.72rem;">
+                                            Format: <b>NIK</b> | <b>Nama</b> | <b>Service Area</b> | <b>STO</b> (dipisah Tab/Koma). Password default: <b>123456</b>.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <h6 class="fw-bold small mb-2 mt-2 text-navy"><i class="bi bi-list-ol me-1"></i> 3. Cek & Simpan</h6>
+                                <div class="table-responsive border rounded-3 bg-white" style="max-height:40vh;overflow-y:auto;">
+                                    <table class="table table-sm align-middle mb-0" style="font-size:0.8rem;min-width:640px;">
+                                        <thead class="table-light" style="position:sticky;top:0;z-index:1;">
+                                            <tr><th>NIK</th><th>Nama</th><th>Service Area</th><th>STO</th><th></th></tr>
+                                        </thead>
+                                        <tbody id="bulkRows"></tbody>
+                                    </table>
+                                </div>
+                                <div class="d-flex align-items-center gap-2 mt-3">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" onclick="addBulkRow()"><i class="bi bi-plus-lg me-1"></i>Tambah Manual</button>
+                                    <span class="ms-auto small text-muted" id="bulkRoleLabel"><i class="bi bi-tools me-1"></i>Akan dibuat sebagai: <b>Teknisi</b></span>
+                                    <button type="button" class="btn btn-sm btn-danger rounded-pill px-4 fw-bold" id="btnBulkAdd" onclick="simpanBulkAdd()">
+                                        <i class="bi bi-save me-1"></i> Simpan Semua Akun
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -773,7 +835,7 @@
                                         <div class="opacity-70" style="font-size:0.75rem;">Master Data Teknisi &amp; Warehouse</div>
                                     </div>
                                 </div>
-                                <div class="d-flex gap-2">
+                                <div class="d-flex flex-wrap align-items-center gap-2">
                                     <span class="badge bg-light text-dark border" style="font-size:0.72rem;">
                                         <i class="bi bi-tools me-1"></i> <%= teknisiList.length %>
                                     </span>
@@ -783,14 +845,27 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="p-4" style="overflow-y:auto;max-height:680px;">
+                        <div class="p-4">
+                            <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
+                                <div class="input-group input-group-sm flex-grow-1" style="min-width:220px;">
+                                    <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                                    <input type="text" class="form-control" id="akunSearch" placeholder="Cari nama, NIK, username, STO, area..." oninput="filterAkunList()">
+                                </div>
+                                <button type="button" class="btn btn-sm btn-danger rounded-pill px-3"
+                                        id="btnHapusTerpilih" disabled onclick="hapusAkunTerpilih()">
+                                    <i class="bi bi-trash3-fill me-1"></i> Hapus Terpilih (<span id="akunTerpilihCount">0</span>)
+                                </button>
+                            </div>
+                        <div style="overflow-y:auto;max-height:680px;">
                             <!-- TEKNISI LIST -->
                             <div class="section-label"><i class="bi bi-tools me-1"></i> Akun Teknisi (Tampil di Dropdown)</div>
                             <% if (teknisiList.length === 0) { %>
                                 <div class="text-center text-muted py-3 small">Belum ada akun teknisi</div>
                             <% } %>
                             <% teknisiList.forEach(u => { %>
-                            <div class="user-item">
+                            <div class="user-item" data-akun-id="<%= u.id %>" data-akun-role="teknisi">
+                                <input type="checkbox" class="akunCheck form-check-input mt-0 me-1" value="<%= u.id %>"
+                                       onchange="updateAkunTerpilih()" style="width:18px;height:18px;">
                                 <div class="avatar-initial avatar-navy">
                                     <%= (u.nama_lengkap || u.username).charAt(0).toUpperCase() %>
                                 </div>
@@ -811,7 +886,9 @@
                                 <div class="text-center text-muted py-3 small">Belum ada akun warehouse</div>
                             <% } %>
                             <% (whList || []).forEach(u => { %>
-                            <div class="user-item">
+                            <div class="user-item" data-akun-id="<%= u.id %>" data-akun-role="wh">
+                                <input type="checkbox" class="akunCheck form-check-input mt-0 me-1" value="<%= u.id %>"
+                                       onchange="updateAkunTerpilih()" style="width:18px;height:18px;">
                                 <div class="avatar-initial avatar-red">
                                     <%= (u.nama_lengkap || u.username).charAt(0).toUpperCase() %>
                                 </div>
@@ -825,150 +902,14 @@
                                 <a href="/admin/user/delete/<%= u.id %>" class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="return confirm('Hapus akun WH <%= u.username %>?')">Hapus</a>
                             </div>
                             <% }) %>
+                            <div class="text-center text-muted small mt-2" id="akunKosong" style="display:none;">Tidak ada akun yang cocok.</div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- TAB 5: VLOOKUP REKON -->
-        <div class="tab-pane fade" id="rekon-pane" role="tabpanel">
-            <div class="card-panel p-4 mb-4 reveal">
-                <h5 class="fw-bold mb-3 text-primary"><i class="bi bi-file-earmark-spreadsheet-fill me-2"></i> Rekonsiliasi Data Aktual vs Database BAST</h5>
-                <p class="text-muted small">Blok (Ctrl+A / Ctrl+C) seluruh data Excel Anda beserta headernya, lalu paste (Ctrl+V) ke dalam kotak di bawah ini.</p>
-
-                <textarea id="excelPasteArea" class="form-control mb-3 font-monospace" rows="5" placeholder="Paste data Excel dari kolom witel sampai valid_bayar di sini..."></textarea>
-
-                <div class="d-flex gap-2">
-                    <button type="button" onclick="prosesRekon()" class="btn btn-primary fw-bold px-4 py-2 rounded-pill shadow-sm">
-                        <i class="bi bi-gear-fill me-2"></i> Proses Komparasi (VLOOKUP)
-                    </button>
-                    <button type="button" onclick="document.getElementById('modalContoh').style.display='flex'" class="btn btn-outline-secondary fw-bold px-4 py-2 rounded-pill shadow-sm">
-                        <i class="bi bi-eye-fill me-2"></i> Lihat Contoh Template
-                    </button>
-                </div>
-            </div>
-
-            <!-- Hasil Rekon -->
-            <div id="resultArea" class="card-panel p-4 mb-4 reveal" style="display:none;">
-                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-                    <h5 class="fw-bold text-success mb-0"><i class="bi bi-check2-all me-2"></i> Hasil Komparasi Berhasil!</h5>
-                    <div class="d-flex gap-2">
-                        <button type="button" onclick="toggleReport()" class="btn btn-info text-white fw-bold px-4 py-2 rounded-pill shadow-sm">
-                            <i class="bi bi-bar-chart-line-fill me-1"></i> Lihat Report Progres
-                        </button>
-                        <button type="button" onclick="downloadExcel()" class="btn btn-success fw-bold px-4 py-2 rounded-pill shadow-sm">
-                            <i class="bi bi-file-earmark-excel-fill me-1"></i> Download Excel Output
-                        </button>
-                    </div>
-                </div>
-
-                <div id="reportArea" class="mb-4 p-4 border rounded-4 bg-light shadow-sm" style="display:none;">
-                    <h6 class="fw-bold text-dark mb-3"><i class="bi bi-pie-chart-fill me-2 text-info"></i> Ringkasan Progres & Pencapaian</h6>
-                    <div class="row g-3 text-center mb-4">
-                        <div class="col-md-3">
-                            <div class="bg-white border rounded-3 p-3 shadow-sm">
-                                <span class="text-muted small fw-bold">TOTAL DATA EXCEL</span>
-                                <h3 id="totData" class="fw-bold text-dark mb-0 mt-1">0</h3>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="bg-success-subtle border-success rounded-3 p-3 shadow-sm border">
-                                <span class="text-success small fw-bold">TOTAL DONE RETURN</span>
-                                <h3 id="totDone" class="fw-bold text-success mb-0 mt-1">0</h3>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="bg-warning-subtle border-warning rounded-3 p-3 shadow-sm border">
-                                <span class="text-warning-emphasis small fw-bold">TOTAL PENDING WH</span>
-                                <h3 id="totPending" class="fw-bold text-warning-emphasis mb-0 mt-1">0</h3>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="bg-danger-subtle border-danger rounded-3 p-3 shadow-sm border">
-                                <span class="text-danger small fw-bold">TOTAL NOK / KENDALA</span>
-                                <h3 id="totNok" class="fw-bold text-danger mb-0 mt-1">0</h3>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-white p-3 rounded-3 border shadow-sm mb-4">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="fw-bold text-secondary small">Persentase Pencapaian (DONE)</span>
-                            <span id="progressText" class="fw-bold text-success fs-5">0%</span>
-                        </div>
-                        <div class="progress" style="height:24px;border-radius:12px;">
-                            <div id="progressBar" class="progress-bar bg-success progress-bar-striped progress-bar-animated fw-bold" role="progressbar" style="width:0%;">0%</div>
-                        </div>
-                    </div>
-                    <h6 class="fw-bold text-dark mb-2"><i class="bi bi-table me-2 text-primary"></i> Tabel Pivot Progres Berdasarkan Status</h6>
-                    <div class="table-responsive border rounded bg-white shadow-sm">
-                        <table class="table table-bordered table-sm text-center align-middle mb-0" style="font-size:0.85rem;">
-                            <thead style="background-color:#0e294b;color:white;">
-                                <tr>
-                                    <th class="text-start">Row Labels</th>
-                                    <th>DONE RETURN</th>
-                                    <th>PENDING</th>
-                                    <th>NOK</th>
-                                    <th>Grand Total</th>
-                                    <th>%</th>
-                                </tr>
-                            </thead>
-                            <tbody id="pivotTbody"></tbody>
-                            <tfoot style="background-color:#0e294b;color:white;" class="fw-bold" id="pivotTfoot"></tfoot>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="table-responsive border rounded-3 bg-white" style="max-height:500px;overflow-y:auto;">
-                    <table class="table table-sm table-hover align-middle mb-0" style="font-size:0.8rem;white-space:nowrap;">
-                        <thead class="table-light" id="rekonThead" style="position:sticky;top:0;z-index:1;"></thead>
-                        <tbody id="rekonTbody"></tbody>
-                    </table>
                 </div>
             </div>
         </div>
 
     </div> <!-- END TAB CONTENT WRAPPER -->
-</div>
-
-<!-- Modal Contoh Template Excel (di level body) -->
-<div id="modalContoh" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
-    <div style="background:#fff;border-radius:16px;padding:30px;max-width:90%;width:900px;max-height:85vh;overflow-y:auto;position:relative;">
-        <button onclick="document.getElementById('modalContoh').style.display='none'" style="position:absolute;top:15px;right:15px;background:#EE2E24;color:white;border:none;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;">&times;</button>
-        <h5 class="fw-bold text-primary mb-1"><i class="bi bi-file-earmark-spreadsheet me-2"></i> Contoh Format Template Excel</h5>
-        <p class="text-muted small mb-3">Pastikan header kolom Excel kamu <b>sama persis</b> seperti di bawah ini.</p>
-        <div class="mb-3 p-3 bg-danger-subtle border border-danger rounded-3">
-            <h6 class="fw-bold text-danger mb-2"><i class="bi bi-exclamation-triangle-fill me-1"></i> Kolom Wajib Ada:</h6>
-            <div class="d-flex gap-2 flex-wrap">
-                <span class="badge bg-danger px-3 py-2">SN_PERANGKAT_OLD</span>
-                <span class="badge bg-danger px-3 py-2">STATUS_WH</span>
-                <span class="badge bg-danger px-3 py-2">STATUS_REAL</span>
-            </div>
-        </div>
-        <div class="table-responsive border rounded-3">
-            <table class="table table-bordered table-sm align-middle mb-0" style="font-size:0.78rem;white-space:nowrap;">
-                <thead style="background:#0e294b;color:white;">
-                    <tr>
-                        <th>WITEL</th><th>SERVICE_AREA</th><th>ID_STO</th><th>NO_INET</th><th>NIK</th>
-                        <th class="bg-danger">SN_PERANGKAT_OLD</th><th>TYPE_OLD</th><th>STATUS</th>
-                        <th class="bg-danger">STATUS_WH</th><th class="bg-danger">STATUS_REAL</th>
-                        <th>LAST_ACTIVITY_DATESTAMP</th><th>VALID_BAYAR</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>BEKASI</td><td>SUKMAJAYA</td><td>SKJ</td><td>122120211614</td><td>26010129</td>
-                        <td class="fw-bold text-danger">FHTT9472E4D0</td><td>ONT : HG6243C</td><td>complete</td>
-                        <td class="text-muted fst-italic">kosong</td><td class="text-muted fst-italic">kosong</td>
-                        <td>2026-07-20</td><td>FREELANCE</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <div class="mt-3 text-end">
-            <button onclick="document.getElementById('modalContoh').style.display='none'" class="btn btn-danger rounded-pill px-4 fw-bold">Tutup</button>
-        </div>
-    </div>
 </div>
 
 <!-- Modal lihat foto eviden (di level body agar tidak terpotong animasi transform) -->
@@ -1056,11 +997,6 @@
         </div>
     </div>
 </div>
-
-<!-- Data SN dari server untuk VLOOKUP -->
-<script id="snDataServer" type="application/json">
-    <%- JSON.stringify(snMaster) %>
-</script>
 
 <!-- Data untuk grafik tren -->
 <script id="trendServer" type="application/json">
@@ -1167,6 +1103,203 @@
         })
         .catch(() => { alertEl.className = 'alert alert-danger small mb-3'; alertEl.textContent = 'Kendala koneksi ke server.'; })
         .finally(() => { btn.disabled = false; });
+    }
+
+    // ===== Search + filter daftar akun =====
+    function filterAkunList() {
+        const kw = (document.getElementById('akunSearch').value || '').toLowerCase().trim();
+        const items = document.querySelectorAll('.user-item');
+        let visibleCount = 0;
+        items.forEach(item => {
+            const match = !kw || item.textContent.toLowerCase().includes(kw);
+            item.style.display = match ? '' : 'none';
+            if (match) visibleCount++;
+        });
+        const sections = document.querySelectorAll('.section-label');
+        sections.forEach(sec => {
+            let anyVisible = false;
+            let next = sec.nextElementSibling;
+            while (next && !next.classList.contains('section-label')) {
+                if (next.classList.contains('user-item') && next.style.display !== 'none') anyVisible = true;
+                next = next.nextElementSibling;
+            }
+            sec.style.display = anyVisible ? '' : 'none';
+        });
+        document.getElementById('akunKosong').style.display = visibleCount === 0 ? '' : 'none';
+    }
+
+    // ===== Pilih massal & hapus massal akun =====
+    function updateAkunTerpilih() {
+        const checks = document.querySelectorAll('.akunCheck:checked');
+        document.getElementById('akunTerpilihCount').textContent = checks.length;
+        document.getElementById('btnHapusTerpilih').disabled = checks.length === 0;
+    }
+    function hapusAkunTerpilih() {
+        const checks = document.querySelectorAll('.akunCheck:checked');
+        if (checks.length === 0) return;
+        if (!confirm('Yakin ingin menghapus ' + checks.length + ' akun terpilih?')) return;
+        const ids = Array.from(checks).map(c => c.value);
+        const btn = document.getElementById('btnHapusTerpilih');
+        btn.disabled = true;
+        fetch('/admin/user/bulk-delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ids })
+        })
+        .then(r => r.json())
+        .then(d => {
+            if (d.success) {
+                alert(d.message);
+                window.location.reload();
+            } else {
+                alert(d.message || 'Gagal menghapus akun.');
+                updateAkunTerpilih();
+            }
+        })
+        .catch(() => { alert('Kendala koneksi ke server.'); updateAkunTerpilih(); });
+    }
+
+    const SERVICE_AREAS_BULK = ['CINERE','DEPOK & RAWAGENI','KALIABANG','KRANJI','PEKAYON','PONDOKGEDE','SUKMAJAYA','BEKASI'];
+    function setBulkRole() {
+        const role = document.getElementById('bulkRole').value;
+        const label = document.getElementById('bulkRoleLabel');
+        if (label) label.innerHTML = role === 'wh'
+            ? '<i class="bi bi-box-seam me-1"></i>Akan dibuat sebagai: <b>Warehouse (WH)</b>'
+            : '<i class="bi bi-tools me-1"></i>Akan dibuat sebagai: <b>Teknisi</b>';
+    }
+    function bulkSaOptions(selected) {
+        let opt = '<option value="">- Semua -</option>';
+        SERVICE_AREAS_BULK.forEach(sa => {
+            const isSel = (selected && String(selected).toUpperCase().trim() === sa) ? ' selected' : '';
+            opt += `<option${isSel}>${sa}</option>`;
+        });
+        return opt;
+    }
+    // Format Excel: NIK[tab]Nama[tab]Service Area[tab]STO
+    function addBulkRow(nik, nama, sa, sto) {
+        const tbody = document.getElementById('bulkRows');
+        if (!tbody) return;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td style="min-width:130px;"><input type="text" class="form-control form-control-sm bulkNik" placeholder="NIK / Username" value="${escAttr(nik||'')}"></td>
+            <td style="min-width:180px;"><input type="text" class="form-control form-control-sm bulkNama" placeholder="Nama lengkap" value="${escAttr(nama||'')}"></td>
+            <td style="min-width:150px;"><select class="form-select form-select-sm bulkSa">${bulkSaOptions(sa)}</select></td>
+            <td style="min-width:90px;"><input type="text" class="form-control form-control-sm text-uppercase bulkSto" placeholder="SKJ" value="${escAttr(sto||'')}"></td>
+            <td class="text-center"><button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-2" onclick="hapusBulkRow(this)"><i class="bi bi-x-lg"></i></button></td>`;
+        tbody.appendChild(tr);
+        const nikInput = tr.querySelector('.bulkNik');
+        if (nikInput) {
+            nikInput.addEventListener('input', function () { this.value = this.value.toUpperCase(); });
+        }
+    }
+    function hapusBulkRow(btn) { btn.closest('tr').remove(); }
+    
+    const HEADER_KEYWORDS = ['nik','nama','service','area','sto','role','username'];
+    function prosesBulkPaste() {
+        const textEl = document.getElementById('bulkPasteArea');
+        if (!textEl) return;
+        const text = textEl.value;
+        if(!text || !text.trim()) return alert("Paste area masih kosong!");
+        
+        const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l.length > 0);
+        const tbody = document.getElementById('bulkRows');
+        let count = 0;
+
+        lines.forEach((line, i) => {
+            let cols;
+            if (line.indexOf('\t') !== -1) cols = line.split('\t');
+            else if (line.indexOf(',') !== -1) cols = line.split(',');
+            else if (line.indexOf(';') !== -1) cols = line.split(';');
+            else cols = line.split(/[ ]{2,}/);
+            
+            cols = cols.map(c => c.trim());
+            const flat = cols.join(' ').toLowerCase();
+
+            if (i === 0 && HEADER_KEYWORDS.some(k => flat.includes(k))) return;
+            if (cols.length < 1) return;
+
+            count++;
+            // NIK = cols[0], Nama = cols[1], Service Area = cols[2], STO = cols[3]
+            addBulkRow(cols[0], cols[1] || '', cols[2] || '', cols[3] || '');
+        });
+        
+        textEl.value = '';
+        if (count > 0) alert(count + " baris berhasil diproses.");
+        else alert("Tidak ada data valid terdeteksi. Gunakan Tab/Koma sebagai pemisah.");
+    }
+
+    function toggleBulkPanel() {
+        const panel = document.getElementById('bulkPanel');
+        if (!panel) return;
+        if (panel.style.display === 'none') {
+            document.getElementById('bulkRows').innerHTML = '';
+            document.getElementById('bulkPasteArea').value = '';
+            document.getElementById('bulkAddAlert').className = 'alert d-none small mb-3';
+            setBulkRole();
+            addBulkRow();
+            panel.style.display = 'block';
+            panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else {
+            panel.style.display = 'none';
+        }
+    }
+    function simpanBulkAdd() {
+        const rows = document.querySelectorAll('#bulkRows tr');
+        const role = document.getElementById('bulkRole').value || 'teknisi';
+        const users = [];
+        rows.forEach(tr => {
+            const nik = tr.querySelector('.bulkNik').value.trim();
+            const nama = tr.querySelector('.bulkNama').value.trim();
+            const sto = tr.querySelector('.bulkSto').value.trim().toUpperCase();
+            const sa = tr.querySelector('.bulkSa').value;
+            if (!nik) return;
+            users.push({ role, nik, nama_lengkap: nama, password: '', sto, service_area: sa });
+        });
+        if (users.length === 0) {
+            const alertEl = document.getElementById('bulkAddAlert');
+            alertEl.className = 'alert alert-warning small mb-3';
+            alertEl.textContent = 'Tidak ada baris yang terisi NIK.';
+            return;
+        }
+        const btn = document.getElementById('btnBulkAdd');
+        const alertEl = document.getElementById('bulkAddAlert');
+        btn.disabled = true;
+        alertEl.className = 'alert alert-info small mb-3';
+        alertEl.textContent = 'Menyimpan ' + users.length + ' akun sebagai ' + (role === 'wh' ? 'Warehouse' : 'Teknisi') + '...';
+        fetch('/admin/user/bulk-add', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ users })
+        })
+        .then(r => r.json())
+        .then(d => {
+            if (d.success) {
+                alertEl.className = 'alert alert-success small mb-3';
+                alertEl.textContent = d.message;
+                setTimeout(() => { document.getElementById('bulkPanel').style.display = 'none'; window.location.reload(); }, 1200);
+            } else {
+                alertEl.className = 'alert alert-danger small mb-3';
+                alertEl.textContent = d.message || 'Gagal menyimpan akun.';
+            }
+        })
+        .catch(() => { alertEl.className = 'alert alert-danger small mb-3'; alertEl.textContent = 'Kendala koneksi ke server.'; })
+        .finally(() => { btn.disabled = false; });
+    }
+
+    // ===== Hapus dokumen BAST (admin) =====
+    function hapusBast(kode) {
+        if (!confirm('Yakin ingin menghapus dokumen BAST ' + kode + '? Data tidak dapat dikembalikan.')) return;
+        fetch('/admin/bast/delete/' + encodeURIComponent(kode), { method: 'POST' })
+            .then(r => r.json())
+            .then(d => {
+                if (d.success) {
+                    alert(d.message);
+                    window.location.reload();
+                } else {
+                    alert(d.message || 'Gagal menghapus dokumen.');
+                }
+            })
+            .catch(() => { alert('Kendala koneksi ke server.'); });
     }
 
     // ===== Search + Pagination tabel Dokumen BAST =====
@@ -1292,117 +1425,10 @@
             return '<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;"><span style="width:10px;height:10px;border-radius:3px;background:' + d.color + ';flex-shrink:0;"></span><span style="color:#64748b">' + d.label + '</span><span style="font-weight:700;margin-left:auto;padding-left:8px;">' + d.val + '</span></div>';
         }).join('') || '<div class="text-muted small">Belum ada data.</div>';
     }
-    initCharts();
+initCharts();
 
-    // Fungsi VLOOKUP JS
-    function prosesRekon() {
-        try {
-            const rawText = document.getElementById('excelPasteArea').value;
-            if (!rawText || rawText.trim() === "") return alert("Kotak teks masih kosong! Silakan paste data Excel terlebih dahulu.");
-            
-            const rows = rawText.split('\n').map(r => r.trim()).filter(r => r.length > 0);
-            if (rows.length < 2) return alert("Data yang di-paste kurang dari 2 baris.");
-            
-            document.getElementById('resultArea').style.display = 'block';
-            const headers = rows[0].split('\t').map(h => h.trim());
-            const lowerHeaders = headers.map(h => h.toLowerCase().replace(/\s+/g, '_'));
-            const idxSnOld     = lowerHeaders.findIndex(h => h.includes('sn_perangkat_old'));
-            const idxStatusWh  = lowerHeaders.findIndex(h => h.includes('status_wh'));
-            const idxStatusReal= lowerHeaders.findIndex(h => h.includes('status_real'));
-            const idxStatusAsal= lowerHeaders.findIndex(h => h === 'status');
-            
-            if (idxSnOld === -1 || idxStatusWh === -1 || idxStatusReal === -1) {
-                document.getElementById('resultArea').style.display = 'none';
-                return alert("GAGAL: Kolom wajib tidak ditemukan!\n\nHeader terdeteksi:\n" + headers.join(", "));
-            }
-            
-            let snMasterDb = {};
-            try { snMasterDb = JSON.parse(document.getElementById('snDataServer').textContent); } catch(e) {}
-            
-            let finalExcelData = [headers];
-            let htmlThead = '<tr>';
-            headers.forEach(h => htmlThead += `<th class="text-uppercase">${h}</th>`);
-            htmlThead += '</tr>';
-            document.getElementById('rekonThead').innerHTML = htmlThead;
-            
-            let htmlTbody = '', totalData = 0, doneReturn = 0, pending = 0, nok = 0, pivotData = {};
-            
-            for (let i = 1; i < rows.length; i++) {
-                let cols = rows[i].split('\t').map(c => c.trim());
-                if (cols.length < 2) continue;
-                while (cols.length < headers.length) cols.push("");
-                totalData++;
-                let sn = cols[idxSnOld];
-                let statusDb = snMasterDb[sn];
-                let namaStatusAsal = (idxStatusAsal !== -1 && cols[idxStatusAsal]) ? cols[idxStatusAsal].trim().toLowerCase() : 'lainnya';
-                
-                if (!pivotData[namaStatusAsal]) pivotData[namaStatusAsal] = { done:0, pending:0, nok:0, total:0 };
-                
-                if (statusDb === 'COMPLETED') {
-                    cols[idxStatusWh] = sn; cols[idxStatusReal] = 'DONE RETURN'; doneReturn++; pivotData[namaStatusAsal].done++;
-                } else if (statusDb === 'PENDING') {
-                    cols[idxStatusWh] = sn; cols[idxStatusReal] = 'PENDING'; pending++; pivotData[namaStatusAsal].pending++;
-                } else {
-                    cols[idxStatusReal] = 'NOK'; nok++; pivotData[namaStatusAsal].nok++;
-                }
-                pivotData[namaStatusAsal].total++;
-                finalExcelData.push(cols);
-                
-                htmlTbody += '<tr>';
-                cols.forEach((c, index) => {
-                    if (index === idxStatusReal) {
-                        if (c === 'DONE RETURN') htmlTbody += `<td class="fw-bold text-success bg-success-subtle">${c}</td>`;
-                        else if (c === 'PENDING') htmlTbody += `<td class="fw-bold text-warning-emphasis bg-warning-subtle">${c}</td>`;
-                        else htmlTbody += `<td class="fw-bold text-danger bg-danger-subtle">${c}</td>`;
-                    } else {
-                        htmlTbody += `<td>${c}</td>`;
-                    }
-                });
-                htmlTbody += '</tr>';
-            }
-            document.getElementById('rekonTbody').innerHTML = htmlTbody;
-            document.getElementById('totData').innerText = totalData;
-            document.getElementById('totDone').innerText = doneReturn;
-            document.getElementById('totPending').innerText = pending;
-            document.getElementById('totNok').innerText = nok;
-            
-            let persentase = totalData > 0 ? Math.round((doneReturn / totalData) * 100) : 0;
-            document.getElementById('progressText').innerText = persentase + '%';
-            document.getElementById('progressBar').style.width = persentase + '%';
-            document.getElementById('progressBar').innerText = persentase + '%';
-            
-            let htmlPivotTbody = '';
-            Object.keys(pivotData).sort().forEach(stat => {
-                let p = pivotData[stat];
-                let persenRow = p.total > 0 ? Math.round((p.done / p.total) * 100) : 0;
-                let capStat = stat.charAt(0).toUpperCase() + stat.slice(1);
-                htmlPivotTbody += `<tr><td class="text-start">${capStat}</td><td>${p.done||''}</td><td>${p.pending||''}</td><td>${p.nok||''}</td><td class="fw-bold bg-light">${p.total}</td><td class="text-primary fw-bold">${persenRow}%</td></tr>`;
-            });
-            document.getElementById('pivotTbody').innerHTML = htmlPivotTbody;
-            document.getElementById('pivotTfoot').innerHTML = `<tr><td class="text-start">Grand Total</td><td>${doneReturn}</td><td>${pending}</td><td>${nok}</td><td>${totalData}</td><td>${persentase}%</td></tr>`;
-            
-            window.globalExcelData = finalExcelData;
-            document.getElementById('resultArea').scrollIntoView({ behavior: 'smooth' });
-        } catch (err) {
-            alert("Terjadi kesalahan: " + err.message);
-        }
-    }
-
-    function toggleReport() {
-        const r = document.getElementById('reportArea');
-        r.style.display = r.style.display === 'none' ? 'block' : 'none';
-    }
-
-    function downloadExcel() {
-        if (!window.globalExcelData || window.globalExcelData.length === 0) return alert("Belum ada data hasil komparasi!");
-        let tsv = window.globalExcelData.map(r => r.join("\t")).join("\n");
-        let blob = new Blob([tsv], { type: 'application/vnd.ms-excel' });
-        let a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = `Laporan_Rekon_Data_${new Date().toISOString().slice(0,10)}.xls`;
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    }
-
+    // ═════════════════════════════════════════════════════════════════
+    // DATA INPUT TEKNISI — filter per Service Area
     // ═════════════════════════════════════════════════════════════════
     // DATA INPUT TEKNISI — filter per Service Area
     // ═════════════════════════════════════════════════════════════════
@@ -1615,22 +1641,55 @@
             success: true,
             sa: data.sa,
             total_bast: 0,
-            teknisi: data.teknisi.map(t => {
-                const recs = t.records.filter(r =>
-                    inTanggal(r.tanggal) &&
-                    (!kw ||
-                        String(r.kode_unik || '').toLowerCase().includes(kw) ||
-                        String(r.loksto || '').toLowerCase().includes(kw) ||
-                        (r.perangkat || []).some(p => String(p.snlama || '').toLowerCase().includes(kw) || String(p.snbaru || '').toLowerCase().includes(kw) || String(p.noinet || '').toLowerCase().includes(kw)))
-                );
-                return {
-                    ...t,
-                    records: recs,
-                    total_bast: recs.length,
-                    total_ont: recs.reduce((s, r) => s + (r.perangkat || []).length, 0),
-                    total_foto: recs.reduce((s, r) => s + (r.eviden_count || 0), 0)
-                };
-            }).filter(t => t.total_bast > 0)
+            teknisi: data.teknisi
+                .filter(t => {
+                    if (!kw) return true;
+                    // Cocokkan dengan Profil (Nama/NIK/STO)
+                    const profilCocok =
+                        String(t.nama || '').toLowerCase().includes(kw) ||
+                        String(t.nik || '').toLowerCase().includes(kw) ||
+                        String(t.sto || '').toLowerCase().includes(kw);
+                    if (profilCocok) return true;
+                    // Cocokkan dengan Detail BAST di dalamnya
+                    return (t.records || []).some(r =>
+                        inTanggal(r.tanggal) &&
+                        (String(r.kode_unik || '').toLowerCase().includes(kw) ||
+                         String(r.loksto || '').toLowerCase().includes(kw) ||
+                         (r.perangkat || []).some(p => 
+                            String(p.snlama || '').toLowerCase().includes(kw) || 
+                            String(p.snbaru || '').toLowerCase().includes(kw) || 
+                            String(p.noinet || '').toLowerCase().includes(kw)
+                         ))
+                    );
+                })
+                .map(t => {
+                    const profilCocok = !kw ||
+                        String(t.nama || '').toLowerCase().includes(kw) ||
+                        String(t.nik || '').toLowerCase().includes(kw) ||
+                        String(t.sto || '').toLowerCase().includes(kw);
+                    
+                    // Jika profil cocok, tampilkan semua BAST-nya (hanya filter tanggal)
+                    // Jika profil TIDAK cocok tapi teknisi ini lolos (berarti BAST-nya yang cocok), filter BAST-nya
+                    const recs = profilCocok
+                        ? t.records.filter(r => inTanggal(r.tanggal))
+                        : t.records.filter(r =>
+                            inTanggal(r.tanggal) &&
+                            (String(r.kode_unik || '').toLowerCase().includes(kw) ||
+                             String(r.loksto || '').toLowerCase().includes(kw) ||
+                             (r.perangkat || []).some(p => 
+                                String(p.snlama || '').toLowerCase().includes(kw) || 
+                                String(p.snbaru || '').toLowerCase().includes(kw) || 
+                                String(p.noinet || '').toLowerCase().includes(kw)
+                             ))
+                        );
+                    return {
+                        ...t,
+                        records: recs,
+                        total_bast: recs.length,
+                        total_ont: recs.reduce((s, r) => s + (r.perangkat || []).length, 0),
+                        total_foto: recs.reduce((s, r) => s + (r.eviden_count || 0), 0)
+                    };
+                })
         };
         filtered.total_bast = filtered.teknisi.reduce((s, t) => s + t.total_bast, 0);
         renderSATeknisi(filtered);
