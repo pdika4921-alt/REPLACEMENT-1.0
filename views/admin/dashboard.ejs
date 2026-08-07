@@ -272,6 +272,17 @@
     .tech-badge.sto { background:#e2e8f0; color:#334155; }
     .tech-badge.sa  { background:#eff6ff; color:#1d4ed8; }
 
+    /* Rekap ONT — tabel kompak */
+    .rekap-table th {
+        background: #eef2f7; color: #475569;
+        font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.5px;
+        font-weight: 700; border-bottom: 2px solid var(--border); white-space: nowrap;
+    }
+    .rekap-row { cursor: pointer; }
+    .rekap-row:hover { background:#f8fafc; }
+    body.dark .rekap-table th { background:#16283f; color:#94a3b8; border-bottom:2px solid #334155; }
+    body.dark .rekap-row:hover { background:#16283f; }
+
     /* ===== EXTRA ANIMATIONS ===== */
     body { overflow-x: hidden; }
 
@@ -1555,37 +1566,52 @@ initCharts();
             content.innerHTML = '<div class="alert alert-secondary text-center mb-0 rounded-4 border-0">Belum ada input BAST dari teknisi di <b>' + escHtml(data.sa) + '</b>.</div>';
             return;
         }
-        let html = '<div class="mb-3 small text-muted"><i class="bi bi-check2-circle text-success me-1"></i>' + data.total_bast +
+        let html = '<div class="mb-2 small text-muted"><i class="bi bi-check2-circle text-success me-1"></i>' + data.total_bast +
                    ' BAST dari ' + data.teknisi.length + ' teknisi di <b>' + escHtml(data.sa) + '</b></div>';
+        html += `
+          <div class="table-responsive">
+            <table class="table table-hover align-middle rekap-table">
+              <thead>
+                <tr>
+                  <th>Teknisi</th>
+                  <th class="text-center">BAST</th>
+                  <th class="text-center">ONT</th>
+                  <th class="text-center">Approved</th>
+                  <th class="text-center">Pending</th>
+                  <th class="text-center">Ditolak</th>
+                  <th class="text-center"></th>
+                </tr>
+              </thead>
+              <tbody>`;
         data.teknisi.forEach((t, idx) => {
+            const sc = t.status_counts || {};
             html += `
-              <div class="technician-card mb-2">
-                <div class="technician-header" onclick="toggleTeknisi(${idx})">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="avatar-initial avatar-navy">${escHtml((t.nama || '?').charAt(0).toUpperCase())}</div>
-                        <div>
-                            <div class="d-flex align-items-center gap-2 flex-wrap">
-                                <span class="fw-bold text-dark" style="font-size:1rem;">${escHtml(t.nama)}</span>
-                                <span class="tech-badge sto"><i class="bi bi-geo-alt-fill me-1"></i>${escHtml(t.sto || '-')}</span>
-                                <span class="tech-badge sa"><i class="bi bi-globe2 me-1"></i>${escHtml(data.sa)}</span>
-                            </div>
-                            <div class="text-muted small font-monospace mt-1">NIK: ${escHtml(t.nik)}</div>
-                        </div>
+              <tr class="rekap-row" onclick="toggleTeknisi(${idx})">
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="avatar-initial avatar-navy">${escHtml((t.nama || '?').charAt(0).toUpperCase())}</div>
+                    <div>
+                      <div class="fw-semibold">${escHtml(t.nama)}</div>
+                      <div class="text-muted small font-monospace">${escHtml(t.nik || '')} <span class="text-body-secondary">· ${escHtml(t.sto || '-')}</span></div>
                     </div>
-                    <div class="d-flex align-items-center gap-2">
-                        <span class="badge" style="background:var(--navy);color:#fff;">${t.total_bast} BAST</span>
-                        <span class="badge bg-light text-primary border">${t.total_ont} ONT</span>
-                        <span class="badge bg-light text-muted border">${t.total_foto} Foto</span>
-                        <i class="bi bi-chevron-down text-muted fs-6" id="chevTek${idx}"></i>
-                    </div>
-                </div>
-                <div class="collapse" id="tekBody${idx}">
-                    <div class="p-3 bg-white">
-                        ${t.records.length === 0 ? '<div class="text-muted small">Tidak ada BAST.</div>' : t.records.map(renderBAST).join('')}
-                    </div>
-                </div>
-              </div>`;
+                  </div>
+                </td>
+                <td class="text-center fw-bold">${t.total_bast}</td>
+                <td class="text-center text-primary">${t.total_ont}</td>
+                <td class="text-center"><span class="badge bg-success-subtle text-success">${sc.done||0}</span></td>
+                <td class="text-center"><span class="badge bg-warning-subtle text-warning-emphasis">${sc.pending||0}</span></td>
+                <td class="text-center"><span class="badge bg-danger-subtle text-danger">${sc.rejected||0}</span></td>
+                <td class="text-center"><i class="bi bi-chevron-down text-muted" id="chevTek${idx}"></i></td>
+              </tr>
+              <tr class="rekap-detail" id="tekBody${idx}" style="display:none;">
+                <td colspan="7">
+                  <div class="p-3 bg-light rounded-3">
+                    ${t.records.length === 0 ? '<div class="text-muted small">Tidak ada BAST.</div>' : t.records.map(renderBAST).join('')}
+                  </div>
+                </td>
+              </tr>`;
         });
+        html += `</tbody></table></div>`;
         content.innerHTML = html;
     }
 
@@ -1593,8 +1619,9 @@ initCharts();
         const el = document.getElementById('tekBody' + idx);
         const chev = document.getElementById('chevTek' + idx);
         if (!el) return;
-        if (el.classList.contains('show')) { bootstrap.Collapse.getInstance(el) ? bootstrap.Collapse.getInstance(el).hide() : new bootstrap.Collapse(el).hide(); if (chev) chev.classList.remove('bi-chevron-up'); }
-        else { new bootstrap.Collapse(el, { toggle: false }).show(); if (chev) chev.classList.replace('bi-chevron-down','bi-chevron-up'); }
+        const show = el.style.display === 'none';
+        el.style.display = show ? '' : 'none';
+        if (chev) chev.className = 'bi ' + (show ? 'bi-chevron-up' : 'bi-chevron-down') + ' text-muted';
     }
 
     function kondisiBadge(k) {

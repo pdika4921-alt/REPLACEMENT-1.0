@@ -1018,9 +1018,13 @@ app.get('/admin/data-teknisi', checkRole('admin'), (req, res) => {
                 const nik = (t.nik || '').trim().toUpperCase();
                 const recs = groups[nik] || [];
                 let totalOnt = 0, totalFoto = 0;
+                let sDone = 0, sWait = 0, sFail = 0;
                 recs.forEach(r => {
                     try { totalOnt  += JSON.parse(r.perangkat_json || '[]').length; } catch(e) {}
                     try { totalFoto += JSON.parse(r.eviden_json    || '[]').length; } catch(e) {}
+                    if (r.status === 'COMPLETED') sDone++;
+                    else if (r.status === 'REJECTED') sFail++;
+                    else sWait++;
                 });
                 return {
                     nik,
@@ -1029,6 +1033,7 @@ app.get('/admin/data-teknisi', checkRole('admin'), (req, res) => {
                     total_bast: recs.length,
                     total_ont: totalOnt,
                     total_foto: totalFoto,
+                    status_counts: { done: sDone, pending: sWait, rejected: sFail },
                     records: recs.map(r => {
                         let perangkat = [], eviden = [];
                         try { perangkat = JSON.parse(r.perangkat_json || '[]'); } catch(e) {}
