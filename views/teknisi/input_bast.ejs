@@ -112,6 +112,26 @@
         }
         .form-label { font-weight: 600; font-size: .82rem; color: #475569; }
 
+        /* ===== SEARCHABLE TEKNISI ===== */
+        .teknisi-search-section { position: relative; z-index: 101; }
+        .teknisi-search-wrap { position: relative; }
+        .teknisi-search-icon { position: absolute; top: 50%; right: 14px; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
+        .teknisi-search-wrap .form-control { padding-right: 40px; }
+        .teknisi-dropdown {
+            position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 60;
+            max-height: 260px; overflow-y: auto;
+            background: #fff; border: 1.5px solid var(--border); border-radius: 10px;
+            box-shadow: 0 16px 36px rgba(14,31,59,.16); padding: 6px;
+        }
+        .teknisi-dropdown .teknisi-item {
+            display: flex; flex-direction: column; gap: 2px;
+            padding: 8px 12px; border-radius: 8px; cursor: pointer;
+            font-size: .84rem; transition: background .15s;
+        }
+        .teknisi-dropdown .teknisi-item small { color: var(--muted); font-size: .72rem; }
+        .teknisi-dropdown .teknisi-item:hover, .teknisi-dropdown .teknisi-item.active { background: #fff1f1; }
+        .teknisi-dropdown .teknisi-empty { padding: 12px; color: var(--muted); font-size: .82rem; text-align: center; }
+
         /* ===== TABLE PERANGKAT ===== */
         .table-perangkat th {
             background: var(--navy); color: rgba(255,255,255,.88);
@@ -262,10 +282,16 @@
 
             <!-- 2. Identitas Teknisi -->
             <div class="section-badge anim-up"><span class="num">2</span> <i class="bi bi-person-vcard-fill"></i> Identitas Pihak Pertama (Teknisi)</div>
-            <div class="mb-4 anim-up">
+            <div class="mb-4 anim-up teknisi-search-section">
                 <label class="form-label">Pilih Nama Teknisi</label>
-                <select class="form-select" name="teknisi_select" required>
-                    <option value="" selected disabled>-- Pilih NIK dan Nama Anda --</option>
+                <div class="teknisi-search-wrap">
+                    <input type="text" class="form-control" id="teknisiSearch" placeholder="Ketik NIK / Nama untuk mencari..." autocomplete="off">
+                    <i class="bi bi-search teknisi-search-icon"></i>
+                    <div class="teknisi-dropdown" id="teknisiDropdown" hidden></div>
+                </div>
+                <small class="text-muted mt-1 d-block"><i class="bi bi-info-circle me-1"></i>Ketik NIK atau nama teknisi untuk mempercepat pencarian.</small>
+                <select name="teknisi_select" id="teknisiSelect" class="d-none" required>
+                    <option value="" selected></option>
                     <% namaTeknisiList.forEach(t => { %>
                     <option value="<%= t.nik %> | <%= t.nama %>">
                         <%= t.nik %> | <%= t.nama %>
@@ -551,6 +577,7 @@
             setv('[name="tanggal"]', d.tanggal);
             setv('[name="loksto"]', d.loksto);
             setv('[name="teknisi_select"]', d.teknisi);
+            syncTeknisiSearch();
             const tbody = document.getElementById('bodyPerangkat');
             const first = tbody.querySelector('tr');
             const fill = (tr, r) => {
@@ -575,6 +602,14 @@
         const form = document.getElementById('formTeknisi');
         if (!form.checkValidity()) return form.reportValidity(); // Cek inputan kosong
         if (!cekDuplikatSN()) return;
+
+        // Validasi manual: teknisi wajib dipilih (select disembunyikan, jadi checkValidity tidak mendeteksi)
+        const valTeknisi = (document.querySelector('[name="teknisi_select"]') || {}).value || '';
+        if (!valTeknisi) {
+            Swal.fire('Perhatian', 'Silakan pilih Nama Teknisi terlebih dahulu.', 'warning');
+            document.getElementById('teknisiSearch').focus();
+            return;
+        }
 
         const btn = document.getElementById('btnSubmit');
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Mengirim Data...';
@@ -629,6 +664,71 @@
             btn.innerHTML = '<i class="bi bi-cloud-arrow-up-fill me-2"></i> SIMPAN &amp; BUAT KODE BAST';
             btn.disabled = false;
         }
+    }
+</script>
+
+<script>
+    // ===== Searchable Pilih Nama Teknisi =====
+    const selTeknisi = document.getElementById('teknisiSelect');
+    const searchTeknisi = document.getElementById('teknisiSearch');
+    const dropTeknisi = document.getElementById('teknisiDropdown');
+    const TEKNISI_OPTIONS = Array.from(selTeknisi.options).filter(o => o.value);
+
+    function buildTeknisi(data) {
+        data.forEach(o => {
+            const [nik, ...nama] = o.value.split(' | ');
+            const div = document.createElement('div');
+            div.className = 'teknisi-item';
+            div.innerHTML = `<span>${nama.join(' | ')}</span><small>NIK: ${nik}</small>`;
+            div.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                selTeknisi.value = o.value;
+                searchTeknisi.value = o.value;
+                dropTeknisi.hidden = true;
+            });
+            dropTeknisi.appendChild(div);
+        });
+    }
+
+    function renderTeknisi(q) {
+        dropTeknisi.innerHTML = '';
+        const query = (q || '').trim().toLowerCase();
+        const matched = query
+            ? TEKNISI_OPTIONS.filter(o => o.value.toLowerCase().includes(query))
+            : TEKNISI_OPTIONS;
+        if (!matched.length) {
+            const empty = document.createElement('div');
+            empty.className = 'teknisi-empty';
+            empty.textContent = 'Tidak ada teknisi yang cocok.';
+            dropTeknisi.appendChild(empty);
+            return;
+        }
+        buildTeknisi(matched);
+    }
+
+    function openTeknisi() {
+        if (dropTeknisi.childNodes.length === 0) renderTeknisi(searchTeknisi.value);
+        dropTeknisi.hidden = false;
+    }
+
+    searchTeknisi.addEventListener('input', () => renderTeknisi(searchTeknisi.value));
+    searchTeknisi.addEventListener('focus', openTeknisi);
+    document.addEventListener('click', (e) => {
+        if (!searchTeknisi.contains(e.target) && !dropTeknisi.contains(e.target)) dropTeknisi.hidden = true;
+    });
+    searchTeknisi.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && TEKNISI_OPTIONS.length === 1) {
+            e.preventDefault();
+            const o = TEKNISI_OPTIONS[0];
+            selTeknisi.value = o.value;
+            searchTeknisi.value = o.value;
+            dropTeknisi.hidden = true;
+        }
+    });
+
+    function syncTeknisiSearch() {
+        if (selTeknisi.value) searchTeknisi.value = selTeknisi.value;
+        else searchTeknisi.value = '';
     }
 </script>
 
