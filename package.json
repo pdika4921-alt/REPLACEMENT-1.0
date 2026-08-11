@@ -14,11 +14,13 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "adm-zip": "^0.6.0",
     "docxtemplater": "^3.69.3",
     "ejs": "^6.0.1",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
     "multer": "^2.2.0",
+    "pdfkit": "^0.19.1",
     "pizzip": "^3.2.0",
     "sqlite3": "^5.1.6",
     "xlsx": "^0.18.5"

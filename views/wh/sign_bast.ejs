@@ -68,6 +68,24 @@
     }
     .table td { font-size: 0.85rem; border-color: #f1f5f9; }
 
+    /* ---- CHECKLIST ONT ---- */
+    .ck-box {
+        display: inline-flex; align-items: center; gap: 5px;
+        background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
+        padding: 4px 8px; font-size: 0.68rem; font-weight: 600; color: var(--muted);
+        cursor: pointer; transition: all .15s ease; user-select: none;
+    }
+    .ck-box:has(input:checked) {
+        background: #dcfce7; border-color: #16a34a; color: #166534;
+    }
+    .ck-box input { accent-color: #16a34a; cursor: pointer; }
+    .ck-status {
+        font-size: 0.8rem; font-weight: 700; color: #b45309;
+        background: #fef3c7; border: 1px solid #fcd34d;
+        padding: 8px 14px; border-radius: 10px; margin-bottom: 12px;
+    }
+    .ck-status.ok { color: #166534; background: #dcfce7; border-color: #86efac; }
+
     /* ---- TTD CANVAS ---- */
     .ttd-wrapper {
         position: relative;
@@ -258,11 +276,12 @@
                             <th>SN Baru</th>
                             <th>No. Internet</th>
                             <th class="text-center">Kondisi</th>
+                            <th class="text-center" style="min-width:110px;">Verifikasi SN Lama</th>
                         </tr>
                     </thead>
                     <tbody>
                         <% data.perangkat.forEach((item, idx) => { %>
-                        <tr>
+                        <tr data-bar="<%= idx %>">
                             <td class="text-center text-muted fw-semibold"><%= idx + 1 %></td>
                             <td class="font-monospace text-muted" style="font-size:0.8rem;"><%= item.snlama || '-' %></td>
                             <td class="font-monospace fw-bold text-success" style="font-size:0.8rem;"><%= item.snbaru || '-' %></td>
@@ -274,13 +293,19 @@
                                     <span style="background:#fee2e2;color:#991b1b;padding:3px 12px;border-radius:8px;font-size:0.72rem;font-weight:600;"><%= item.kondisi || '-' %></span>
                                 <% } %>
                             </td>
+                            <td class="text-center">
+                                <label class="ck-box">
+                                    <input type="checkbox" class="ck-item" data-idx="<%= idx %>" data-key="snlama" onchange="cekChecklist()">
+                                    <span class="ck-lbl">Sudah Dicek</span>
+                                </label>
+                            </td>
                         </tr>
                         <% }) %>
                     </tbody>
                     <tfoot>
                         <tr class="table-light">
-                            <td colspan="5" class="text-end small fw-semibold text-muted">
-                                Total: <strong class="text-danger"><%= data.perangkat.length %> ONT</strong>
+                            <td colspan="6" class="text-end small fw-semibold text-muted">
+                                Total: <strong class="text-danger"><%= data.perangkat.length %> ONT</strong> — wajib ceklis "Sudah Dicek" untuk setiap SN Lama sebelum tanda tangan.
                             </td>
                         </tr>
                     </tfoot>
@@ -311,9 +336,13 @@
                     <img src="/uploads/eviden/<%= String(path).split(/[\\/]/).pop() %>"
                          alt="Eviden <%= idx + 1 %>"
                          onclick="bukaFoto(this.src)"
+                         onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,'+encodeURIComponent('<svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;220&quot; height=&quot;164&quot;><rect width=&quot;100%25&quot; height=&quot;100%25&quot; fill=&quot;#f1f5f9&quot;/><text x=&quot;50%25&quot; y=&quot;45%25&quot; font-family=&quot;Arial&quot; font-size=&quot;12&quot; fill=&quot;#94a3b8&quot; text-anchor=&quot;middle&quot;>Foto tidak ditemukan</text><text x=&quot;50%25&quot; y=&quot;60%25&quot; font-family=&quot;Arial&quot; font-size=&quot;10&quot; fill=&quot;#cbd5e1&quot; text-anchor=&quot;middle&quot;>' + (encodeURIComponent('<%= String(path).split(/[\\/]/).pop() %>')) + '</text></svg>');"
                          title="Klik untuk perbesar">
                 </div>
                 <% }) %>
+            </div>
+            <div class="px-4 pb-3 small text-muted">
+                <i class="bi bi-image me-1"></i> <%= data.eviden.length %> foto eviden terunggah.
             </div>
         <% } else { %>
             <div class="p-4 pt-2">
@@ -375,10 +404,16 @@
     </div>
 
     <!-- 6. TOMBOL SUBMIT -->
-    <div class="d-grid mt-2 anim-up">
-        <button type="button" onclick="submitTTD()" class="btn-submit-ttd">
-            <i class="bi bi-check-circle-fill me-2"></i> Setujui &amp; Simpan Tanda Tangan
-        </button>
+    <div class="mt-2 anim-up">
+        <div id="ckStatus" class="ck-status">SN Lama terverifikasi: 0 / 0</div>
+        <div class="d-grid">
+            <button type="button" id="btnSetujui" onclick="submitTTD()" class="btn-submit-ttd" disabled>
+                <i class="bi bi-check-circle-fill me-2"></i> Setujui &amp; Simpan Tanda Tangan
+            </button>
+        </div>
+        <div class="text-center small text-muted mt-2">
+            <i class="bi bi-shield-check me-1"></i> Tombol aktif setelah seluruh ONT terceklis 1-1 dan tanda tangan diisi.
+        </div>
     </div>
 
 </div>
@@ -398,6 +433,7 @@
 <form id="formSubmit" action="/wh/submit" method="POST" style="display:none;">
     <input type="hidden" name="kode_unik" value="<%= data.kode_unik %>">
     <input type="hidden" name="ttdPenerimaBase64" id="ttdDataInput">
+    <input type="hidden" name="checklist" id="checklistDataInput">
 </form>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -468,13 +504,35 @@
         wrapper.classList.remove('active');
     }
 
+    function cekChecklist() {
+        const total = document.querySelectorAll('.ck-item[data-key="snlama"]').length;
+        const checked = document.querySelectorAll('.ck-item[data-key="snlama"]:checked').length;
+        const status = document.getElementById('ckStatus');
+        const btn = document.getElementById('btnSetujui');
+        if (status) {
+            status.textContent = 'SN Lama terverifikasi: ' + checked + ' / ' + total;
+            status.className = (checked === total && total > 0) ? 'ck-status ok' : 'ck-status';
+        }
+        if (btn) btn.disabled = !(total > 0 && checked === total);
+        return total > 0 && checked === total;
+    }
+
     function submitTTD() {
+        if (!cekChecklist()) {
+            showToast('Harap ceklis "Sudah Dicek" untuk SETIAP SN Lama terlebih dahulu.', 'err');
+            return;
+        }
         if (!hasSigned) {
             showToast('Harap tanda tangani terlebih dahulu.', 'err');
             return;
         }
+        const checklist = {};
+        document.querySelectorAll('.ck-item[data-key="snlama"]:checked').forEach(cb => {
+            checklist[cb.dataset.idx] = { snlama: true };
+        });
         const dataURL = canvas.toDataURL('image/png');
         document.getElementById('ttdDataInput').value = dataURL;
+        document.getElementById('checklistDataInput').value = JSON.stringify(checklist);
         document.getElementById('formSubmit').submit();
     }
 
@@ -499,6 +557,10 @@
         document.querySelectorAll('.anim-up').forEach(function (el, i) {
             el.style.animationDelay = (i * 70) + 'ms';
         });
+        if (typeof cekChecklist === 'function') cekChecklist();
+        <% if (typeof error !== 'undefined' && error) { %>
+        showToast('<%= error %>', 'err');
+        <% } %>
     });
 </script>
 

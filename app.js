@@ -5,6 +5,8 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto'); 
 const session = require('express-session');
+const AdmZip = require('adm-zip');
+const { buatPdfBast } = require('./buatPdfBast');
 
 const app = express();
 
@@ -51,8 +53,11 @@ db.serialize(() => {
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )`);
 
-    // Migrasi defensif untuk database lama yang belum punya kolom alasan_tolak
+    // Migrasi defensif untuk database lama
     db.run(`ALTER TABLE bast_data ADD COLUMN alasan_tolak TEXT`, () => {});
+    db.run(`ALTER TABLE bast_data ADD COLUMN approval_checklist TEXT`, () => {});
+    db.run(`ALTER TABLE bast_data ADD COLUMN wh_nik TEXT`, () => {});
+    db.run(`ALTER TABLE bast_data ADD COLUMN approved_at TEXT`, () => {});
 
     // Tabel audit log
     db.run(`CREATE TABLE IF NOT EXISTS audit_log (
@@ -490,9 +495,10 @@ app.get('/admin/audit', checkRole('admin'), (req, res) => {
 
 // ================= ROUTE TEKNISI =================
 app.get('/teknisi/dashboard', checkRole('teknisi'), (req, res) => {
-    db.all("SELECT * FROM bast_data ORDER BY id DESC", (err, rows) => {
+    const nik = String(req.session.nik || req.session.username || '').trim();
+    db.all("SELECT * FROM bast_data WHERE teknisi_nik = ? ORDER BY id DESC", [nik], (err, rows) => {
         res.render('teknisi/dashboard', {
-            data        : rows,
+            data        : rows || [],
             username    : req.session.username,
             nama_lengkap: req.session.nama_lengkap || req.session.username
         });
@@ -500,30 +506,13 @@ app.get('/teknisi/dashboard', checkRole('teknisi'), (req, res) => {
 });
 
 app.get('/teknisi/input', checkRole('teknisi'), (req, res) => {
-    db.all(`
-        SELECT 
-            COALESCE(NULLIF(TRIM(nik), ''), username) AS nik, 
-            COALESCE(NULLIF(TRIM(nama_lengkap), ''), username) AS nama 
-        FROM users 
-        WHERE role = 'teknisi' 
-        ORDER BY nama ASC
-    `, (err, namaTeknisiList) => {
-
-        db.all(`
-            SELECT UPPER(TRIM(sto)) as sto 
-            FROM users 
-            WHERE sto IS NOT NULL 
-            AND TRIM(sto) != ''
-            AND UPPER(TRIM(sto)) != 'ALL'
-            GROUP BY UPPER(TRIM(sto))
-            ORDER BY sto ASC
-        `, (errSto, stoRows) => {
-            res.render('teknisi/input_bast', { 
-                namaTeknisiList : namaTeknisiList || [], 
-                stoList         : stoRows || []
-            });
-        });
-    });
+    const teknisi = {
+        nik: String(req.session.nik || req.session.username || '').trim(),
+        nama: req.session.nama_lengkap || req.session.username
+    };
+    const stoTeknisi = String(req.session.sto || '').trim().toUpperCase();
+    const stoList = stoTeknisi && stoTeknisi !== 'ALL' ? [{ sto: stoTeknisi }] : [];
+    res.render('teknisi/input_bast', { teknisi, stoList });
 });
 
 // Batalkan BAST yang masih PENDING (hanya milik teknisi tsb)
@@ -555,9 +544,12 @@ app.post('/teknisi/cancel/:kode', checkRole('teknisi'), (req, res) => {
 //   memakai name="snlama" (tanpa []) maka hanya satu nilai yang masuk sebagai string.
 //   Fix ini menangani KEDUA kemungkinan nama field.
 // =====================================================================
-app.post('/teknisi/submit', upload.array('eviden', 10), (req, res) => { 
+app.post('/teknisi/submit', checkRole('teknisi'), upload.array('eviden', 10), (req, res) => { 
     try {
         const data = req.body;
+        const nik = String(req.session.nik || req.session.username || '').trim();
+        const nama = req.session.nama_lengkap || req.session.username;
+        const stoTeknisi = String(req.session.sto || '').trim().toUpperCase();
 
         // Log untuk debug — bisa dihapus setelah konfirmasi berjalan
         console.log('=== TEKNISI SUBMIT - req.body keys ===');
@@ -618,9 +610,12 @@ const ttdRelPath = path.join('uploads', 'ttd', `ttd_teknisi_${kodeUnik}.png`);
 
         let evidenArray = req.files ? req.files.map(file => path.join('uploads', 'eviden', path.basename(file.path))) : [];
 
-        // ===== VALIDASI SERVER-SIDE =====
+        // ==== VALIDASI SERVER-SIDE =====
         if (!data.tanggal || !data.loksto) {
             return res.status(400).json({ success: false, message: 'Tanggal dan lokasi STO wajib diisi.' });
+        }
+        if (stoTeknisi && stoTeknisi !== 'ALL' && String(data.loksto || '').trim().toUpperCase() !== stoTeknisi) {
+            return res.status(400).json({ success: false, message: 'Lokasi STO tidak sesuai dengan akun Anda.' });
         }
         if (perangkatArray.length === 0) {
             return res.status(400).json({ success: false, message: 'Minimal 1 perangkat wajib diisi.' });
@@ -639,14 +634,6 @@ const ttdRelPath = path.join('uploads', 'ttd', `ttd_teknisi_${kodeUnik}.png`);
                 return res.status(400).json({ success: false, message: 'Ada SN Lama yang duplikat.' });
             }
             if (s) snSet.add(s);
-        }
-
-        // Parse teknisi dari select
-        let nik = "", nama = "";
-        if (data.teknisi_select) {
-            const teknisiSplit = data.teknisi_select.split(' | ');
-            nik  = teknisiSplit[0] || '';
-            nama = teknisiSplit[1] || '';
         }
 
         const sql = `INSERT INTO bast_data 
@@ -728,6 +715,11 @@ app.post('/teknisi/update/:kode', checkRole('teknisi'), upload.array('eviden', 1
         if (perangkatArray.length === 0) return res.status(400).json({ success: false, message: 'Minimal 1 perangkat wajib diisi.' });
         if (perangkatArray.length > 10) return res.status(400).json({ success: false, message: 'Maksimal 10 perangkat per BAST.' });
 
+        const stoTeknisi = String(req.session.sto || '').trim().toUpperCase();
+        if (stoTeknisi && stoTeknisi !== 'ALL' && String(data.loksto || '').trim().toUpperCase() !== stoTeknisi) {
+            return res.status(400).json({ success: false, message: 'Lokasi STO tidak sesuai dengan akun Anda.' });
+        }
+
         let newEviden;
         if (req.files && req.files.length > 0) {
             newEviden = req.files.map(f => path.join('uploads', 'eviden', path.basename(f.path)));
@@ -741,12 +733,8 @@ app.post('/teknisi/update/:kode', checkRole('teknisi'), upload.array('eviden', 1
         const ttdRelPath = path.join('uploads', 'ttd', `ttd_teknisi_${kode}.png`);
         try { fs.writeFileSync(ttdPath, data.ttdPemberiBase64.replace(/^data:image\/png;base64,/, ""), 'base64'); } catch (e) {}
 
-        let tnik = '', tnama = '';
-        if (data.teknisi_select) {
-            const s = data.teknisi_select.split(' | ');
-            tnik = s[0] || '';
-            tnama = s[1] || '';
-        }
+        const tnik = String(req.session.nik || req.session.username || '').trim();
+        const tnama = req.session.nama_lengkap || req.session.username;
 
         db.run(
             "UPDATE bast_data SET tanggal = ?, loksto = ?, teknisi_nama = ?, teknisi_nik = ?, perangkat_json = ?, eviden_json = ?, ttd_teknisi = ? WHERE kode_unik = ?",
@@ -834,29 +822,68 @@ app.get('/wh/sign/:kode', checkRole('wh'), (req, res) => {
 });
 
 app.post('/wh/submit', checkRole('wh'), (req, res) => {
-    const { kode_unik, ttdPenerimaBase64 } = req.body;
-    const wh_nama = req.session.nama_lengkap;
+    const { kode_unik, ttdPenerimaBase64, checklist } = req.body;
+    const wh_nama = req.session.nama_lengkap || req.session.username;
+    const wh_nik  = String(req.session.nik || '').trim();
 
-    // ✅ FIX 3 — di route /wh/submit
-const ttdPath = path.join(uploadBase, 'ttd', `ttd_wh_${kode_unik}.png`);
-const ttdRelPath = path.join('uploads', 'ttd', `ttd_wh_${kode_unik}.png`);
-    if (ttdPenerimaBase64) {
-        fs.writeFileSync(
-            ttdPath,
-            ttdPenerimaBase64.replace(/^data:image\/png;base64,/, ""),
-            'base64'
-        );
-    }
-    db.run(
-        `UPDATE bast_data SET wh_nama = ?, ttd_wh = ?, status = 'COMPLETED' WHERE kode_unik = ?`,
-        [wh_nama, ttdRelPath, kode_unik],
-        function(err) {
-            if (err) console.error('WH submit error:', err.message);
-            logAudit(req, 'APPROVE', kode_unik);
-            res.redirect('/bast/cetak/' + kode_unik);
+    db.get("SELECT * FROM bast_data WHERE kode_unik = ?", [kode_unik], (err, row) => {
+        if (!row) return res.redirect('/wh/dashboard');
+
+        // Wajib masih PENDING
+        if (row.status !== 'PENDING') return res.redirect('/wh/dashboard');
+
+        // Batasi akses sesuai STO milik WH
+        const whSto = String(req.session.sto || '').trim().toUpperCase();
+        if (whSto && whSto !== 'ALL' && String(row.loksto || '').trim().toUpperCase() !== whSto) {
+            return res.redirect('/wh/dashboard');
         }
-    );
+
+        // TTD wajib ada
+        if (!ttdPenerimaBase64) {
+            return res.render('wh/sign_bast', {
+                data: Object.assign(row, { perangkat: parseJson(row.perangkat_json), eviden: parseJson(row.eviden_json), wh_nama_session: wh_nama, wh_nik_session: wh_nik }),
+                username: req.session.username,
+                error: 'Harap tanda tangani terlebih dahulu.'
+            });
+        }
+
+        // Validasi checklist per ONT (verifikasi SN Lama)
+        let checklistObj = {};
+        if (checklist) {
+            try { checklistObj = JSON.parse(checklist); } catch (e) { checklistObj = {}; }
+        }
+        let perangkat = [];
+        try { perangkat = JSON.parse(row.perangkat_json || '[]'); } catch (e) { perangkat = []; }
+        for (let i = 0; i < perangkat.length; i++) {
+            const c = checklistObj[i] || {};
+            if (perangkat[i].snlama && !c.snlama) {
+                return res.redirect('/wh/sign/' + kode_unik);
+            }
+        }
+        if (!perangkat.length) return res.redirect('/wh/sign/' + kode_unik);
+
+        const ttdPath = path.join(uploadBase, 'ttd', `ttd_wh_${kode_unik}.png`);
+        const ttdRelPath = path.join('uploads', 'ttd', `ttd_wh_${kode_unik}.png`);
+        try {
+            fs.writeFileSync(ttdPath, ttdPenerimaBase64.replace(/^data:image\/png;base64,/, ""), 'base64');
+        } catch (e) {}
+
+        const approvedAt = new Date().toLocaleString('sv-SE', { timeZone: 'Asia/Jakarta' }).replace('T', ' ');
+        db.run(
+            `UPDATE bast_data SET wh_nama = ?, wh_nik = ?, ttd_wh = ?, approval_checklist = ?, approved_at = ?, status = 'COMPLETED' WHERE kode_unik = ?`,
+            [wh_nama, wh_nik, ttdRelPath, JSON.stringify(checklistObj), approvedAt, kode_unik],
+            function(err) {
+                if (err) console.error('WH submit error:', err.message);
+                logAudit(req, 'APPROVE', kode_unik);
+                res.redirect('/bast/cetak/' + kode_unik);
+            }
+        );
+    });
 });
+
+function parseJson(s) {
+    try { return JSON.parse(s || '[]'); } catch (e) { return []; }
+}
 
 app.post('/wh/reject/:kodeUnik', checkRole('wh'), (req, res) => {
     const { kodeUnik } = req.params;
@@ -891,6 +918,45 @@ app.get('/bast/cetak/:kode', isAuth, (req, res) => {
 });
 
 app.use('/uploads', express.static(uploadBase));
+
+// ================= DOWNLOAD SEMUA PDF (ZIP) =================
+app.get('/download/all-pdf', isAuth, (req, res) => {
+    const role = req.session.role;
+    if (role !== 'admin' && role !== 'wh') {
+        return res.status(403).send('Akses ditolak.');
+    }
+    const whSto = String(req.session.sto || '').trim().toUpperCase();
+    const restricted = (role === 'wh' && whSto && whSto !== 'ALL');
+    const q = restricted
+        ? "SELECT * FROM bast_data WHERE UPPER(COALESCE(loksto,'')) = ? ORDER BY id ASC"
+        : "SELECT * FROM bast_data ORDER BY id ASC";
+    const params = restricted ? [whSto] : [];
+
+    db.all(q, params, async (err, rows) => {
+        if (err) return res.status(500).send('Gagal mengambil data BAST.');
+        if (!rows || rows.length === 0) {
+            return res.status(404).send('Tidak ada BAST yang dapat diunduh.');
+        }
+
+        try {
+            const logoPath = path.join(__dirname, 'public', 'logo-telkom.png');
+            const zip = new AdmZip();
+            for (const row of rows) {
+                const pdfBuf = await buatPdfBast(row, { uploadBase, logoPath });
+                const namaFile = String(row.kode_unik || 'BAST-' + row.id) + '.pdf';
+                zip.addFile(namaFile, pdfBuf);
+            }
+            const zipBuf = zip.toBuffer();
+            const namaZip = (role === 'wh' ? 'BAST_' + (whSto || 'WH') : 'BAST_SEMUA') + '_' + Date.now() + '.zip';
+            res.setHeader('Content-Type', 'application/zip');
+            res.setHeader('Content-Disposition', 'attachment; filename="' + namaZip + '"');
+            res.send(zipBuf);
+        } catch (e) {
+            console.error('Error generate ZIP PDF:', e);
+            res.status(500).send('Gagal membuat file PDF: ' + e.message);
+        }
+    });
+});
 const xlsx = require('xlsx');
 
 // ================= ROUTE EXPORT EXCEL =================
@@ -1227,4 +1293,4 @@ app.use((err, req, res, next) => {
     });
 });
 
-app.listen(3000, () => console.log('Server berjalan di http://localhost:3000'));
+app.listen(process.env.PORT || 3000, () => console.log('Server berjalan di http://localhost:' + (process.env.PORT || 3000)));
